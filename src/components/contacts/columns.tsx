@@ -91,7 +91,7 @@ export function createColumns(): ColumnDef<Contact>[] {
         <Button
           variant="ghost"
           size="sm"
-          className="-ml-3 h-7 gap-1 text-xs font-medium"
+          className="-ml-3 h-7 gap-1 text-xs font-medium hidden md:flex"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Title
@@ -99,14 +99,14 @@ export function createColumns(): ColumnDef<Contact>[] {
         </Button>
       ),
       cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">{row.getValue("title")}</span>
+        <span className="text-sm text-muted-foreground hidden md:block">{row.getValue("title")}</span>
       ),
     },
     {
       accessorKey: "email",
-      header: () => <span className="text-xs font-medium">Email</span>,
+      header: () => <span className="text-xs font-medium hidden lg:block">Email</span>,
       cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground font-mono text-xs">
+        <span className="text-sm text-muted-foreground font-mono text-xs hidden lg:block">
           {row.getValue("email")}
         </span>
       ),

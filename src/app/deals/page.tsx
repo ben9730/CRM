@@ -17,9 +17,9 @@ export default function DealsPage() {
     .reduce((sum, d) => sum + d.value, 0);
 
   return (
-    <div className="flex flex-col h-full p-6 gap-5">
+    <div className="flex flex-col h-full p-4 sm:p-6 gap-5">
       {/* Page header */}
-      <div className="flex items-center justify-between flex-shrink-0">
+      <div className="flex flex-col gap-3 flex-shrink-0 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Deal Pipeline</h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -36,7 +36,7 @@ export default function DealsPage() {
       </div>
 
       {/* Kanban board */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 min-h-0">
         <KanbanBoard />
       </div>
     </div>

@@ -46,7 +46,7 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps) {
   const linkedInteractions = mockInteractions.filter((i) => i.contactId === id);
 
   return (
-    <div className="space-y-5 p-6">
+    <div className="space-y-5 p-4 sm:p-6">
       {/* Contact overview */}
       <ContactOverview contact={contact} />
 

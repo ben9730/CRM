@@ -38,8 +38,8 @@ export function ContactsTable({ contacts, onRowClick }: ContactsTableProps) {
   });
 
   return (
-    <div className="rounded-lg border border-border/40 overflow-hidden">
-      <Table>
+    <div className="rounded-lg border border-border/40 overflow-x-auto">
+      <Table className="min-w-[600px]">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow
