@@ -32,7 +32,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Bootstrap Next.js + shadcn/ui, OKLCH dark design system, app shell (collapsible sidebar + header), mock data files
+- [x] 01-01-PLAN.md — Bootstrap Next.js + shadcn/ui, OKLCH dark design system, app shell (collapsible sidebar + header), mock data files
 - [ ] 01-02-PLAN.md — Build 4 prototype screens: Dashboard, Contacts List (table/grid/sheet), Deal Pipeline Kanban, Contact Detail
 - [ ] 01-03-PLAN.md — Responsive testing at 1280px/768px/375px and user approval gate
 
@@ -91,7 +91,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Frontend Design & UI | 0/3 | Not started | - |
+| 1. Frontend Design & UI | 1/3 | In progress | - |
 | 2. Backend & Data Layer | 0/3 | Not started | - |
 | 3. Integration & Features | 0/3 | Not started | - |
 | 4. Polish & Production | 0/3 | Not started | - |

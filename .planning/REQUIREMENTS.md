@@ -9,12 +9,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Design & UI Quality
 
-- [ ] **DSGN-01**: Application uses the `frontend-design` skill to create a distinctive, premium UI comparable to HubSpot/Pipedrive
+- [x] **DSGN-01**: Application uses the `frontend-design` skill to create a distinctive, premium UI comparable to HubSpot/Pipedrive
 - [ ] **DSGN-02**: Interactive HTML prototypes created via `playground` skill for key screens (dashboard, contacts list, deal pipeline, contact detail) — approved by user before backend work
-- [ ] **DSGN-03**: Full component library designed and documented (buttons, forms, cards, tables, modals, navigation)
+- [x] **DSGN-03**: Full component library designed and documented (buttons, forms, cards, tables, modals, navigation)
 - [ ] **DSGN-04**: Responsive design works on desktop (1280px+), tablet (768px), and mobile (375px)
-- [ ] **DSGN-05**: Consistent design system with color palette, typography, spacing, and iconography
-- [ ] **DSGN-06**: Frontend built and visually polished BEFORE backend integration begins
+- [x] **DSGN-05**: Consistent design system with color palette, typography, spacing, and iconography
+- [x] **DSGN-06**: Frontend built and visually polished BEFORE backend integration begins
 
 ### Authentication
 
@@ -84,7 +84,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **ARCH-03**: Full-text search uses PostgreSQL tsvector with GIN indexes
 - [ ] **ARCH-04**: Cloud deployed on Vercel + Supabase
 - [ ] **ARCH-05**: All available MCP tools (Supabase, Playwright) leveraged during development
-- [ ] **ARCH-06**: Available skills (`frontend-design`, `playground`, `tdd`, `security-review`, `e2e`) used throughout development
+- [x] **ARCH-06**: Available skills (`frontend-design`, `playground`, `tdd`, `security-review`, `e2e`) used throughout development
 
 ### Process Requirements
 
@@ -135,12 +135,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DSGN-01 | Phase 1 | Pending |
+| DSGN-01 | Phase 1 | Complete (01-01) |
 | DSGN-02 | Phase 1 | Pending |
-| DSGN-03 | Phase 1 | Pending |
+| DSGN-03 | Phase 1 | Complete (01-01) |
 | DSGN-04 | Phase 1 | Pending |
-| DSGN-05 | Phase 1 | Pending |
-| DSGN-06 | Phase 1 | Pending |
+| DSGN-05 | Phase 1 | Complete (01-01) |
+| DSGN-06 | Phase 1 | Complete (01-01) |
 | AUTH-01 | Phase 2 | Pending |
 | AUTH-02 | Phase 2 | Pending |
 | AUTH-03 | Phase 2 | Pending |
@@ -183,7 +183,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ARCH-03 | Phase 2 | Pending |
 | ARCH-04 | Phase 2 | Pending |
 | ARCH-05 | Phase 2 | Pending |
-| ARCH-06 | Phase 1 | Pending |
+| ARCH-06 | Phase 1 | Complete (01-01) |
 | PROC-01 | Phase 1 | Pending |
 | PROC-02 | Phase 1 | Pending |
 | PROC-03 | Phase 3 | Pending |
@@ -196,4 +196,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-21*
-*Last updated: 2026-02-21 after roadmap creation — all 53 requirements mapped*
+*Last updated: 2026-02-21 after 01-01 completion — DSGN-01, DSGN-03, DSGN-05, DSGN-06, ARCH-06 complete*
