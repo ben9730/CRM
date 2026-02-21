@@ -1,9 +1,8 @@
 "use client";
 
 import { Contact } from "@/data/mock-contacts";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Mail, Phone, Building2, ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { Mail, Phone, Building2, ArrowLeft, Pencil, Trash2, Tag } from "lucide-react";
 import Link from "next/link";
 
 function getInitials(name: string): string {
@@ -16,18 +15,10 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-const AVATAR_COLORS = [
-  "bg-primary/20 text-primary",
-  "bg-blue-500/20 text-blue-400",
-  "bg-emerald-500/20 text-emerald-400",
-  "bg-amber-500/20 text-amber-400",
-  "bg-rose-500/20 text-rose-400",
-  "bg-cyan-500/20 text-cyan-400",
-];
-
-function getAvatarColor(name: string): string {
-  const idx = name.charCodeAt(0) % AVATAR_COLORS.length;
-  return AVATAR_COLORS[idx];
+// Deterministic avatar hue from name
+function getAvatarHue(name: string): number {
+  const hues = [280, 220, 160, 45, 320, 190];
+  return hues[name.charCodeAt(0) % hues.length];
 }
 
 interface ContactOverviewProps {
@@ -35,80 +26,209 @@ interface ContactOverviewProps {
 }
 
 export function ContactOverview({ contact }: ContactOverviewProps) {
-  const colorClass = getAvatarColor(contact.name);
+  const hue = getAvatarHue(contact.name);
+  const initials = getInitials(contact.name);
+
+  const lastContactDate = new Date(contact.lastContact).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 
   return (
-    <div className="rounded-xl border border-border/40 bg-card/60 p-6">
-      {/* Back link */}
-      <Link
-        href="/contacts"
-        className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-5"
-      >
-        <ArrowLeft className="h-3 w-3" />
-        Back to Contacts
-      </Link>
+    <div
+      className="gradient-border-top rounded-xl overflow-hidden"
+      style={{
+        background: "oklch(0.13 0.005 280)",
+        border: "1px solid oklch(1 0 0 / 7%)",
+      }}
+    >
+      {/* Gradient mesh background */}
+      <div
+        className="absolute inset-0 pointer-events-none rounded-xl overflow-hidden"
+        aria-hidden="true"
+        style={{
+          background: `radial-gradient(ellipse 70% 60% at 0% 0%, oklch(0.65 0.24 ${hue} / 7%) 0%, transparent 60%),
+                       radial-gradient(ellipse 40% 40% at 100% 100%, oklch(0.55 0.20 280 / 5%) 0%, transparent 60%)`,
+        }}
+      />
 
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-        {/* Avatar */}
-        <div
-          className={`flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full text-xl font-bold ${colorClass}`}
+      <div className="relative p-6">
+        {/* Back link */}
+        <Link
+          href="/contacts"
+          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-all duration-200 mb-6 px-3 py-1.5 rounded-md"
+          style={{
+            background: "oklch(0.16 0.005 280)",
+            border: "1px solid oklch(1 0 0 / 8%)",
+          }}
+          onMouseEnter={(e) => {
+            const el = e.currentTarget as HTMLAnchorElement;
+            el.style.borderColor = "oklch(0.65 0.24 280 / 25%)";
+            el.style.color = "oklch(0.85 0 0)";
+            el.style.boxShadow = "0 0 12px -3px oklch(0.65 0.24 280 / 15%)";
+          }}
+          onMouseLeave={(e) => {
+            const el = e.currentTarget as HTMLAnchorElement;
+            el.style.borderColor = "oklch(1 0 0 / 8%)";
+            el.style.color = "";
+            el.style.boxShadow = "none";
+          }}
         >
-          {getInitials(contact.name)}
-        </div>
+          <ArrowLeft className="h-3 w-3" />
+          Back to Contacts
+        </Link>
 
-        {/* Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">{contact.name}</h1>
-              <p className="text-muted-foreground mt-0.5">{contact.title}</p>
-              <p className="text-muted-foreground text-sm">{contact.organization}</p>
-            </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs" disabled>
-                <Pencil className="h-3 w-3" />
-                Edit
-              </Button>
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs text-destructive border-destructive/30 hover:bg-destructive/10" disabled>
-                <Trash2 className="h-3 w-3" />
-                Delete
-              </Button>
-            </div>
-          </div>
-
-          {/* Contact info row */}
-          <div className="mt-4 flex flex-wrap gap-4 text-sm">
-            <a
-              href={`mailto:${contact.email}`}
-              className="flex items-center gap-1.5 text-primary hover:underline"
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+          {/* Avatar with gradient ring */}
+          <div className="flex-shrink-0">
+            <div
+              className="p-[2px] rounded-full"
+              style={{
+                background: `conic-gradient(from 135deg, oklch(0.65 0.24 ${hue}), oklch(0.55 0.20 ${hue + 40}), oklch(0.65 0.24 ${hue}) 360deg)`,
+                boxShadow: `0 0 28px -4px oklch(0.65 0.24 ${hue} / 35%)`,
+              }}
             >
-              <Mail className="h-3.5 w-3.5 flex-shrink-0" />
-              {contact.email}
-            </a>
-            <span className="flex items-center gap-1.5 text-muted-foreground">
-              <Phone className="h-3.5 w-3.5 flex-shrink-0" />
-              {contact.phone}
-            </span>
-            <span className="flex items-center gap-1.5 text-muted-foreground">
-              <Building2 className="h-3.5 w-3.5 flex-shrink-0" />
-              {contact.organization}
-            </span>
+              <div
+                className="h-[72px] w-[72px] rounded-full flex items-center justify-center text-2xl font-bold tracking-tight"
+                style={{
+                  background: `oklch(0.12 0.02 ${hue})`,
+                  color: `oklch(0.80 0.18 ${hue})`,
+                }}
+              >
+                {initials}
+              </div>
+            </div>
           </div>
 
-          {/* Tags */}
-          {contact.tags.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {contact.tags.map((tag) => (
-                <Badge
-                  key={tag}
-                  variant="outline"
-                  className="text-xs border-border/50 text-muted-foreground"
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                {/* Name with gradient */}
+                <h1
+                  className="text-3xl font-bold tracking-tight text-gradient-violet"
+                  style={{ lineHeight: 1.2 }}
                 >
-                  {tag}
-                </Badge>
-              ))}
+                  {contact.name}
+                </h1>
+                <p className="text-sm font-medium text-foreground/70 mt-1">{contact.title}</p>
+                <p
+                  className="text-xs mt-0.5 font-medium"
+                  style={{ color: `oklch(0.65 0.24 ${hue})` }}
+                >
+                  {contact.organization}
+                </p>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 text-xs h-7 px-2.5 border-border/40 bg-transparent hover:bg-white/5 hover:border-border/60"
+                  disabled
+                >
+                  <Pencil className="h-3 w-3" />
+                  Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 text-xs h-7 px-2.5 bg-transparent"
+                  style={{
+                    borderColor: "oklch(0.55 0.22 25 / 30%)",
+                    color: "oklch(0.55 0.22 25)",
+                  }}
+                  disabled
+                >
+                  <Trash2 className="h-3 w-3" />
+                  Delete
+                </Button>
+              </div>
             </div>
-          )}
+
+            {/* Contact info pills */}
+            <div className="mt-4 flex flex-wrap gap-2">
+              <a
+                href={`mailto:${contact.email}`}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all duration-200"
+                style={{
+                  background: "oklch(0.65 0.24 220 / 10%)",
+                  border: "1px solid oklch(0.65 0.24 220 / 20%)",
+                  color: "oklch(0.65 0.18 220)",
+                }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLAnchorElement;
+                  el.style.background = "oklch(0.65 0.24 220 / 15%)";
+                  el.style.borderColor = "oklch(0.65 0.24 220 / 35%)";
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLAnchorElement;
+                  el.style.background = "oklch(0.65 0.24 220 / 10%)";
+                  el.style.borderColor = "oklch(0.65 0.24 220 / 20%)";
+                }}
+              >
+                <Mail className="h-3 w-3 flex-shrink-0" />
+                {contact.email}
+              </a>
+
+              <span
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
+                style={{
+                  background: "oklch(0.60 0.18 160 / 10%)",
+                  border: "1px solid oklch(0.60 0.18 160 / 20%)",
+                  color: "oklch(0.60 0.15 160)",
+                }}
+              >
+                <Phone className="h-3 w-3 flex-shrink-0" />
+                {contact.phone}
+              </span>
+
+              <span
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
+                style={{
+                  background: `oklch(0.65 0.24 ${hue} / 8%)`,
+                  border: `1px solid oklch(0.65 0.24 ${hue} / 18%)`,
+                  color: `oklch(0.65 0.18 ${hue})`,
+                }}
+              >
+                <Building2 className="h-3 w-3 flex-shrink-0" />
+                {contact.organization}
+              </span>
+
+              <span
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
+                style={{
+                  background: "oklch(0.60 0 0 / 8%)",
+                  border: "1px solid oklch(1 0 0 / 8%)",
+                  color: "oklch(0.55 0 0)",
+                }}
+              >
+                Last contact: {lastContactDate}
+              </span>
+            </div>
+
+            {/* Tags */}
+            {contact.tags.length > 0 && (
+              <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                <Tag className="h-3 w-3 text-muted-foreground/50 flex-shrink-0" />
+                {contact.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wider"
+                    style={{
+                      background: "oklch(0.65 0.24 280 / 8%)",
+                      border: "1px solid oklch(0.65 0.24 280 / 15%)",
+                      color: "oklch(0.65 0.18 280)",
+                    }}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -38,23 +38,41 @@ export function ContactsTable({ contacts, onRowClick }: ContactsTableProps) {
   });
 
   return (
-    <div className="rounded-lg border border-border/40 overflow-x-auto">
-      <Table className="min-w-[600px]">
+    <div
+      className="rounded-xl border border-white/6 overflow-x-auto animate-fade-in"
+      style={{ background: "oklch(0.13 0.005 280)" }}
+    >
+      {/* Gradient top accent */}
+      <div
+        className="h-px w-full"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent, oklch(0.65 0.24 280 / 35%), transparent)",
+        }}
+      />
+      <Table className="min-w-[680px]">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow
               key={headerGroup.id}
-              className="border-b border-border/40 bg-muted/20 hover:bg-muted/20"
+              className="border-b border-white/6 hover:bg-transparent"
+              style={{ background: "oklch(0.11 0.003 280 / 80%)" }}
             >
               {headerGroup.headers.map((header) => (
                 <TableHead
                   key={header.id}
-                  className="text-xs font-medium text-muted-foreground px-3 py-2.5"
-                  style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
+                  className="px-3 py-2.5 h-10"
+                  style={{
+                    width:
+                      header.getSize() !== 150 ? header.getSize() : undefined,
+                  }}
                 >
                   {header.isPlaceholder
                     ? null
-                    : flexRender(header.column.columnDef.header, header.getContext())}
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
                 </TableHead>
               ))}
             </TableRow>
@@ -64,10 +82,23 @@ export function ContactsTable({ contacts, onRowClick }: ContactsTableProps) {
           {table.getRowModel().rows.map((row, idx) => (
             <TableRow
               key={row.id}
-              className={`cursor-pointer border-b border-border/30 transition-colors hover:bg-accent/40 ${
-                idx % 2 === 0 ? "bg-card/20" : "bg-card/5"
-              }`}
+              className="cursor-pointer border-b border-white/4 transition-all duration-150 group"
+              style={
+                {
+                  "--row-bg": "transparent",
+                } as React.CSSProperties
+              }
               onClick={() => onRowClick(row.original)}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.background = "oklch(0.22 0.04 280 / 30%)";
+                el.style.boxShadow = "inset 2px 0 0 oklch(0.65 0.24 280)";
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.background = "transparent";
+                el.style.boxShadow = "none";
+              }}
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id} className="px-3 py-2.5">
@@ -78,6 +109,14 @@ export function ContactsTable({ contacts, onRowClick }: ContactsTableProps) {
           ))}
         </TableBody>
       </Table>
+      {/* Bottom fade */}
+      <div
+        className="h-px w-full"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent, oklch(0.65 0.24 280 / 10%), transparent)",
+        }}
+      />
     </div>
   );
 }

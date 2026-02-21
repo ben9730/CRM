@@ -99,17 +99,18 @@ export function KanbanBoard() {
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-3 overflow-x-auto pb-4">
-        {PIPELINE_STAGES.map((stage) => (
+      <div className="flex gap-3 h-full overflow-x-auto overflow-y-hidden px-6 py-5 pb-6">
+        {PIPELINE_STAGES.map((stage, index) => (
           <KanbanColumn
             key={stage}
             stage={stage}
             deals={dealsByStage[stage] ?? []}
+            animationDelay={index * 60}
           />
         ))}
       </div>
 
-      <DragOverlay>
+      <DragOverlay dropAnimation={null}>
         {activeDeal ? <DealCard deal={activeDeal} isOverlay /> : null}
       </DragOverlay>
     </DndContext>

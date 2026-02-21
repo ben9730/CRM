@@ -1,19 +1,27 @@
 "use client";
 
 import { Task } from "@/data/mock-tasks";
-import { Badge } from "@/components/ui/badge";
-import { CheckSquare, AlertCircle } from "lucide-react";
+import { CheckSquare, AlertCircle, Clock, CheckCircle2 } from "lucide-react";
 
-const PRIORITY_STYLES: Record<string, string> = {
-  high: "bg-destructive/15 text-destructive border-destructive/30",
-  medium: "bg-primary/15 text-primary border-primary/30",
-  low: "bg-muted/50 text-muted-foreground border-border/50",
-};
-
-const STATUS_STYLES: Record<string, string> = {
-  pending: "bg-muted/40 text-muted-foreground border-border/40",
-  completed: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-  overdue: "bg-destructive/15 text-destructive border-destructive/30",
+const PRIORITY_CONFIG: Record<
+  string,
+  { borderOklch: string; labelOklch: string; bgOklch: string }
+> = {
+  high: {
+    borderOklch: "oklch(0.55 0.22 25 / 60%)",
+    labelOklch: "oklch(0.60 0.20 25)",
+    bgOklch: "oklch(0.55 0.22 25 / 8%)",
+  },
+  medium: {
+    borderOklch: "oklch(0.65 0.24 280 / 60%)",
+    labelOklch: "oklch(0.65 0.20 280)",
+    bgOklch: "oklch(0.65 0.24 280 / 6%)",
+  },
+  low: {
+    borderOklch: "oklch(1 0 0 / 10%)",
+    labelOklch: "oklch(0.50 0 0)",
+    bgOklch: "oklch(0.16 0 0)",
+  },
 };
 
 function formatDate(dateStr: string): string {
@@ -37,73 +45,241 @@ export function LinkedTasks({ tasks }: LinkedTasksProps) {
     return a.dueDate.localeCompare(b.dueDate);
   });
 
-  return (
-    <div className="rounded-xl border border-border/40 bg-card/60 p-5">
-      <h2 className="text-sm font-semibold text-foreground/90 mb-4 flex items-center gap-2">
-        <CheckSquare className="h-4 w-4 text-muted-foreground" />
-        Linked Tasks
-        <Badge variant="outline" className="ml-auto text-[10px] px-1.5 py-0 h-4 border-border/50 text-muted-foreground">
-          {tasks.length}
-        </Badge>
-      </h2>
+  const pendingCount = tasks.filter((t) => t.status !== "completed").length;
+  const completedCount = tasks.filter((t) => t.status === "completed").length;
 
-      {tasks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-8 text-center">
-          <div className="h-10 w-10 rounded-full bg-muted/20 flex items-center justify-center mb-2">
-            <CheckSquare className="h-5 w-5 text-muted-foreground/40" />
+  return (
+    <div
+      className="gradient-border-top rounded-xl overflow-hidden"
+      style={{
+        background: "oklch(0.13 0.005 280)",
+        border: "1px solid oklch(1 0 0 / 7%)",
+      }}
+    >
+      {/* Section header */}
+      <div
+        className="px-5 pt-5 pb-4"
+        style={{ borderBottom: "1px solid oklch(1 0 0 / 5%)" }}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div
+              className="h-7 w-7 rounded-md flex items-center justify-center"
+              style={{
+                background: "oklch(0.65 0.18 150 / 12%)",
+                border: "1px solid oklch(0.65 0.18 150 / 20%)",
+              }}
+            >
+              <CheckSquare
+                className="h-3.5 w-3.5"
+                style={{ color: "oklch(0.65 0.18 150)" }}
+              />
+            </div>
+            <span className="text-sm font-semibold text-foreground/90">Linked Tasks</span>
           </div>
-          <p className="text-sm text-muted-foreground">No linked tasks</p>
-        </div>
-      ) : (
-        <div className="space-y-2.5">
-          {sortedTasks.map((task) => {
-            const isOverdue = task.status !== "completed" && task.dueDate < today;
-            return (
-              <div
-                key={task.id}
-                className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 ${
-                  isOverdue
-                    ? "border-destructive/30 bg-destructive/5"
-                    : "border-border/30 bg-background/50"
-                }`}
+          <div className="flex items-center gap-2">
+            {completedCount > 0 && (
+              <span
+                className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+                style={{
+                  background: "oklch(0.65 0.18 150 / 10%)",
+                  color: "oklch(0.65 0.18 150)",
+                  border: "1px solid oklch(0.65 0.18 150 / 20%)",
+                }}
               >
-                <div className="mt-0.5 flex-shrink-0">
-                  {isOverdue ? (
-                    <AlertCircle className="h-4 w-4 text-destructive" />
-                  ) : task.status === "completed" ? (
-                    <CheckSquare className="h-4 w-4 text-emerald-400" />
-                  ) : (
-                    <div className="h-4 w-4 rounded border-2 border-muted-foreground/40" />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className={`text-sm font-medium truncate ${task.status === "completed" ? "line-through text-muted-foreground" : ""}`}>
-                    {task.title}
-                  </p>
-                  <p className={`text-xs mt-0.5 ${isOverdue ? "text-destructive font-medium" : "text-muted-foreground"}`}>
-                    Due: {formatDate(task.dueDate)}
-                    {isOverdue ? " (overdue)" : ""}
-                  </p>
-                </div>
-                <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                  <Badge
-                    variant="outline"
-                    className={`text-[10px] px-1.5 py-0 h-4 border ${PRIORITY_STYLES[task.priority]}`}
-                  >
-                    {task.priority}
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className={`text-[10px] px-1.5 py-0 h-4 border ${STATUS_STYLES[task.status]}`}
-                  >
-                    {task.status}
-                  </Badge>
-                </div>
-              </div>
-            );
-          })}
+                {completedCount} done
+              </span>
+            )}
+            <span
+              className="inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded text-[10px] font-bold tabular-nums"
+              style={{
+                background: "oklch(0.65 0.18 150 / 12%)",
+                color: "oklch(0.65 0.18 150)",
+                border: "1px solid oklch(0.65 0.18 150 / 20%)",
+              }}
+            >
+              {tasks.length}
+            </span>
+          </div>
         </div>
-      )}
+
+        {/* Progress bar */}
+        {tasks.length > 0 && (
+          <div
+            className="mt-3 h-1 rounded-full overflow-hidden"
+            style={{ background: "oklch(0.18 0 0)" }}
+          >
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${tasks.length > 0 ? (completedCount / tasks.length) * 100 : 0}%`,
+                background:
+                  "linear-gradient(90deg, oklch(0.55 0.18 150), oklch(0.65 0.20 160))",
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="p-5">
+        {tasks.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-10 text-center gap-3">
+            <div
+              className="h-12 w-12 rounded-full flex items-center justify-center"
+              style={{
+                background: "oklch(0.65 0.18 150 / 5%)",
+                border: "1px solid oklch(0.65 0.18 150 / 10%)",
+              }}
+            >
+              <CheckSquare
+                className="h-5 w-5"
+                style={{ color: "oklch(0.65 0.18 150 / 30%)" }}
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">No linked tasks</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {sortedTasks.map((task) => {
+              const isOverdue =
+                task.status !== "completed" && task.dueDate < today;
+              const isCompleted = task.status === "completed";
+              const cfg = PRIORITY_CONFIG[task.priority] ?? PRIORITY_CONFIG.low;
+
+              return (
+                <div
+                  key={task.id}
+                  className="relative rounded-lg overflow-hidden pl-[3px] transition-all duration-200 group"
+                  style={{
+                    boxShadow: isOverdue
+                      ? "0 0 16px -4px oklch(0.55 0.22 25 / 20%)"
+                      : "none",
+                  }}
+                >
+                  {/* Left priority border */}
+                  <div
+                    className="absolute left-0 top-0 bottom-0 w-[3px]"
+                    style={{
+                      background: isOverdue
+                        ? "oklch(0.55 0.22 25)"
+                        : isCompleted
+                        ? "oklch(0.65 0.18 150 / 40%)"
+                        : cfg.borderOklch,
+                    }}
+                  />
+
+                  <div
+                    className="flex items-start gap-3 px-3.5 py-3"
+                    style={{
+                      background: isOverdue
+                        ? "oklch(0.55 0.22 25 / 6%)"
+                        : isCompleted
+                        ? "oklch(0.14 0 0)"
+                        : cfg.bgOklch,
+                      border: "1px solid oklch(1 0 0 / 5%)",
+                      borderLeft: "none",
+                      borderRadius: "0 0.5rem 0.5rem 0",
+                    }}
+                  >
+                    {/* Status icon */}
+                    <div className="mt-0.5 flex-shrink-0">
+                      {isOverdue ? (
+                        <AlertCircle
+                          className="h-4 w-4"
+                          style={{ color: "oklch(0.60 0.22 25)" }}
+                        />
+                      ) : isCompleted ? (
+                        <CheckCircle2
+                          className="h-4 w-4"
+                          style={{ color: "oklch(0.65 0.18 150)" }}
+                        />
+                      ) : (
+                        <div
+                          className="h-4 w-4 rounded border-2"
+                          style={{ borderColor: "oklch(0.35 0 0)" }}
+                        />
+                      )}
+                    </div>
+
+                    {/* Task info */}
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className="text-sm font-medium truncate"
+                        style={{
+                          color: isCompleted
+                            ? "oklch(0.40 0 0)"
+                            : "oklch(0.90 0 0)",
+                          textDecoration: isCompleted ? "line-through" : "none",
+                        }}
+                      >
+                        {task.title}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Clock
+                          className="h-2.5 w-2.5 flex-shrink-0"
+                          style={{
+                            color: isOverdue
+                              ? "oklch(0.60 0.22 25)"
+                              : "oklch(0.40 0 0)",
+                          }}
+                        />
+                        <p
+                          className="text-[11px] font-medium"
+                          style={{
+                            color: isOverdue
+                              ? "oklch(0.60 0.22 25)"
+                              : "oklch(0.45 0 0)",
+                          }}
+                        >
+                          {isOverdue ? "Overdue · " : "Due: "}
+                          {formatDate(task.dueDate)}
+                        </p>
+                        {task.dealName && (
+                          <span
+                            className="text-[10px] truncate max-w-[100px]"
+                            style={{ color: "oklch(0.65 0.24 280 / 60%)" }}
+                          >
+                            · {task.dealName}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Priority badge */}
+                    <div className="flex-shrink-0">
+                      <span
+                        className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
+                        style={{
+                          background: isOverdue
+                            ? "oklch(0.55 0.22 25 / 12%)"
+                            : isCompleted
+                            ? "oklch(0.16 0 0)"
+                            : cfg.bgOklch,
+                          color: isOverdue
+                            ? "oklch(0.60 0.20 25)"
+                            : isCompleted
+                            ? "oklch(0.35 0 0)"
+                            : cfg.labelOklch,
+                          border: `1px solid ${
+                            isOverdue
+                              ? "oklch(0.55 0.22 25 / 30%)"
+                              : isCompleted
+                              ? "oklch(1 0 0 / 6%)"
+                              : cfg.borderOklch
+                          }`,
+                        }}
+                      >
+                        {task.priority}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
