@@ -10,7 +10,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Design & UI Quality
 
 - [x] **DSGN-01**: Application uses the `frontend-design` skill to create a distinctive, premium UI comparable to HubSpot/Pipedrive
-- [ ] **DSGN-02**: Interactive HTML prototypes created via `playground` skill for key screens (dashboard, contacts list, deal pipeline, contact detail) — approved by user before backend work
+- [x] **DSGN-02**: Interactive HTML prototypes created via `playground` skill for key screens (dashboard, contacts list, deal pipeline, contact detail) — approved by user before backend work
 - [x] **DSGN-03**: Full component library designed and documented (buttons, forms, cards, tables, modals, navigation)
 - [ ] **DSGN-04**: Responsive design works on desktop (1280px+), tablet (768px), and mobile (375px)
 - [x] **DSGN-05**: Consistent design system with color palette, typography, spacing, and iconography
@@ -136,7 +136,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | DSGN-01 | Phase 1 | Complete (01-01) |
-| DSGN-02 | Phase 1 | Pending |
+| DSGN-02 | Phase 1 | Complete (01-02) |
 | DSGN-03 | Phase 1 | Complete (01-01) |
 | DSGN-04 | Phase 1 | Pending |
 | DSGN-05 | Phase 1 | Complete (01-01) |
@@ -196,4 +196,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-21*
-*Last updated: 2026-02-21 after 01-01 completion — DSGN-01, DSGN-03, DSGN-05, DSGN-06, ARCH-06 complete*
+*Last updated: 2026-02-21 after 01-02 completion — DSGN-02 complete (interactive prototype screens built)*
