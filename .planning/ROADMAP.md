@@ -29,12 +29,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. The design system is documented: color palette, typography scale, spacing units, and icon set are consistent across all prototype screens
   4. All prototype screens render correctly and without layout breaks at 1280px (desktop), 768px (tablet), and 375px (mobile)
   5. No backend work has started — frontend design phase is fully complete and signed off before Phase 2 begins
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 01-01: Design system and component library (frontend-design skill — color palette, typography, spacing, shadcn/ui base)
-- [ ] 01-02: Interactive prototypes for key screens (playground skill — dashboard, contacts list, pipeline Kanban, contact detail)
-- [ ] 01-03: Responsive verification and user approval gate
+- [ ] 01-01-PLAN.md — Bootstrap Next.js + shadcn/ui, OKLCH dark design system, app shell (collapsible sidebar + header), mock data files
+- [ ] 01-02-PLAN.md — Build 4 prototype screens: Dashboard, Contacts List (table/grid/sheet), Deal Pipeline Kanban, Contact Detail
+- [ ] 01-03-PLAN.md — Responsive testing at 1280px/768px/375px and user approval gate
 
 ### Phase 2: Backend & Data Layer
 **Goal**: The database schema is correct and immutable-quality, RLS is live on every table, and users can authenticate — the foundation every feature will build on
