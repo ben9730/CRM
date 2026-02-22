@@ -23,6 +23,7 @@ import {
   SidebarMenuItem,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { LogoutButton } from "@/components/auth/logout-button";
 
 const navItems = [
   {
@@ -104,6 +105,11 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <LogoutButton />
+          </SidebarMenuItem>
+        </SidebarMenu>
         <div className="flex items-center justify-center py-2">
           <SidebarTrigger className="text-sidebar-foreground/60 hover:text-sidebar-foreground" />
         </div>
