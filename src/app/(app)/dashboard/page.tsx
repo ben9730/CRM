@@ -1,11 +1,12 @@
-"use client";
-
+import { getDashboardMetrics } from "@/lib/queries/dashboard";
 import { MetricsCards } from "@/components/dashboard/metrics-cards";
 import { PipelineSummary } from "@/components/dashboard/pipeline-summary";
 import { TasksWidget } from "@/components/dashboard/tasks-widget";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const metrics = await getDashboardMetrics();
+
   return (
     <div className="min-h-screen space-y-8 p-4 sm:p-6 lg:p-8">
       {/* Page header */}
@@ -25,22 +26,31 @@ export default function DashboardPage() {
 
       {/* Row 1: Metrics bar */}
       <div className="animate-fade-in animate-delay-1 opacity-0">
-        <MetricsCards />
+        <MetricsCards
+          totalDeals={metrics.totalDeals}
+          totalPipelineValue={metrics.totalPipelineValue}
+          tasksDueToday={metrics.tasksDueToday}
+          overdueTaskCount={metrics.overdueTaskCount}
+        />
       </div>
 
       {/* Row 2: Pipeline summary + Tasks widget */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 animate-fade-in animate-delay-2 opacity-0">
         <div className="lg:col-span-2">
-          <PipelineSummary />
+          <PipelineSummary pipelineByStage={metrics.pipelineByStage} />
         </div>
         <div className="lg:col-span-1">
-          <TasksWidget />
+          <TasksWidget
+            tasksDueToday={metrics.tasksDueToday}
+            overdueCount={metrics.overdueTaskCount}
+            upcomingTasks={metrics.upcomingTasks}
+          />
         </div>
       </div>
 
       {/* Row 3: Activity feed */}
       <div className="animate-fade-in animate-delay-3 opacity-0">
-        <ActivityFeed />
+        <ActivityFeed recentActivity={metrics.recentActivity} />
       </div>
     </div>
   );
