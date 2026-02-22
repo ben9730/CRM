@@ -5,33 +5,33 @@
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** Sales and account management teams can track every customer relationship, deal, and interaction in one place — so nothing falls through the cracks.
-**Current focus:** Phase 2 checkpoint — auth flows implemented, awaiting human verification before Phase 3
+**Current focus:** Phase 2 complete — auth guard fix deployed to production; ready for Phase 3 (data integration)
 
 ## Current Position
 
 Phase: 2 of 4 (Backend & Data Layer)
-Plan: 3 of 3 in current phase — 02-03 Task 1 complete, at checkpoint (Task 2: human verification)
-Status: Phase 2 checkpoint — auth code complete and building; human must verify browser flows
-Last activity: 2026-02-22 — Auth Server Actions, form components, logout button all committed
+Plan: 4 of 4 in current phase — 02-04 complete (proxy.ts moved to src/, auth redirect verified in production)
+Status: Phase 2 complete — all 8/8 UAT tests pass; ready for Phase 3
+Last activity: 2026-02-22 — proxy.ts moved to src/proxy.ts, deployed to Vercel, auth redirect confirmed
 
-Progress: [████░░░░░░] 45%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: ~13 min
-- Total execution time: ~1.0 hours
+- Total plans completed: 6
+- Average duration: ~12 min
+- Total execution time: ~1.1 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-frontend-design-ui | 3 | ~20 min | ~7 min |
-| 02-backend-data-layer | 3/3 | ~51 min | ~17 min |
+| 02-backend-data-layer | 4/4 | ~54 min | ~14 min |
 
 **Recent Trend:**
-- Last 5 plans: 12 min, 4 min, approval, 12 min, 24 min
+- Last 5 plans: 4 min, approval, 12 min, 24 min, 3 min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -69,6 +69,7 @@ Recent decisions affecting current work:
 - [Phase 02-03]: React 19 useActionState requires Server Actions with (prevState, formData) signature — not just (formData)
 - [Phase 02-03]: AuthState type exported from auth.ts imported into each form for shared error/success type safety
 - [Phase 02-03]: signOut uses plain form action pattern (no useActionState) — no error state needed, always redirects
+- [02-04]: Next.js 16 with src/ directory requires proxy.ts at src/proxy.ts — not project root; Turbopack uses functions-config-manifest.json for registration, not middleware-manifest.json
 
 ### Pending Todos
 
@@ -83,5 +84,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Checkpoint 02-03 Task 2 — auth flows implemented (Task 1 complete), awaiting human verification in browser
-Resume file: .planning/phases/02-backend-data-layer/02-03-SUMMARY.md
+Stopped at: Completed 02-04-PLAN.md — proxy.ts moved to src/, auth guard active in production, all UAT tests pass
+Resume file: .planning/phases/02-backend-data-layer/02-04-SUMMARY.md
