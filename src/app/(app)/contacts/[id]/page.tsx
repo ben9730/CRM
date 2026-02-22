@@ -6,6 +6,8 @@ import {
   getContactInteractions,
 } from '@/lib/queries/contacts'
 import { getOrganizationsList } from '@/lib/queries/organizations'
+import { getContacts } from '@/lib/queries/contacts'
+import { getDealsList } from '@/lib/queries/deals'
 import { ContactDetailClient } from '@/components/contact-detail/contact-detail-client'
 
 interface ContactDetailPageProps {
@@ -15,17 +17,26 @@ interface ContactDetailPageProps {
 export default async function ContactDetailPage({ params }: ContactDetailPageProps) {
   const { id } = await params
 
-  const [contact, deals, tasks, interactions, organizations] = await Promise.all([
-    getContact(id),
-    getContactDeals(id),
-    getContactTasks(id),
-    getContactInteractions(id),
-    getOrganizationsList(),
-  ])
+  const [contact, deals, tasks, interactions, organizations, allContactsResult, allDeals] =
+    await Promise.all([
+      getContact(id),
+      getContactDeals(id),
+      getContactTasks(id),
+      getContactInteractions(id),
+      getOrganizationsList(),
+      getContacts({ pageSize: 200 }),
+      getDealsList(),
+    ])
 
   if (!contact) {
     notFound()
   }
+
+  const allContacts = allContactsResult.data.map((c) => ({
+    id: c.id,
+    first_name: c.first_name,
+    last_name: c.last_name,
+  }))
 
   return (
     <div className="p-4 sm:p-6">
@@ -44,6 +55,8 @@ export default async function ContactDetailPage({ params }: ContactDetailPagePro
           tasks={tasks}
           interactions={interactions}
           organizations={organizations}
+          allContacts={allContacts}
+          allDeals={allDeals}
         />
       </div>
     </div>

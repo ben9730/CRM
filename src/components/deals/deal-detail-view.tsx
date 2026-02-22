@@ -4,10 +4,12 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import type { DealWithRelations, PipelineStageRow } from '@/lib/types/app'
+import type { DealWithRelations, PipelineStageRow, InteractionWithRelations, TaskWithRelations } from '@/lib/types/app'
 import { deleteDeal } from '@/lib/actions/deals'
 import { DealForm } from './deal-form'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
+import { InteractionTimeline } from '@/components/contact-detail/interaction-timeline'
+import { LinkedTasks } from '@/components/contact-detail/linked-tasks'
 import {
   Sheet,
   SheetContent,
@@ -24,8 +26,6 @@ import {
   Pencil,
   Trash2,
   ArrowLeft,
-  Clock,
-  CheckSquare,
 } from 'lucide-react'
 
 function formatCurrency(value: number | null): string {
@@ -60,9 +60,20 @@ interface DealDetailViewProps {
   stages: PipelineStageRow[]
   organizations: OrgOption[]
   contacts: ContactOption[]
+  allDeals?: { id: string; title: string }[]
+  interactions?: InteractionWithRelations[]
+  tasks?: TaskWithRelations[]
 }
 
-export function DealDetailView({ deal, stages, organizations, contacts }: DealDetailViewProps) {
+export function DealDetailView({
+  deal,
+  stages,
+  organizations,
+  contacts,
+  allDeals = [],
+  interactions = [],
+  tasks = [],
+}: DealDetailViewProps) {
   const router = useRouter()
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -189,9 +200,7 @@ export function DealDetailView({ deal, stages, organizations, contacts }: DealDe
           <InfoCard
             icon={<Calendar className="h-4 w-4" />}
             label="Expected Close"
-            value={
-              <span>{formatDate(deal.expected_close)}</span>
-            }
+            value={<span>{formatDate(deal.expected_close)}</span>}
           />
 
           {/* Value */}
@@ -209,9 +218,7 @@ export function DealDetailView({ deal, stages, organizations, contacts }: DealDe
           <InfoCard
             icon={<TrendingUp className="h-4 w-4" />}
             label="Pipeline Stage"
-            value={
-              <span>{stage?.name ?? '—'}</span>
-            }
+            value={<span>{stage?.name ?? '—'}</span>}
           />
         </div>
 
@@ -270,45 +277,21 @@ export function DealDetailView({ deal, stages, organizations, contacts }: DealDe
           </section>
         )}
 
-        {/* Interaction Timeline — placeholder for 03-03 */}
-        <section>
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 mb-3 flex items-center gap-2">
-            <Clock className="h-3.5 w-3.5" />
-            Interaction Timeline
-          </h2>
-          <div
-            className="flex flex-col items-center justify-center py-10 rounded-lg"
-            style={{
-              background: 'oklch(0.12 0.004 280)',
-              border: '1px dashed oklch(1 0 0 / 8%)',
-            }}
-          >
-            <Clock className="h-7 w-7 text-muted-foreground/20 mb-2" />
-            <p className="text-sm text-muted-foreground/40">
-              Interaction timeline coming in plan 03-03
-            </p>
-          </div>
-        </section>
+        {/* Tasks section */}
+        <LinkedTasks
+          tasks={tasks}
+          dealId={deal.id}
+          allContacts={contacts}
+          allDeals={allDeals}
+        />
 
-        {/* Tasks — placeholder for 03-03 */}
-        <section>
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 mb-3 flex items-center gap-2">
-            <CheckSquare className="h-3.5 w-3.5" />
-            Tasks
-          </h2>
-          <div
-            className="flex flex-col items-center justify-center py-10 rounded-lg"
-            style={{
-              background: 'oklch(0.12 0.004 280)',
-              border: '1px dashed oklch(1 0 0 / 8%)',
-            }}
-          >
-            <CheckSquare className="h-7 w-7 text-muted-foreground/20 mb-2" />
-            <p className="text-sm text-muted-foreground/40">
-              Tasks section coming in plan 03-03
-            </p>
-          </div>
-        </section>
+        {/* Interaction Timeline */}
+        <InteractionTimeline
+          interactions={interactions}
+          contacts={contacts}
+          deals={allDeals}
+          defaultDealId={deal.id}
+        />
       </div>
 
       {/* Edit Sheet */}
@@ -321,7 +304,8 @@ export function DealDetailView({ deal, stages, organizations, contacts }: DealDe
           <div
             className="absolute top-0 left-0 right-0 h-px"
             style={{
-              background: 'linear-gradient(90deg, transparent, oklch(0.65 0.24 280 / 50%), transparent)',
+              background:
+                'linear-gradient(90deg, transparent, oklch(0.65 0.24 280 / 50%), transparent)',
             }}
           />
           <SheetHeader className="px-6 pt-8 pb-6">

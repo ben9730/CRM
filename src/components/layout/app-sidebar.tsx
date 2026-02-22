@@ -25,41 +25,51 @@ import {
 } from "@/components/ui/sidebar";
 import { LogoutButton } from "@/components/auth/logout-button";
 
-const navItems = [
-  {
-    title: "Dashboard",
-    href: "/",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Contacts",
-    href: "/contacts",
-    icon: Users,
-  },
-  {
-    title: "Organizations",
-    href: "/organizations",
-    icon: Building2,
-  },
-  {
-    title: "Deals",
-    href: "/deals",
-    icon: Briefcase,
-  },
-  {
-    title: "Tasks",
-    href: "/tasks",
-    icon: CheckSquare,
-  },
-  {
-    title: "Interactions",
-    href: "/interactions",
-    icon: MessageSquare,
-  },
-];
+interface AppSidebarProps {
+  overdueTaskCount?: number
+}
 
-export function AppSidebar() {
+export function AppSidebar({ overdueTaskCount = 0 }: AppSidebarProps) {
   const pathname = usePathname();
+
+  const navItems = [
+    {
+      title: "Dashboard",
+      href: "/",
+      icon: LayoutDashboard,
+      badge: null,
+    },
+    {
+      title: "Contacts",
+      href: "/contacts",
+      icon: Users,
+      badge: null,
+    },
+    {
+      title: "Organizations",
+      href: "/organizations",
+      icon: Building2,
+      badge: null,
+    },
+    {
+      title: "Deals",
+      href: "/deals",
+      icon: Briefcase,
+      badge: null,
+    },
+    {
+      title: "Tasks",
+      href: "/tasks",
+      icon: CheckSquare,
+      badge: overdueTaskCount > 0 ? overdueTaskCount : null,
+    },
+    {
+      title: "Interactions",
+      href: "/interactions",
+      icon: MessageSquare,
+      badge: null,
+    },
+  ];
 
   return (
     <Sidebar collapsible="icon">
@@ -93,7 +103,18 @@ export function AppSidebar() {
                     >
                       <Link href={item.href}>
                         <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
+                        <span className="flex-1">{item.title}</span>
+                        {item.badge !== null && (
+                          <span
+                            className="ml-auto flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold tabular-nums group-data-[collapsible=icon]:hidden"
+                            style={{
+                              background: "oklch(0.55 0.22 25)",
+                              color: "oklch(0.95 0 0)",
+                            }}
+                          >
+                            {item.badge > 99 ? "99+" : item.badge}
+                          </span>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

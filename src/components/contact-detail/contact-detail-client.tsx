@@ -2,10 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import type { ContactWithOrgs } from '@/lib/types/app'
+import type { ContactWithOrgs, InteractionWithRelations, TaskWithRelations } from '@/lib/types/app'
 import type { ContactDeal } from './linked-deals'
-import type { ContactTask } from './linked-tasks'
-import type { ContactInteraction } from './interaction-timeline'
 import { ContactOverview } from './contact-overview'
 import { LinkedDeals } from './linked-deals'
 import { LinkedTasks } from './linked-tasks'
@@ -21,9 +19,11 @@ import {
 interface ContactDetailClientProps {
   contact: ContactWithOrgs
   deals: ContactDeal[]
-  tasks: ContactTask[]
-  interactions: ContactInteraction[]
+  tasks: TaskWithRelations[]
+  interactions: InteractionWithRelations[]
   organizations: { id: string; name: string }[]
+  allContacts: { id: string; first_name: string; last_name: string }[]
+  allDeals: { id: string; title: string }[]
 }
 
 export function ContactDetailClient({
@@ -32,6 +32,8 @@ export function ContactDetailClient({
   tasks,
   interactions,
   organizations,
+  allContacts,
+  allDeals,
 }: ContactDetailClientProps) {
   const router = useRouter()
   const [editOpen, setEditOpen] = useState(false)
@@ -49,12 +51,17 @@ export function ContactDetailClient({
       {/* Middle section: Linked entities */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 animate-fade-in animate-delay-2">
         <LinkedDeals deals={deals} />
-        <LinkedTasks tasks={tasks} />
+        <LinkedTasks tasks={tasks} contactId={contact.id} allDeals={allDeals} />
       </div>
 
       {/* Interaction timeline */}
       <div className="animate-fade-in animate-delay-3">
-        <InteractionTimeline interactions={interactions} />
+        <InteractionTimeline
+          interactions={interactions}
+          contacts={allContacts}
+          deals={allDeals}
+          defaultContactId={contact.id}
+        />
       </div>
 
       {/* Edit Sheet */}
