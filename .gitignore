@@ -33,3 +33,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# review screenshots
+*.png
+
+# dev tools
+theme-playground.html
+.playwright-mcp/
