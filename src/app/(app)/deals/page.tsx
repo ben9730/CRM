@@ -1,26 +1,37 @@
-"use client";
-
-import { KanbanBoard } from "@/components/deals/kanban-board";
-import { Button } from "@/components/ui/button";
-import { mockDeals } from "@/data/mock-deals";
-import { Plus, TrendingUp } from "lucide-react";
+import { getDeals } from '@/lib/queries/deals'
+import { getPipelineStages } from '@/lib/queries/pipeline-stages'
+import { getOrganizationsList } from '@/lib/queries/organizations'
+import { KanbanBoard } from '@/components/deals/kanban-board'
+import { DealCreateButton } from '@/components/deals/deal-create-button'
+import { TrendingUp } from 'lucide-react'
 
 function formatCurrency(value: number): string {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
-  return `$${value.toLocaleString()}`;
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`
+  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`
+  return `$${value.toLocaleString()}`
 }
 
-export default function DealsPage() {
-  const totalPipelineValue = mockDeals
-    .filter((d) => d.stage !== "Closed Lost")
-    .reduce((sum, d) => sum + d.value, 0);
+export default async function DealsPage() {
+  // Parallel data fetch: deals, stages, orgs (for deal creation form)
+  const [deals, stages, organizations] = await Promise.all([
+    getDeals(),
+    getPipelineStages(),
+    getOrganizationsList(),
+  ])
 
-  const activeDeals = mockDeals.filter(
-    (d) => d.stage !== "Closed Lost" && d.stage !== "Closed Won"
-  ).length;
+  // Compute pipeline metrics from live data
+  const wonStageIds = new Set(stages.filter((s) => s.is_won).map((s) => s.id))
+  const lostStageIds = new Set(stages.filter((s) => s.is_lost).map((s) => s.id))
 
-  const wonDeals = mockDeals.filter((d) => d.stage === "Closed Won").length;
+  const totalPipelineValue = deals
+    .filter((d) => !lostStageIds.has(d.stage_id))
+    .reduce((sum, d) => sum + (d.value ?? 0), 0)
+
+  const activeDeals = deals.filter(
+    (d) => !wonStageIds.has(d.stage_id) && !lostStageIds.has(d.stage_id)
+  ).length
+
+  const wonDeals = deals.filter((d) => wonStageIds.has(d.stage_id)).length
 
   return (
     <div className="flex flex-col h-full gap-0">
@@ -54,20 +65,15 @@ export default function DealsPage() {
             </div>
           </div>
 
-          <Button
-            size="sm"
-            className="gap-1.5 bg-primary/90 hover:bg-primary text-primary-foreground shadow-lg shadow-primary/20 border border-primary/30 transition-all"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Add Deal
-          </Button>
+          {/* New Deal button — client island */}
+          <DealCreateButton stages={stages} organizations={organizations} />
         </div>
       </div>
 
-      {/* Kanban board */}
+      {/* Kanban board — client component with live data */}
       <div className="flex-1 min-h-0 overflow-hidden">
-        <KanbanBoard />
+        <KanbanBoard initialDeals={deals} stages={stages} />
       </div>
     </div>
-  );
+  )
 }
