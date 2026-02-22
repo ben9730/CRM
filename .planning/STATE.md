@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** Sales and account management teams can track every customer relationship, deal, and interaction in one place — so nothing falls through the cracks.
-**Current focus:** Phase 3 in progress — deals/kanban CRUD complete (03-02); ready for interactions/tasks/dashboard (03-03)
+**Current focus:** Phase 3 COMPLETE — all 3 plans done; ready for Phase 4 (Polish & Launch)
 
 ## Current Position
 
-Phase: 3 of 4 (Integration & Features)
-Plan: 2 of 3 complete in current phase — 03-01 (orgs+contacts), 03-02 (deals/kanban) done; 03-03 (interactions/tasks/dashboard) remaining
-Status: Phase 3 in progress — 03-01 and 03-02 complete, 03-03 remaining
-Last activity: 2026-02-22 — deal pipeline Kanban with optimistic drag-and-drop wired to live Supabase data
+Phase: 3 of 4 (Integration & Features) — COMPLETE
+Plan: 3 of 3 complete in current phase — 03-01 (orgs+contacts), 03-02 (deals/kanban), 03-03 (interactions/tasks/dashboard) all done
+Status: Phase 3 complete — entire CRM is functional with live Supabase data
+Last activity: 2026-02-22 — interactions/tasks/dashboard wired to live data; Phase 3 complete
 
-Progress: [████████░░] 75%
+Progress: [██████████] 100% (Phase 3) — overall project ~75% complete (3 of 4 phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
+- Total plans completed: 8
 - Average duration: ~12 min
-- Total execution time: ~1.3 hours
+- Total execution time: ~1.5 hours
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: [████████░░] 75%
 |-------|-------|-------|----------|
 | 01-frontend-design-ui | 3 | ~20 min | ~7 min |
 | 02-backend-data-layer | 4/4 | ~54 min | ~14 min |
-| 03-integration-features | 2/3 | 31 min | 15.5 min |
+| 03-integration-features | 3/3 | 45 min | 15 min |
 
 **Recent Trend:**
-- Last 5 plans: 4 min, approval, 12 min, 24 min, 13 min
+- Last 5 plans: 4 min, approval, 12 min, 24 min, 13 min, 14 min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -80,6 +80,10 @@ Recent decisions affecting current work:
 - [03-02]: KanbanBoard receives initialDeals+stages as props from Server Component — client component for DnD only
 - [03-02]: Stage hex color from DB used directly via color-mix(in oklch) — no hardcoded color maps needed
 - [03-02]: deal_contacts RLS via EXISTS through deals.account_id (junction table has no account_id column)
+- [03-03]: AppShell as Server Component to fetch overdueTaskCount for sidebar badge; AppSidebar stays client
+- [03-03]: getDashboardMetrics uses Promise.all for parallel aggregation — avoids sequential waterfall
+- [03-03]: isOverdue computed application-side at query time (due_date < today && !is_complete)
+- [03-03]: InteractionFormModal uses Dialog (not Sheet) — quick-log pattern for interactions
 
 ### Pending Todos
 
@@ -87,11 +91,10 @@ None.
 
 ### Blockers/Concerns
 
-- [Phase 3]: Interactions, tasks, dashboard still use mock data — 03-03 replaces
 - [Phase 4]: Supabase BAA must be signed before production launch if any patient-adjacent data is stored (business action, not code task)
 
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 03-02-PLAN.md — deal pipeline Kanban with live data and optimistic drag-and-drop
-Resume file: .planning/phases/03-integration-features/03-03-PLAN.md
+Stopped at: Completed 03-03-PLAN.md — interactions/tasks/dashboard wired to live Supabase data, Phase 3 complete
+Resume file: .planning/phases/04-polish-launch/ (next phase)

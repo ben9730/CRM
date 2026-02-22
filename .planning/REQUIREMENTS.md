@@ -51,25 +51,25 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Interactions
 
-- [ ] **INTR-01**: User can log an interaction (call, email, meeting, note) linked to a contact and/or deal
-- [ ] **INTR-02**: User can edit and delete interactions
-- [ ] **INTR-03**: Interactions display as a chronological timeline on contact detail pages
-- [ ] **INTR-04**: Interactions display as a chronological timeline on deal detail pages
+- [x] **INTR-01**: User can log an interaction (call, email, meeting, note) linked to a contact and/or deal
+- [x] **INTR-02**: User can edit and delete interactions
+- [x] **INTR-03**: Interactions display as a chronological timeline on contact detail pages
+- [x] **INTR-04**: Interactions display as a chronological timeline on deal detail pages
 
 ### Tasks
 
-- [ ] **TASK-01**: User can create a task with title, description, due date, and link to contact and/or deal
-- [ ] **TASK-02**: User can edit, complete, and delete tasks
-- [ ] **TASK-03**: Tasks show overdue status when past due date
-- [ ] **TASK-04**: Task list view with filtering by status (pending/completed/overdue)
+- [x] **TASK-01**: User can create a task with title, description, due date, and link to contact and/or deal
+- [x] **TASK-02**: User can edit, complete, and delete tasks
+- [x] **TASK-03**: Tasks show overdue status when past due date
+- [x] **TASK-04**: Task list view with filtering by status (pending/completed/overdue)
 
 ### Dashboard
 
-- [ ] **DASH-01**: Dashboard shows pipeline value by stage (bar or funnel chart)
-- [ ] **DASH-02**: Dashboard shows count of tasks due today and overdue tasks
-- [ ] **DASH-03**: Dashboard shows recent activity feed (latest interactions across all records)
-- [ ] **DASH-04**: Dashboard shows deal count and total pipeline value
-- [ ] **DASH-05**: Dashboard is the landing page after login
+- [x] **DASH-01**: Dashboard shows pipeline value by stage (bar or funnel chart)
+- [x] **DASH-02**: Dashboard shows count of tasks due today and overdue tasks
+- [x] **DASH-03**: Dashboard shows recent activity feed (latest interactions across all records)
+- [x] **DASH-04**: Dashboard shows deal count and total pipeline value
+- [x] **DASH-05**: Dashboard is the landing page after login
 
 ### Data Management
 
@@ -90,7 +90,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [ ] **PROC-01**: Frontend design phase completed and approved BEFORE any backend implementation
 - [ ] **PROC-02**: Phase ordering strictly follows: Frontend Design → Backend & Data → Integration → Polish
-- [ ] **PROC-03**: Code reviewed using `code-reviewer` agent after each major implementation step
+- [x] **PROC-03**: Code reviewed using `code-reviewer` agent after each major implementation step
 - [ ] **PROC-04**: Security reviewed using `security-reviewer` agent before production deployment
 
 ## v2 Requirements
@@ -162,19 +162,19 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DEAL-04 | Phase 3 | Complete |
 | DEAL-05 | Phase 3 | Complete |
 | DEAL-06 | Phase 3 | Complete |
-| INTR-01 | Phase 3 | Pending |
-| INTR-02 | Phase 3 | Pending |
-| INTR-03 | Phase 3 | Pending |
-| INTR-04 | Phase 3 | Pending |
-| TASK-01 | Phase 3 | Pending |
-| TASK-02 | Phase 3 | Pending |
-| TASK-03 | Phase 3 | Pending |
-| TASK-04 | Phase 3 | Pending |
-| DASH-01 | Phase 3 | Pending |
-| DASH-02 | Phase 3 | Pending |
-| DASH-03 | Phase 3 | Pending |
-| DASH-04 | Phase 3 | Pending |
-| DASH-05 | Phase 3 | Pending |
+| INTR-01 | Phase 3 | Complete |
+| INTR-02 | Phase 3 | Complete |
+| INTR-03 | Phase 3 | Complete |
+| INTR-04 | Phase 3 | Complete |
+| TASK-01 | Phase 3 | Complete |
+| TASK-02 | Phase 3 | Complete |
+| TASK-03 | Phase 3 | Complete |
+| TASK-04 | Phase 3 | Complete |
+| DASH-01 | Phase 3 | Complete |
+| DASH-02 | Phase 3 | Complete |
+| DASH-03 | Phase 3 | Complete |
+| DASH-04 | Phase 3 | Complete |
+| DASH-05 | Phase 3 | Complete |
 | DATA-01 | Phase 4 | Pending |
 | DATA-02 | Phase 4 | Pending |
 | DATA-03 | Phase 4 | Pending |
@@ -186,7 +186,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ARCH-06 | Phase 1 | Complete (01-01) |
 | PROC-01 | Phase 1 | Pending |
 | PROC-02 | Phase 1 | Pending |
-| PROC-03 | Phase 3 | Pending |
+| PROC-03 | Phase 3 | Complete |
 | PROC-04 | Phase 4 | Pending |
 
 **Coverage:**
