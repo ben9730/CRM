@@ -35,7 +35,14 @@ export type PaginatedResult<T> = {
 // Generic server action state (matches AuthState pattern from auth.ts)
 export type ActionState = { error?: string; success?: string } | undefined
 
-// Deal with stage info for contact detail
+// Deal with full relations for Kanban board and detail page
+export type DealWithRelations = DealRow & {
+  pipeline_stages: PipelineStageRow | null
+  organizations: { id: string; name: string } | null
+  contacts?: { id: string; first_name: string; last_name: string }[]
+}
+
+// Deal with stage info for contact detail (simpler variant used in contact page)
 export type DealWithStage = DealRow & {
   stage_name: string
   stage_color: string | null
