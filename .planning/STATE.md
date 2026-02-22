@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** Sales and account management teams can track every customer relationship, deal, and interaction in one place — so nothing falls through the cracks.
-**Current focus:** Phase 2 in progress — Database schema complete, auth flows next
+**Current focus:** Phase 2 checkpoint — auth flows implemented, awaiting human verification before Phase 3
 
 ## Current Position
 
 Phase: 2 of 4 (Backend & Data Layer)
-Plan: 2 of 3 in current phase — 02-02 complete
-Status: Phase 2 active — schema + seed done; 02-03 auth flows remaining
-Last activity: 2026-02-22 — Schema, RLS, seed data, TypeScript types all applied
+Plan: 3 of 3 in current phase — 02-03 Task 1 complete, at checkpoint (Task 2: human verification)
+Status: Phase 2 checkpoint — auth code complete and building; human must verify browser flows
+Last activity: 2026-02-22 — Auth Server Actions, form components, logout button all committed
 
-Progress: [████░░░░░░] 37%
+Progress: [████░░░░░░] 45%
 
 ## Performance Metrics
 
@@ -28,7 +28,7 @@ Progress: [████░░░░░░] 37%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-frontend-design-ui | 3 | ~20 min | ~7 min |
-| 02-backend-data-layer | 2/3 | ~36 min | ~18 min |
+| 02-backend-data-layer | 3/3 | ~51 min | ~17 min |
 
 **Recent Trend:**
 - Last 5 plans: 12 min, 4 min, approval, 12 min, 24 min
@@ -66,6 +66,9 @@ Recent decisions affecting current work:
 - [02-02]: RLS split policy pattern for soft-delete — SELECT filters deleted_at IS NULL, UPDATE/DELETE do not
 - [02-02]: private.is_account_member() security definer in private schema — 7ms vs 11000ms inline
 - [02-02]: contact_organizations has no account_id — RLS derives via EXISTS subquery to contacts
+- [Phase 02-03]: React 19 useActionState requires Server Actions with (prevState, formData) signature — not just (formData)
+- [Phase 02-03]: AuthState type exported from auth.ts imported into each form for shared error/success type safety
+- [Phase 02-03]: signOut uses plain form action pattern (no useActionState) — no error state needed, always redirects
 
 ### Pending Todos
 
@@ -73,12 +76,12 @@ None.
 
 ### Blockers/Concerns
 
-- [Phase 2]: SUPABASE_SERVICE_ROLE_KEY not in .env.local — 02-03 will need it for server-side auth server actions
+- [Phase 3]: Kanban and contacts pages still use mock data from src/data/ — Phase 3 replaces with real Supabase queries
 - [Phase 3]: Kanban drag-and-drop library — dnd-kit pre-installed; react-beautiful-dnd not needed (resolved by dnd-kit install in Plan 01)
 - [Phase 4]: Supabase BAA must be signed before production launch if any patient-adjacent data is stored (business action, not code task)
 
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 02-02-PLAN.md — database schema, RLS, seed data, TypeScript types
-Resume file: .planning/phases/02-backend-data-layer/02-02-SUMMARY.md
+Stopped at: Checkpoint 02-03 Task 2 — auth flows implemented (Task 1 complete), awaiting human verification in browser
+Resume file: .planning/phases/02-backend-data-layer/02-03-SUMMARY.md
