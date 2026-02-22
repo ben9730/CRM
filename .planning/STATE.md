@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** Sales and account management teams can track every customer relationship, deal, and interaction in one place — so nothing falls through the cracks.
-**Current focus:** Phase 2 complete — auth guard fix deployed to production; ready for Phase 3 (data integration)
+**Current focus:** Phase 3 in progress — organizations and contacts CRUD complete (03-01); ready for deals/kanban (03-02)
 
 ## Current Position
 
-Phase: 2 of 4 (Backend & Data Layer)
-Plan: 4 of 4 in current phase — 02-04 complete (proxy.ts moved to src/, auth redirect verified in production)
-Status: Phase 2 complete — all 8/8 UAT tests pass; ready for Phase 3
-Last activity: 2026-02-22 — proxy.ts moved to src/proxy.ts, deployed to Vercel, auth redirect confirmed
+Phase: 3 of 4 (Integration & Features)
+Plan: 1 of 3 complete in current phase — 03-01 done (orgs+contacts CRUD wired to Supabase)
+Status: Phase 3 in progress — 03-01 complete, 03-02 (deals/kanban) and 03-03 (interactions/tasks/dashboard) remaining
+Last activity: 2026-02-22 — organizations and contacts full CRUD with live Supabase data
 
-Progress: [█████░░░░░] 50%
+Progress: [███████░░░] 62%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
+- Total plans completed: 7
 - Average duration: ~12 min
-- Total execution time: ~1.1 hours
+- Total execution time: ~1.3 hours
 
 **By Phase:**
 
@@ -29,9 +29,10 @@ Progress: [█████░░░░░] 50%
 |-------|-------|-------|----------|
 | 01-frontend-design-ui | 3 | ~20 min | ~7 min |
 | 02-backend-data-layer | 4/4 | ~54 min | ~14 min |
+| 03-integration-features | 1/3 | 13 min | 13 min |
 
 **Recent Trend:**
-- Last 5 plans: 4 min, approval, 12 min, 24 min, 3 min
+- Last 5 plans: 4 min, approval, 12 min, 24 min, 13 min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -70,6 +71,11 @@ Recent decisions affecting current work:
 - [Phase 02-03]: AuthState type exported from auth.ts imported into each form for shared error/success type safety
 - [Phase 02-03]: signOut uses plain form action pattern (no useActionState) — no error state needed, always redirects
 - [02-04]: Next.js 16 with src/ directory requires proxy.ts at src/proxy.ts — not project root; Turbopack uses functions-config-manifest.json for registration, not middleware-manifest.json
+- [03-01]: Zod v4 uses .issues[] not .errors[] on ZodError — applied to all Server Actions
+- [03-01]: Tags submitted as JSON-encoded hidden inputs in Server Action forms (formData doesn't support arrays natively)
+- [03-01]: OrgCreateButton/ContactCreateButton are client islands — page stays Server Component for data fetching
+- [03-01]: Contact deals linked via org membership (no direct contact_id on deals table in schema)
+- [03-01]: OrgId filter for contacts applied in application code after fetch (PostgREST limitation with nested joins + count)
 
 ### Pending Todos
 
@@ -77,12 +83,12 @@ None.
 
 ### Blockers/Concerns
 
-- [Phase 3]: Kanban and contacts pages still use mock data from src/data/ — Phase 3 replaces with real Supabase queries
-- [Phase 3]: Kanban drag-and-drop library — dnd-kit pre-installed; react-beautiful-dnd not needed (resolved by dnd-kit install in Plan 01)
+- [Phase 3]: Kanban (deals) pages still use mock data from src/data/ — 03-02 replaces with real Supabase queries
+- [Phase 3]: Interactions, tasks, dashboard still use mock data — 03-03 replaces
 - [Phase 4]: Supabase BAA must be signed before production launch if any patient-adjacent data is stored (business action, not code task)
 
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Phase 3 context gathered — ready for planning
-Resume file: .planning/phases/03-integration-features/03-CONTEXT.md
+Stopped at: Completed 03-01-PLAN.md — organizations and contacts CRUD live
+Resume file: .planning/phases/03-integration-features/03-02-PLAN.md

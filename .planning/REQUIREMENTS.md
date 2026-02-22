@@ -25,20 +25,20 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Organizations
 
-- [ ] **ORG-01**: User can create an organization with name, type (hospital/clinic/lab/other), address, phone, website, and notes
-- [ ] **ORG-02**: User can edit and delete organizations
-- [ ] **ORG-03**: User can view all contacts linked to an organization
-- [ ] **ORG-04**: User can view all deals linked to an organization
-- [ ] **ORG-05**: Organization list with search and filtering
+- [x] **ORG-01**: User can create an organization with name, type (hospital/clinic/lab/other), address, phone, website, and notes
+- [x] **ORG-02**: User can edit and delete organizations
+- [x] **ORG-03**: User can view all contacts linked to an organization
+- [x] **ORG-04**: User can view all deals linked to an organization
+- [x] **ORG-05**: Organization list with search and filtering
 
 ### Contacts
 
-- [ ] **CONT-01**: User can create a contact with name, title, email, phone, and linked organization
-- [ ] **CONT-02**: User can edit and delete contacts
-- [ ] **CONT-03**: User can tag contacts with free-form tags
-- [ ] **CONT-04**: User can search contacts by name, email, organization, or tag (full-text search)
-- [ ] **CONT-05**: User can filter contacts by tag, organization, and date
-- [ ] **CONT-06**: Contact can belong to multiple organizations (junction table, not flat FK)
+- [x] **CONT-01**: User can create a contact with name, title, email, phone, and linked organization
+- [x] **CONT-02**: User can edit and delete contacts
+- [x] **CONT-03**: User can tag contacts with free-form tags
+- [x] **CONT-04**: User can search contacts by name, email, organization, or tag (full-text search)
+- [x] **CONT-05**: User can filter contacts by tag, organization, and date
+- [x] **CONT-06**: Contact can belong to multiple organizations (junction table, not flat FK)
 
 ### Deals & Pipeline
 
@@ -145,17 +145,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-02 | Phase 2 | Complete |
 | AUTH-03 | Phase 2 | Complete |
 | AUTH-04 | Phase 2 | Complete |
-| ORG-01 | Phase 3 | Pending |
-| ORG-02 | Phase 3 | Pending |
-| ORG-03 | Phase 3 | Pending |
-| ORG-04 | Phase 3 | Pending |
-| ORG-05 | Phase 3 | Pending |
-| CONT-01 | Phase 3 | Pending |
-| CONT-02 | Phase 3 | Pending |
-| CONT-03 | Phase 3 | Pending |
-| CONT-04 | Phase 3 | Pending |
-| CONT-05 | Phase 3 | Pending |
-| CONT-06 | Phase 3 | Pending |
+| ORG-01 | Phase 3 | Complete |
+| ORG-02 | Phase 3 | Complete |
+| ORG-03 | Phase 3 | Complete |
+| ORG-04 | Phase 3 | Complete |
+| ORG-05 | Phase 3 | Complete |
+| CONT-01 | Phase 3 | Complete |
+| CONT-02 | Phase 3 | Complete |
+| CONT-03 | Phase 3 | Complete |
+| CONT-04 | Phase 3 | Complete |
+| CONT-05 | Phase 3 | Complete |
+| CONT-06 | Phase 3 | Complete |
 | DEAL-01 | Phase 3 | Pending |
 | DEAL-02 | Phase 3 | Pending |
 | DEAL-03 | Phase 3 | Pending |
