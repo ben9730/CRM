@@ -5,33 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** Sales and account management teams can track every customer relationship, deal, and interaction in one place — so nothing falls through the cracks.
-**Current focus:** Phase 1 COMPLETE — Ready for Phase 2 (Backend & Data Layer)
+**Current focus:** Phase 2 in progress — Database schema complete, auth flows next
 
 ## Current Position
 
-Phase: 1 of 4 (Frontend Design & UI) — COMPLETE
-Plan: 3 of 3 in current phase — ALL DONE
-Status: Phase 1 complete, Phase 2 ready to start
-Last activity: 2026-02-22 — User approved frontend prototype; Phase 1 closed
+Phase: 2 of 4 (Backend & Data Layer)
+Plan: 2 of 3 in current phase — 02-02 complete
+Status: Phase 2 active — schema + seed done; 02-03 auth flows remaining
+Last activity: 2026-02-22 — Schema, RLS, seed data, TypeScript types all applied
 
-Progress: [███░░░░░░░] 25%
+Progress: [████░░░░░░] 37%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: ~7 min
-- Total execution time: ~0.4 hours
+- Total plans completed: 5
+- Average duration: ~13 min
+- Total execution time: ~1.0 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-frontend-design-ui | 3 | ~20 min | ~7 min |
+| 02-backend-data-layer | 2/3 | ~36 min | ~18 min |
 
 **Recent Trend:**
-- Last 5 plans: 12 min, 4 min, approval
-- Trend: accelerating
+- Last 5 plans: 12 min, 4 min, approval, 12 min, 24 min
+- Trend: stable
 
 *Updated after each plan completion*
 
@@ -60,19 +61,24 @@ Recent decisions affecting current work:
 - [01-03]: Border radius base reduced to 7px (0.4375rem) per theme playground tuning
 - [01-03]: Sidebar width reduced to 180px (11.25rem) for more content space
 - [01-03]: Glow hover intensity set to 14% for slightly more pronounced effect
+- [02-01]: Supabase project ID: ntrliqzjbmhkkqhxtvqe, region us-east-1
+- [02-01]: proxy.ts with auth guards — verified correct Next.js 16 pattern
+- [02-02]: RLS split policy pattern for soft-delete — SELECT filters deleted_at IS NULL, UPDATE/DELETE do not
+- [02-02]: private.is_account_member() security definer in private schema — 7ms vs 11000ms inline
+- [02-02]: contact_organizations has no account_id — RLS derives via EXISTS subquery to contacts
 
 ### Pending Todos
 
-None yet.
+None.
 
 ### Blockers/Concerns
 
-- [Phase 2]: Next.js 16 uses `proxy.ts` not `middleware.ts` for session refresh — verify correct filename before scaffolding
+- [Phase 2]: SUPABASE_SERVICE_ROLE_KEY not in .env.local — 02-03 will need it for server-side auth server actions
 - [Phase 3]: Kanban drag-and-drop library — dnd-kit pre-installed; react-beautiful-dnd not needed (resolved by dnd-kit install in Plan 01)
 - [Phase 4]: Supabase BAA must be signed before production launch if any patient-adjacent data is stored (business action, not code task)
 
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Phase 2 context gathered — ready for planning
-Resume file: .planning/phases/02-backend-data-layer/02-CONTEXT.md
+Stopped at: Completed 02-02-PLAN.md — database schema, RLS, seed data, TypeScript types
+Resume file: .planning/phases/02-backend-data-layer/02-02-SUMMARY.md

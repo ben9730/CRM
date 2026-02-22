@@ -79,11 +79,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Architecture & Infrastructure
 
-- [ ] **ARCH-01**: RLS (Row Level Security) enabled on all Supabase tables from day one
-- [ ] **ARCH-02**: Database schema uses contact-organization junction table (many-to-many)
-- [ ] **ARCH-03**: Full-text search uses PostgreSQL tsvector with GIN indexes
-- [ ] **ARCH-04**: Cloud deployed on Vercel + Supabase
-- [ ] **ARCH-05**: All available MCP tools (Supabase, Playwright) leveraged during development
+- [x] **ARCH-01**: RLS (Row Level Security) enabled on all Supabase tables from day one
+- [x] **ARCH-02**: Database schema uses contact-organization junction table (many-to-many)
+- [x] **ARCH-03**: Full-text search uses PostgreSQL tsvector with GIN indexes
+- [x] **ARCH-04**: Cloud deployed on Vercel + Supabase
+- [x] **ARCH-05**: All available MCP tools (Supabase, Playwright) leveraged during development
 - [x] **ARCH-06**: Available skills (`frontend-design`, `playground`, `tdd`, `security-review`, `e2e`) used throughout development
 
 ### Process Requirements
@@ -178,11 +178,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DATA-01 | Phase 4 | Pending |
 | DATA-02 | Phase 4 | Pending |
 | DATA-03 | Phase 4 | Pending |
-| ARCH-01 | Phase 2 | Pending |
-| ARCH-02 | Phase 2 | Pending |
-| ARCH-03 | Phase 2 | Pending |
-| ARCH-04 | Phase 2 | Pending |
-| ARCH-05 | Phase 2 | Pending |
+| ARCH-01 | Phase 2 | Complete (02-02) |
+| ARCH-02 | Phase 2 | Complete (02-02) |
+| ARCH-03 | Phase 2 | Complete (02-02) |
+| ARCH-04 | Phase 2 | Complete (02-01) |
+| ARCH-05 | Phase 2 | Complete (02-02) |
 | ARCH-06 | Phase 1 | Complete (01-01) |
 | PROC-01 | Phase 1 | Pending |
 | PROC-02 | Phase 1 | Pending |

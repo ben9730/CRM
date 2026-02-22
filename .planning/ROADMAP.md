@@ -48,8 +48,8 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Supabase project creation, Next.js restructure with route groups, Supabase client libraries, proxy.ts, Vercel deployment
-- [ ] 02-02-PLAN.md — Database schema (10 tables), RLS policies, security definer function, tsvector GIN indexes, profiles trigger, seed data
+- [x] 02-01-PLAN.md — Supabase project creation, Next.js restructure with route groups, Supabase client libraries, proxy.ts, Vercel deployment
+- [x] 02-02-PLAN.md — Database schema (10 tables), RLS policies, security definer function, tsvector GIN indexes, profiles trigger, seed data
 - [ ] 02-03-PLAN.md — Auth flows (signup, login, logout, password reset, session persistence, auth guards, shadcn/ui forms)
 
 ### Phase 3: Integration & Features
@@ -92,6 +92,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Frontend Design & UI | 3/3 | Complete | 2026-02-22 |
-| 2. Backend & Data Layer | 0/3 | Not started | - |
+| 2. Backend & Data Layer | 2/3 | In progress | - |
 | 3. Integration & Features | 0/3 | Not started | - |
 | 4. Polish & Production | 0/3 | Not started | - |
