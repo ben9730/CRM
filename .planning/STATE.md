@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** Sales and account management teams can track every customer relationship, deal, and interaction in one place — so nothing falls through the cracks.
-**Current focus:** Phase 3 in progress — organizations and contacts CRUD complete (03-01); ready for deals/kanban (03-02)
+**Current focus:** Phase 3 in progress — deals/kanban CRUD complete (03-02); ready for interactions/tasks/dashboard (03-03)
 
 ## Current Position
 
 Phase: 3 of 4 (Integration & Features)
-Plan: 1 of 3 complete in current phase — 03-01 done (orgs+contacts CRUD wired to Supabase)
-Status: Phase 3 in progress — 03-01 complete, 03-02 (deals/kanban) and 03-03 (interactions/tasks/dashboard) remaining
-Last activity: 2026-02-22 — organizations and contacts full CRUD with live Supabase data
+Plan: 2 of 3 complete in current phase — 03-01 (orgs+contacts), 03-02 (deals/kanban) done; 03-03 (interactions/tasks/dashboard) remaining
+Status: Phase 3 in progress — 03-01 and 03-02 complete, 03-03 remaining
+Last activity: 2026-02-22 — deal pipeline Kanban with optimistic drag-and-drop wired to live Supabase data
 
-Progress: [███████░░░] 62%
+Progress: [████████░░] 75%
 
 ## Performance Metrics
 
@@ -29,7 +29,7 @@ Progress: [███████░░░] 62%
 |-------|-------|-------|----------|
 | 01-frontend-design-ui | 3 | ~20 min | ~7 min |
 | 02-backend-data-layer | 4/4 | ~54 min | ~14 min |
-| 03-integration-features | 1/3 | 13 min | 13 min |
+| 03-integration-features | 2/3 | 31 min | 15.5 min |
 
 **Recent Trend:**
 - Last 5 plans: 4 min, approval, 12 min, 24 min, 13 min
@@ -76,6 +76,10 @@ Recent decisions affecting current work:
 - [03-01]: OrgCreateButton/ContactCreateButton are client islands — page stays Server Component for data fetching
 - [03-01]: Contact deals linked via org membership (no direct contact_id on deals table in schema)
 - [03-01]: OrgId filter for contacts applied in application code after fetch (PostgREST limitation with nested joins + count)
+- [03-02]: Optimistic DnD via useTransition snapshot/rollback — no confirmation dialog, instant move with toast error on failure
+- [03-02]: KanbanBoard receives initialDeals+stages as props from Server Component — client component for DnD only
+- [03-02]: Stage hex color from DB used directly via color-mix(in oklch) — no hardcoded color maps needed
+- [03-02]: deal_contacts RLS via EXISTS through deals.account_id (junction table has no account_id column)
 
 ### Pending Todos
 
@@ -83,12 +87,11 @@ None.
 
 ### Blockers/Concerns
 
-- [Phase 3]: Kanban (deals) pages still use mock data from src/data/ — 03-02 replaces with real Supabase queries
 - [Phase 3]: Interactions, tasks, dashboard still use mock data — 03-03 replaces
 - [Phase 4]: Supabase BAA must be signed before production launch if any patient-adjacent data is stored (business action, not code task)
 
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 03-01-PLAN.md — organizations and contacts CRUD live
-Resume file: .planning/phases/03-integration-features/03-02-PLAN.md
+Stopped at: Completed 03-02-PLAN.md — deal pipeline Kanban with live data and optimistic drag-and-drop
+Resume file: .planning/phases/03-integration-features/03-03-PLAN.md

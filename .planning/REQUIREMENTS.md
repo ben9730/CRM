@@ -42,12 +42,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Deals & Pipeline
 
-- [ ] **DEAL-01**: User can create a deal with name, stage, value, close date, linked organization, and linked contacts
-- [ ] **DEAL-02**: User can edit and delete deals
-- [ ] **DEAL-03**: User can view deals as a Kanban board with drag-and-drop between stages
-- [ ] **DEAL-04**: Pipeline stages are pre-configured with healthtech defaults (Prospecting, Discovery, Demo, Proposal, Procurement Review, Contract Negotiation, Won, Lost)
-- [ ] **DEAL-05**: Each pipeline stage shows deal count and total value
-- [ ] **DEAL-06**: Pipeline stages stored in a normalized `pipeline_stages` table (not string values)
+- [x] **DEAL-01**: User can create a deal with name, stage, value, close date, linked organization, and linked contacts
+- [x] **DEAL-02**: User can edit and delete deals
+- [x] **DEAL-03**: User can view deals as a Kanban board with drag-and-drop between stages
+- [x] **DEAL-04**: Pipeline stages are pre-configured with healthtech defaults (Prospecting, Discovery, Demo, Proposal, Procurement Review, Contract Negotiation, Won, Lost)
+- [x] **DEAL-05**: Each pipeline stage shows deal count and total value
+- [x] **DEAL-06**: Pipeline stages stored in a normalized `pipeline_stages` table (not string values)
 
 ### Interactions
 
@@ -156,12 +156,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CONT-04 | Phase 3 | Complete |
 | CONT-05 | Phase 3 | Complete |
 | CONT-06 | Phase 3 | Complete |
-| DEAL-01 | Phase 3 | Pending |
-| DEAL-02 | Phase 3 | Pending |
-| DEAL-03 | Phase 3 | Pending |
-| DEAL-04 | Phase 3 | Pending |
-| DEAL-05 | Phase 3 | Pending |
-| DEAL-06 | Phase 3 | Pending |
+| DEAL-01 | Phase 3 | Complete |
+| DEAL-02 | Phase 3 | Complete |
+| DEAL-03 | Phase 3 | Complete |
+| DEAL-04 | Phase 3 | Complete |
+| DEAL-05 | Phase 3 | Complete |
+| DEAL-06 | Phase 3 | Complete |
 | INTR-01 | Phase 3 | Pending |
 | INTR-02 | Phase 3 | Pending |
 | INTR-03 | Phase 3 | Pending |
