@@ -74,5 +74,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Phase 1 complete — user approved prototype. Ready for Phase 2: Backend & Data Layer
-Resume file: Phase 2 planning needed — /gsd:plan-phase 2
+Stopped at: Phase 2 context gathered — ready for planning
+Resume file: .planning/phases/02-backend-data-layer/02-CONTEXT.md
