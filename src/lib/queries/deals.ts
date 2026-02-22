@@ -101,3 +101,24 @@ export async function getDealsByContact(contactId: string): Promise<DealWithRela
 
   return deals
 }
+
+/**
+ * Get a minimal list of deals for dropdowns/selects.
+ */
+export async function getDealsList(): Promise<{ id: string; title: string }[]> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('deals')
+    .select('id, title')
+    .is('deleted_at', null)
+    .order('title')
+    .limit(200)
+
+  if (error) {
+    console.error('getDealsList error:', error)
+    return []
+  }
+
+  return data ?? []
+}

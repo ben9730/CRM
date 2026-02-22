@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import type { ContactWithOrgs, PaginatedResult } from '@/lib/types/app'
+import type { ContactWithOrgs, InteractionWithRelations, PaginatedResult, TaskWithRelations } from '@/lib/types/app'
 
 const DEFAULT_PAGE_SIZE = 20
 
@@ -162,38 +162,64 @@ export async function getContactDeals(contactId: string) {
 }
 
 /**
- * Get linked tasks for a contact.
+ * Get linked tasks for a contact, with isOverdue computed.
  */
-export async function getContactTasks(contactId: string) {
+export async function getContactTasks(contactId: string): Promise<TaskWithRelations[]> {
   const supabase = await createClient()
+
+  const today = new Date().toISOString().split('T')[0]
 
   const { data, error } = await supabase
     .from('tasks')
-    .select('id, title, due_date, is_complete, priority, description')
+    .select('*, contacts(id, first_name, last_name), deals(id, title)')
     .eq('contact_id', contactId)
     .is('deleted_at', null)
     .order('due_date', { ascending: true })
 
   if (error || !data) return []
-  return data
+
+  return data.map((task) => {
+    const raw = task as typeof task & {
+      contacts: { id: string; first_name: string; last_name: string } | null
+      deals: { id: string; title: string } | null
+    }
+    return {
+      ...raw,
+      contacts: raw.contacts ?? null,
+      deals: raw.deals ?? null,
+      isOverdue: !raw.is_complete && !!raw.due_date && raw.due_date < today,
+    } as TaskWithRelations
+  })
 }
 
 /**
- * Get linked interactions for a contact.
+ * Get linked interactions for a contact, with full relations.
  */
-export async function getContactInteractions(contactId: string) {
+export async function getContactInteractions(
+  contactId: string
+): Promise<InteractionWithRelations[]> {
   const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('interactions')
-    .select('id, type, subject, body, occurred_at, duration_mins')
+    .select('*, contacts(id, first_name, last_name), deals(id, title)')
     .eq('contact_id', contactId)
     .is('deleted_at', null)
     .order('occurred_at', { ascending: false })
-    .limit(20)
 
   if (error || !data) return []
-  return data
+
+  return data.map((row) => {
+    const raw = row as typeof row & {
+      contacts: { id: string; first_name: string; last_name: string } | null
+      deals: { id: string; title: string } | null
+    }
+    return {
+      ...raw,
+      contacts: raw.contacts ?? null,
+      deals: raw.deals ?? null,
+    } as InteractionWithRelations
+  })
 }
 
 /**

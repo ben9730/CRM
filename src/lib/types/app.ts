@@ -48,8 +48,15 @@ export type DealWithStage = DealRow & {
   stage_color: string | null
 }
 
-// Task with contact/deal context
-export type TaskWithContext = TaskRow
+// Interaction with related contact and deal info
+export type InteractionWithRelations = InteractionRow & {
+  contacts?: { id: string; first_name: string; last_name: string } | null
+  deals?: { id: string; title: string } | null
+}
 
-// Interaction row (already flat enough for display)
-export type InteractionWithContext = InteractionRow
+// Task with related contact and deal info, plus computed overdue flag
+export type TaskWithRelations = TaskRow & {
+  contacts?: { id: string; first_name: string; last_name: string } | null
+  deals?: { id: string; title: string } | null
+  isOverdue: boolean
+}
