@@ -1,99 +1,107 @@
-"use client";
+import { Suspense } from 'react'
+import { getContacts, getAvailableTags } from '@/lib/queries/contacts'
+import { getOrganizationsList } from '@/lib/queries/organizations'
+import { ContactsViewWrapper } from '@/components/contacts/contacts-view-wrapper'
+import { ContactSearchForm } from '@/components/contacts/contact-search-form'
+import { ContactCreateButton } from '@/components/contacts/contact-create-button'
+import { Pagination } from '@/components/shared/pagination'
+import { Users } from 'lucide-react'
 
-import { useState } from "react";
-import { mockContacts, Contact } from "@/data/mock-contacts";
-import { ContactsTable } from "@/components/contacts/contacts-table";
-import { ContactsGrid } from "@/components/contacts/contacts-grid";
-import { ViewToggle, ViewMode } from "@/components/contacts/view-toggle";
-import { ContactSheet } from "@/components/contacts/contact-sheet";
-import { Button } from "@/components/ui/button";
-import { UserPlus, Users } from "lucide-react";
+interface ContactsPageProps {
+  searchParams: Promise<{
+    search?: string
+    tag?: string
+    org?: string
+    page?: string
+  }>
+}
 
-export default function ContactsPage() {
-  const [view, setView] = useState<ViewMode>("table");
-  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
+export default async function ContactsPage({ searchParams }: ContactsPageProps) {
+  const params = await searchParams
+  const search = params.search ?? ''
+  const tag = params.tag ?? ''
+  const org = params.org ?? ''
+  const page = parseInt(params.page ?? '1', 10) || 1
 
-  function handleContactSelect(contact: Contact) {
-    setSelectedContact(contact);
-    setSheetOpen(true);
-  }
+  const [result, availableTags, organizations] = await Promise.all([
+    getContacts({ search, tag, orgId: org, page }),
+    getAvailableTags(),
+    getOrganizationsList(),
+  ])
 
   return (
     <div className="space-y-5 p-4 sm:p-6">
+      {/* Ambient glow */}
+      <div
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 80% 50% at 50% -10%, oklch(0.65 0.24 280 / 5%) 0%, transparent 60%)',
+        }}
+      />
+
       {/* Page header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between animate-fade-in">
+      <div className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between animate-fade-in">
         <div className="flex items-start gap-3">
-          {/* Icon accent */}
           <div
             className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl mt-0.5"
             style={{
               background:
-                "linear-gradient(135deg, oklch(0.65 0.24 280 / 20%), oklch(0.55 0.24 300 / 20%))",
-              boxShadow: "0 0 16px -4px oklch(0.65 0.24 280 / 20%)",
-              border: "1px solid oklch(0.65 0.24 280 / 15%)",
+                'linear-gradient(135deg, oklch(0.65 0.24 280 / 20%), oklch(0.55 0.24 300 / 20%))',
+              boxShadow: '0 0 16px -4px oklch(0.65 0.24 280 / 20%)',
+              border: '1px solid oklch(0.65 0.24 280 / 15%)',
             }}
           >
             <Users className="h-5 w-5 text-primary/80" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-gradient-violet">
-              Contacts
-            </h1>
+            <h1 className="text-2xl font-bold tracking-tight text-gradient-violet">Contacts</h1>
             <p className="text-sm text-muted-foreground/60 mt-0.5">
-              {mockContacts.length} healthcare B2B contacts
+              {result.total} {result.total === 1 ? 'contact' : 'contacts'}
+              {search && ` matching "${search}"`}
+              {tag && ` tagged "${tag}"`}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <ViewToggle view={view} onChange={setView} />
-          <Button
-            size="sm"
-            className="gap-1.5 font-medium"
-            style={{
-              background:
-                "linear-gradient(135deg, oklch(0.55 0.22 280), oklch(0.50 0.25 300))",
-              boxShadow: "0 0 16px -4px oklch(0.65 0.24 280 / 25%)",
-              border: "1px solid oklch(0.65 0.24 280 / 20%)",
-            }}
-          >
-            <UserPlus className="h-3.5 w-3.5" />
-            Add Contact
-          </Button>
-        </div>
+        <ContactCreateButton organizations={organizations} />
       </div>
 
       {/* Gradient separator */}
       <div
-        className="h-px animate-fade-in animate-delay-1"
+        className="relative z-10 h-px animate-fade-in animate-delay-1"
         style={{
           background:
-            "linear-gradient(90deg, oklch(0.65 0.24 280 / 20%), oklch(0.65 0.24 280 / 5%), transparent)",
+            'linear-gradient(90deg, oklch(0.65 0.24 280 / 20%), oklch(0.65 0.24 280 / 5%), transparent)',
         }}
       />
 
-      {/* Content */}
-      <div className="animate-fade-in animate-delay-2">
-        {view === "table" ? (
-          <ContactsTable
-            contacts={mockContacts}
-            onRowClick={handleContactSelect}
+      {/* Search + Filters */}
+      <div className="relative z-10 animate-fade-in animate-delay-1">
+        <Suspense fallback={null}>
+          <ContactSearchForm
+            defaultSearch={search}
+            defaultTag={tag}
+            defaultOrg={org}
+            availableTags={availableTags}
+            availableOrgs={organizations}
           />
-        ) : (
-          <ContactsGrid
-            contacts={mockContacts}
-            onCardClick={handleContactSelect}
-          />
-        )}
+        </Suspense>
       </div>
 
-      {/* Slide-over sheet */}
-      <ContactSheet
-        contact={selectedContact}
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-      />
+      {/* Content: View toggle + Table or Grid */}
+      <div className="relative z-10 animate-fade-in animate-delay-2">
+        <ContactsViewWrapper contacts={result.data} />
+      </div>
+
+      {/* Pagination */}
+      {result.totalPages > 1 && (
+        <div className="relative z-10">
+          <Suspense fallback={null}>
+            <Pagination currentPage={result.page} totalPages={result.totalPages} />
+          </Suspense>
+        </div>
+      )}
     </div>
-  );
+  )
 }

@@ -1,72 +1,31 @@
 "use client";
 
-import { Deal } from "@/data/mock-deals";
 import { Briefcase, TrendingUp, Calendar } from "lucide-react";
 
-function formatCurrency(value: number): string {
+function formatCurrency(value: number, currency = 'USD'): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "USD",
+    currency,
     maximumFractionDigits: 0,
   }).format(value);
 }
 
-// Stage config: border color (OKLCH), label color, bg tint
-const STAGE_CONFIG: Record<
-  string,
-  { borderOklch: string; labelOklch: string; bgOklch: string; dotOklch: string }
-> = {
-  Prospecting: {
-    borderOklch: "oklch(0.65 0.24 280 / 60%)",
-    labelOklch: "oklch(0.70 0.20 280)",
-    bgOklch: "oklch(0.65 0.24 280 / 6%)",
-    dotOklch: "oklch(0.65 0.24 280)",
-  },
-  Qualification: {
-    borderOklch: "oklch(0.60 0.20 220 / 60%)",
-    labelOklch: "oklch(0.65 0.18 220)",
-    bgOklch: "oklch(0.60 0.20 220 / 6%)",
-    dotOklch: "oklch(0.60 0.20 220)",
-  },
-  Proposal: {
-    borderOklch: "oklch(0.60 0.24 300 / 60%)",
-    labelOklch: "oklch(0.65 0.22 300)",
-    bgOklch: "oklch(0.60 0.24 300 / 6%)",
-    dotOklch: "oklch(0.60 0.24 300)",
-  },
-  Negotiation: {
-    borderOklch: "oklch(0.70 0.20 65 / 60%)",
-    labelOklch: "oklch(0.72 0.18 65)",
-    bgOklch: "oklch(0.70 0.20 65 / 6%)",
-    dotOklch: "oklch(0.70 0.20 65)",
-  },
-  "Closed Won": {
-    borderOklch: "oklch(0.65 0.18 150 / 60%)",
-    labelOklch: "oklch(0.65 0.16 150)",
-    bgOklch: "oklch(0.65 0.18 150 / 6%)",
-    dotOklch: "oklch(0.65 0.18 150)",
-  },
-  "Closed Lost": {
-    borderOklch: "oklch(0.45 0.10 0 / 40%)",
-    labelOklch: "oklch(0.50 0.08 0)",
-    bgOklch: "oklch(0.45 0.10 0 / 4%)",
-    dotOklch: "oklch(0.50 0.08 0)",
-  },
-};
-
-const DEFAULT_STAGE = {
-  borderOklch: "oklch(1 0 0 / 12%)",
-  labelOklch: "oklch(0.55 0 0)",
-  bgOklch: "oklch(0.18 0 0)",
-  dotOklch: "oklch(0.55 0 0)",
-};
+export interface ContactDeal {
+  id: string;
+  title: string;
+  value: number | null;
+  currency: string;
+  expected_close: string | null;
+  stage_name: string;
+  stage_color: string | null;
+}
 
 interface LinkedDealsProps {
-  deals: Deal[];
+  deals: ContactDeal[];
 }
 
 export function LinkedDeals({ deals }: LinkedDealsProps) {
-  const totalValue = deals.reduce((sum, d) => sum + d.value, 0);
+  const totalValue = deals.reduce((sum, d) => sum + (d.value ?? 0), 0);
 
   return (
     <div
@@ -95,7 +54,7 @@ export function LinkedDeals({ deals }: LinkedDealsProps) {
             <span className="text-sm font-semibold text-foreground/90">Linked Deals</span>
           </div>
           <div className="flex items-center gap-3">
-            {deals.length > 0 && (
+            {deals.length > 0 && totalValue > 0 && (
               <span
                 className="text-xs font-medium"
                 style={{ color: "oklch(0.65 0.18 150)" }}
@@ -135,12 +94,13 @@ export function LinkedDeals({ deals }: LinkedDealsProps) {
         ) : (
           <div className="space-y-2.5">
             {deals.map((deal) => {
-              const cfg = STAGE_CONFIG[deal.stage] ?? DEFAULT_STAGE;
-              const closeDate = new Date(deal.expectedCloseDate).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              });
+              const closeDate = deal.expected_close
+                ? new Date(deal.expected_close).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })
+                : null;
 
               return (
                 <div
@@ -150,69 +110,82 @@ export function LinkedDeals({ deals }: LinkedDealsProps) {
                   {/* Left colored border */}
                   <div
                     className="absolute left-0 top-0 bottom-0 w-[3px]"
-                    style={{ background: cfg.borderOklch }}
+                    style={{
+                      background: deal.stage_color ?? "oklch(0.65 0.24 280)",
+                    }}
                   />
 
                   <div
                     className="flex items-center justify-between gap-3 px-3.5 py-3.5"
-                    style={{ background: cfg.bgOklch }}
+                    style={{
+                      background: deal.stage_color
+                        ? `${deal.stage_color}15`
+                        : "oklch(0.65 0.24 280 / 6%)",
+                    }}
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        {/* Stage dot */}
                         <div
                           className="h-1.5 w-1.5 rounded-full flex-shrink-0"
-                          style={{ background: cfg.dotOklch }}
+                          style={{
+                            background: deal.stage_color ?? "oklch(0.65 0.24 280)",
+                          }}
                         />
                         <p className="text-sm font-medium text-foreground/90 truncate">
-                          {deal.name}
+                          {deal.title}
                         </p>
                       </div>
                       <div className="flex items-center gap-3 mt-1.5 ml-3.5">
                         <span
                           className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded"
                           style={{
-                            background: cfg.bgOklch,
-                            color: cfg.labelOklch,
-                            border: `1px solid ${cfg.borderOklch}`,
+                            background: deal.stage_color
+                              ? `${deal.stage_color}20`
+                              : "oklch(0.65 0.24 280 / 10%)",
+                            color: deal.stage_color ?? "oklch(0.65 0.20 280)",
+                            border: `1px solid ${deal.stage_color ? `${deal.stage_color}40` : "oklch(0.65 0.24 280 / 25%)"}`,
                           }}
                         >
-                          {deal.stage}
+                          {deal.stage_name}
                         </span>
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Calendar className="h-2.5 w-2.5" />
-                          {closeDate}
-                        </span>
+                        {closeDate && (
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Calendar className="h-2.5 w-2.5" />
+                            {closeDate}
+                          </span>
+                        )}
                       </div>
                     </div>
 
                     {/* Value display */}
-                    <div className="flex-shrink-0 text-right">
-                      <p
-                        className="text-base font-bold tabular-nums"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, oklch(0.85 0.05 280), oklch(0.97 0 0))",
-                          WebkitBackgroundClip: "text",
-                          WebkitTextFillColor: "transparent",
-                          backgroundClip: "text",
-                        }}
-                      >
-                        {formatCurrency(deal.value)}
-                      </p>
-                      <div className="flex items-center gap-1 justify-end mt-0.5">
-                        <TrendingUp
-                          className="h-2.5 w-2.5"
-                          style={{ color: "oklch(0.65 0.18 150)" }}
-                        />
-                        <span
-                          className="text-[10px] font-medium"
-                          style={{ color: "oklch(0.65 0.18 150)" }}
+                    {deal.value !== null && (
+                      <div className="flex-shrink-0 text-right">
+                        <p
+                          className="text-base font-bold tabular-nums"
+                          style={{
+                            background:
+                              "linear-gradient(135deg, oklch(0.85 0.05 280), oklch(0.97 0 0))",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                            backgroundClip: "text",
+                          }}
                         >
-                          pipeline
-                        </span>
+                          {formatCurrency(deal.value, deal.currency)}
+                        </p>
+                        <div className="flex items-center gap-1 justify-end mt-0.5">
+                          <TrendingUp
+                            className="h-2.5 w-2.5"
+                            style={{ color: "oklch(0.65 0.18 150)" }}
+                          />
+                          <span
+                            className="text-[10px] font-medium"
+                            style={{ color: "oklch(0.65 0.18 150)" }}
+                          >
+                            pipeline
+                          </span>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               );

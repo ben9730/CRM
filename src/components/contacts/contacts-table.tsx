@@ -8,7 +8,8 @@ import {
   flexRender,
 } from "@tanstack/react-table";
 import { useState } from "react";
-import { Contact } from "@/data/mock-contacts";
+import { useRouter } from "next/navigation";
+import type { ContactWithOrgs } from "@/lib/types/app";
 import { createColumns } from "./columns";
 import {
   Table,
@@ -20,11 +21,12 @@ import {
 } from "@/components/ui/table";
 
 interface ContactsTableProps {
-  contacts: Contact[];
-  onRowClick: (contact: Contact) => void;
+  contacts: ContactWithOrgs[];
+  onRowClick?: (contact: ContactWithOrgs) => void;
 }
 
 export function ContactsTable({ contacts, onRowClick }: ContactsTableProps) {
+  const router = useRouter();
   const [sorting, setSorting] = useState<SortingState>([]);
   const columns = createColumns();
 
@@ -36,6 +38,14 @@ export function ContactsTable({ contacts, onRowClick }: ContactsTableProps) {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
+
+  function handleRowClick(contact: ContactWithOrgs) {
+    if (onRowClick) {
+      onRowClick(contact);
+    } else {
+      router.push(`/contacts/${contact.id}`);
+    }
+  }
 
   return (
     <div
@@ -79,34 +89,40 @@ export function ContactsTable({ contacts, onRowClick }: ContactsTableProps) {
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows.map((row, idx) => (
-            <TableRow
-              key={row.id}
-              className="cursor-pointer border-b border-white/4 transition-all duration-150 group"
-              style={
-                {
-                  "--row-bg": "transparent",
-                } as React.CSSProperties
-              }
-              onClick={() => onRowClick(row.original)}
-              onMouseEnter={(e) => {
-                const el = e.currentTarget as HTMLElement;
-                el.style.background = "oklch(0.22 0.04 280 / 30%)";
-                el.style.boxShadow = "inset 2px 0 0 oklch(0.65 0.24 280)";
-              }}
-              onMouseLeave={(e) => {
-                const el = e.currentTarget as HTMLElement;
-                el.style.background = "transparent";
-                el.style.boxShadow = "none";
-              }}
-            >
-              {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id} className="px-3 py-2.5">
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
-              ))}
+          {table.getRowModel().rows.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={columns.length}
+                className="text-center py-16 text-muted-foreground/60 text-sm"
+              >
+                No contacts found
+              </TableCell>
             </TableRow>
-          ))}
+          ) : (
+            table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                className="cursor-pointer border-b border-white/4 transition-all duration-150 group"
+                onClick={() => handleRowClick(row.original)}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.background = "oklch(0.22 0.04 280 / 30%)";
+                  el.style.boxShadow = "inset 2px 0 0 oklch(0.65 0.24 280)";
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.background = "transparent";
+                  el.style.boxShadow = "none";
+                }}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id} className="px-3 py-2.5">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
       {/* Bottom fade */}

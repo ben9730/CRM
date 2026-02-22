@@ -1,20 +1,9 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Contact } from "@/data/mock-contacts";
-import { Badge } from "@/components/ui/badge";
+import type { ContactWithOrgs } from "@/lib/types/app";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
 
 // Gradient backgrounds keyed by first-char code mod 6
 const AVATAR_GRADIENTS = [
@@ -29,6 +18,10 @@ const AVATAR_GRADIENTS = [
 export function getAvatarGradient(name: string): string {
   const idx = name.charCodeAt(0) % AVATAR_GRADIENTS.length;
   return AVATAR_GRADIENTS[idx];
+}
+
+export function getInitials(firstName: string, lastName: string): string {
+  return `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase();
 }
 
 // Tag color variants for visual variety
@@ -49,7 +42,7 @@ const TAG_VARIANTS: Record<string, string> = {
   "it": "border-sky-500/30 text-sky-400 bg-sky-500/8",
 };
 
-function getTagClass(tag: string): string {
+export function getTagClass(tag: string): string {
   return TAG_VARIANTS[tag] ?? "border-white/10 text-muted-foreground bg-white/4";
 }
 
@@ -83,19 +76,21 @@ function SortHeader({ label, column, className }: SortHeaderProps) {
   );
 }
 
-export function createColumns(): ColumnDef<Contact>[] {
+export function createColumns(): ColumnDef<ContactWithOrgs>[] {
   return [
     {
       id: "avatar",
       header: "",
       cell: ({ row }) => {
-        const name = row.original.name;
-        const gradient = getAvatarGradient(name);
+        const { first_name, last_name } = row.original;
+        const fullName = `${first_name} ${last_name}`;
+        const gradient = getAvatarGradient(first_name);
+        const initials = getInitials(first_name, last_name);
         return (
           <div
             className={`flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br text-[11px] font-bold ring-1 ring-white/10 ${gradient}`}
           >
-            {getInitials(name)}
+            {initials}
           </div>
         );
       },
@@ -103,22 +98,27 @@ export function createColumns(): ColumnDef<Contact>[] {
       size: 48,
     },
     {
-      accessorKey: "name",
+      id: "name",
       header: ({ column }) => <SortHeader label="Name" column={column} />,
+      accessorFn: (row) => `${row.first_name} ${row.last_name}`,
       cell: ({ row }) => (
         <span className="font-semibold text-sm text-foreground/95 tracking-tight">
-          {row.getValue("name")}
+          {row.original.first_name} {row.original.last_name}
         </span>
       ),
     },
     {
-      accessorKey: "organization",
+      id: "organization",
       header: ({ column }) => <SortHeader label="Organization" column={column} />,
-      cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground/80">
-          {row.getValue("organization")}
-        </span>
-      ),
+      accessorFn: (row) => row.organizations.find((o) => o.is_primary)?.name ?? row.organizations[0]?.name ?? "",
+      cell: ({ row }) => {
+        const primaryOrg = row.original.organizations.find((o) => o.is_primary) ?? row.original.organizations[0];
+        return (
+          <span className="text-sm text-muted-foreground/80">
+            {primaryOrg?.name ?? "—"}
+          </span>
+        );
+      },
     },
     {
       accessorKey: "title",
@@ -127,7 +127,7 @@ export function createColumns(): ColumnDef<Contact>[] {
       ),
       cell: ({ row }) => (
         <span className="text-sm text-muted-foreground/70 hidden md:block">
-          {row.getValue("title")}
+          {row.getValue("title") ?? "—"}
         </span>
       ),
     },
@@ -140,7 +140,7 @@ export function createColumns(): ColumnDef<Contact>[] {
       ),
       cell: ({ row }) => (
         <span className="font-mono text-xs text-muted-foreground/60 hidden lg:block">
-          {row.getValue("email")}
+          {row.getValue("email") ?? "—"}
         </span>
       ),
       enableSorting: false,
@@ -153,7 +153,7 @@ export function createColumns(): ColumnDef<Contact>[] {
         </span>
       ),
       cell: ({ row }) => {
-        const tags = row.getValue("tags") as string[];
+        const tags = (row.getValue("tags") as string[] | null) ?? [];
         return (
           <div className="flex flex-wrap gap-1">
             {tags.slice(0, 2).map((tag) => (
@@ -173,25 +173,6 @@ export function createColumns(): ColumnDef<Contact>[] {
         );
       },
       enableSorting: false,
-    },
-    {
-      accessorKey: "lastContact",
-      header: ({ column }) => <SortHeader label="Last Contact" column={column} />,
-      cell: ({ row }) => {
-        const date = new Date(row.getValue("lastContact") as string);
-        const now = new Date();
-        const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-        const isRecent = diffDays <= 7;
-        return (
-          <span className={`text-xs tabular-nums ${isRecent ? "text-emerald-400" : "text-muted-foreground/60"}`}>
-            {date.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}
-          </span>
-        );
-      },
     },
   ];
 }

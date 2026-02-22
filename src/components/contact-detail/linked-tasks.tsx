@@ -1,6 +1,5 @@
 "use client";
 
-import { Task } from "@/data/mock-tasks";
 import { CheckSquare, AlertCircle, Clock, CheckCircle2 } from "lucide-react";
 
 const PRIORITY_CONFIG: Record<
@@ -24,6 +23,15 @@ const PRIORITY_CONFIG: Record<
   },
 };
 
+export interface ContactTask {
+  id: string;
+  title: string;
+  due_date: string | null;
+  is_complete: boolean;
+  priority: string | null;
+  description: string | null;
+}
+
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-US", {
     month: "short",
@@ -33,20 +41,23 @@ function formatDate(dateStr: string): string {
 }
 
 interface LinkedTasksProps {
-  tasks: Task[];
+  tasks: ContactTask[];
 }
 
 export function LinkedTasks({ tasks }: LinkedTasksProps) {
   const today = new Date().toISOString().split("T")[0];
 
   const sortedTasks = [...tasks].sort((a, b) => {
-    if (a.status === "completed" && b.status !== "completed") return 1;
-    if (a.status !== "completed" && b.status === "completed") return -1;
-    return a.dueDate.localeCompare(b.dueDate);
+    if (a.is_complete && !b.is_complete) return 1;
+    if (!a.is_complete && b.is_complete) return -1;
+    if (!a.due_date && !b.due_date) return 0;
+    if (!a.due_date) return 1;
+    if (!b.due_date) return -1;
+    return a.due_date.localeCompare(b.due_date);
   });
 
-  const pendingCount = tasks.filter((t) => t.status !== "completed").length;
-  const completedCount = tasks.filter((t) => t.status === "completed").length;
+  const pendingCount = tasks.filter((t) => !t.is_complete).length;
+  const completedCount = tasks.filter((t) => t.is_complete).length;
 
   return (
     <div
@@ -143,9 +154,10 @@ export function LinkedTasks({ tasks }: LinkedTasksProps) {
           <div className="space-y-2">
             {sortedTasks.map((task) => {
               const isOverdue =
-                task.status !== "completed" && task.dueDate < today;
-              const isCompleted = task.status === "completed";
-              const cfg = PRIORITY_CONFIG[task.priority] ?? PRIORITY_CONFIG.low;
+                !task.is_complete && task.due_date && task.due_date < today;
+              const isCompleted = task.is_complete;
+              const priority = task.priority ?? 'low';
+              const cfg = PRIORITY_CONFIG[priority] ?? PRIORITY_CONFIG.low;
 
               return (
                 <div
@@ -215,64 +227,60 @@ export function LinkedTasks({ tasks }: LinkedTasksProps) {
                       >
                         {task.title}
                       </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Clock
-                          className="h-2.5 w-2.5 flex-shrink-0"
-                          style={{
-                            color: isOverdue
-                              ? "oklch(0.60 0.22 25)"
-                              : "oklch(0.40 0 0)",
-                          }}
-                        />
-                        <p
-                          className="text-[11px] font-medium"
-                          style={{
-                            color: isOverdue
-                              ? "oklch(0.60 0.22 25)"
-                              : "oklch(0.45 0 0)",
-                          }}
-                        >
-                          {isOverdue ? "Overdue · " : "Due: "}
-                          {formatDate(task.dueDate)}
-                        </p>
-                        {task.dealName && (
-                          <span
-                            className="text-[10px] truncate max-w-[100px]"
-                            style={{ color: "oklch(0.65 0.24 280 / 60%)" }}
+                      {task.due_date && (
+                        <div className="flex items-center gap-2 mt-1">
+                          <Clock
+                            className="h-2.5 w-2.5 flex-shrink-0"
+                            style={{
+                              color: isOverdue
+                                ? "oklch(0.60 0.22 25)"
+                                : "oklch(0.40 0 0)",
+                            }}
+                          />
+                          <p
+                            className="text-[11px] font-medium"
+                            style={{
+                              color: isOverdue
+                                ? "oklch(0.60 0.22 25)"
+                                : "oklch(0.45 0 0)",
+                            }}
                           >
-                            · {task.dealName}
-                          </span>
-                        )}
-                      </div>
+                            {isOverdue ? "Overdue · " : "Due: "}
+                            {formatDate(task.due_date)}
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     {/* Priority badge */}
-                    <div className="flex-shrink-0">
-                      <span
-                        className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
-                        style={{
-                          background: isOverdue
-                            ? "oklch(0.55 0.22 25 / 12%)"
-                            : isCompleted
-                            ? "oklch(0.16 0 0)"
-                            : cfg.bgOklch,
-                          color: isOverdue
-                            ? "oklch(0.60 0.20 25)"
-                            : isCompleted
-                            ? "oklch(0.35 0 0)"
-                            : cfg.labelOklch,
-                          border: `1px solid ${
-                            isOverdue
-                              ? "oklch(0.55 0.22 25 / 30%)"
+                    {task.priority && (
+                      <div className="flex-shrink-0">
+                        <span
+                          className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
+                          style={{
+                            background: isOverdue
+                              ? "oklch(0.55 0.22 25 / 12%)"
                               : isCompleted
-                              ? "oklch(1 0 0 / 6%)"
-                              : cfg.borderOklch
-                          }`,
-                        }}
-                      >
-                        {task.priority}
-                      </span>
-                    </div>
+                              ? "oklch(0.16 0 0)"
+                              : cfg.bgOklch,
+                            color: isOverdue
+                              ? "oklch(0.60 0.20 25)"
+                              : isCompleted
+                              ? "oklch(0.35 0 0)"
+                              : cfg.labelOklch,
+                            border: `1px solid ${
+                              isOverdue
+                                ? "oklch(0.55 0.22 25 / 30%)"
+                                : isCompleted
+                                ? "oklch(1 0 0 / 6%)"
+                                : cfg.borderOklch
+                            }`,
+                          }}
+                        >
+                          {task.priority}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               );

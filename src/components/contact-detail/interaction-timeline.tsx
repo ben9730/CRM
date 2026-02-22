@@ -1,6 +1,5 @@
 "use client";
 
-import { Interaction } from "@/data/mock-interactions";
 import { Phone, Mail, Calendar, FileText, Clock } from "lucide-react";
 
 const TYPE_CONFIG: Record<
@@ -51,6 +50,15 @@ const DEFAULT_TYPE_CONFIG = {
   label: "Interaction",
 };
 
+export interface ContactInteraction {
+  id: string;
+  type: string;
+  subject: string | null;
+  body: string | null;
+  occurred_at: string;
+  duration_mins: number | null;
+}
+
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
   const now = new Date();
@@ -78,12 +86,12 @@ function formatDate(dateStr: string): string {
 }
 
 interface InteractionTimelineProps {
-  interactions: Interaction[];
+  interactions: ContactInteraction[];
 }
 
 export function InteractionTimeline({ interactions }: InteractionTimelineProps) {
   const sorted = [...interactions].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    (a, b) => new Date(b.occurred_at).getTime() - new Date(a.occurred_at).getTime()
   );
 
   return (
@@ -167,6 +175,7 @@ export function InteractionTimeline({ interactions }: InteractionTimelineProps) 
               {sorted.map((interaction, index) => {
                 const cfg = TYPE_CONFIG[interaction.type] ?? DEFAULT_TYPE_CONFIG;
                 const { Icon } = cfg;
+                const displayText = interaction.subject || interaction.body || `${cfg.label} recorded`;
 
                 return (
                   <div
@@ -201,7 +210,7 @@ export function InteractionTimeline({ interactions }: InteractionTimelineProps) 
                         (e.currentTarget as HTMLDivElement).style.borderColor =
                           cfg.borderOklch;
                         (e.currentTarget as HTMLDivElement).style.boxShadow =
-                          `0 0 16px -4px ${cfg.accentOklch.replace(")", " / 12%)")}`;
+                          `0 0 16px -4px ${cfg.accentOklch} / 12%`;
                       }}
                       onMouseLeave={(e) => {
                         (e.currentTarget as HTMLDivElement).style.borderColor =
@@ -232,13 +241,13 @@ export function InteractionTimeline({ interactions }: InteractionTimelineProps) 
                             {cfg.label}
                           </span>
 
-                          {interaction.duration && (
+                          {interaction.duration_mins && (
                             <span
                               className="flex items-center gap-1 text-[10px] font-medium"
                               style={{ color: "oklch(0.45 0 0)" }}
                             >
                               <Clock className="h-2.5 w-2.5" />
-                              {interaction.duration} min
+                              {interaction.duration_mins} min
                             </span>
                           )}
 
@@ -246,35 +255,17 @@ export function InteractionTimeline({ interactions }: InteractionTimelineProps) 
                             className="ml-auto text-[10px] font-medium tabular-nums flex-shrink-0"
                             style={{ color: "oklch(0.42 0 0)" }}
                           >
-                            {formatDate(interaction.date)}
+                            {formatDate(interaction.occurred_at)}
                           </span>
                         </div>
 
-                        {/* Summary */}
+                        {/* Content */}
                         <p
                           className="text-sm leading-relaxed"
                           style={{ color: "oklch(0.70 0 0)" }}
                         >
-                          {interaction.summary}
+                          {displayText}
                         </p>
-
-                        {/* Deal link */}
-                        {interaction.dealName && (
-                          <div
-                            className="mt-2 flex items-center gap-1.5"
-                          >
-                            <div
-                              className="h-1 w-1 rounded-full flex-shrink-0"
-                              style={{ background: "oklch(0.65 0.24 280 / 60%)" }}
-                            />
-                            <span
-                              className="text-[11px] font-medium"
-                              style={{ color: "oklch(0.65 0.24 280 / 70%)" }}
-                            >
-                              {interaction.dealName}
-                            </span>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
