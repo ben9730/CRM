@@ -40,3 +40,9 @@ next-env.d.ts
 # dev tools
 theme-playground.html
 .playwright-mcp/
+
+.vercel
+
+# supabase local dev (keep migrations tracked)
+.supabase/
+supabase/.temp/
