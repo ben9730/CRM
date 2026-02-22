@@ -13,7 +13,7 @@ HealthCRM is built in four phases that strictly follow the mandated order: visua
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Frontend Design & UI** - Prototypes and component library approved by user before backend work begins
-- [x] **Phase 2: Backend & Data Layer** - Database schema, RLS, auth, and infrastructure scaffolded (completed 2026-02-22)
+- [ ] **Phase 2: Backend & Data Layer** - Database schema, RLS, auth, and infrastructure scaffolded — UAT gap closure in progress
 - [ ] **Phase 3: Integration & Features** - All CRM features built and wired to live backend
 - [ ] **Phase 4: Polish & Production** - CSV export, security review, and production deployment
 
@@ -45,12 +45,13 @@ Plans:
   2. All database tables exist with the correct schema: contact-organization junction table (not flat FK), pipeline_stages normalized table, tsvector GIN indexes on contacts and organizations, RLS enabled on every table
   3. The Next.js project is scaffolded with App Router, TypeScript, Tailwind CSS v4, and shadcn/ui — the component library from Phase 1 is integrated and builds without errors
   4. The application is deployed to Vercel and connected to Supabase — accessible from a live URL
-**Plans:** 3/3 plans complete
+**Plans:** 4 plans (3 original + 1 gap closure)
 
 Plans:
 - [x] 02-01-PLAN.md — Supabase project creation, Next.js restructure with route groups, Supabase client libraries, proxy.ts, Vercel deployment
 - [x] 02-02-PLAN.md — Database schema (10 tables), RLS policies, security definer function, tsvector GIN indexes, profiles trigger, seed data
-- [ ] 02-03-PLAN.md — Auth flows (signup, login, logout, password reset, session persistence, auth guards, shadcn/ui forms)
+- [x] 02-03-PLAN.md — Auth flows (signup, login, logout, password reset, session persistence, auth guards, shadcn/ui forms)
+- [ ] 02-04-PLAN.md — Gap closure: move proxy.ts to src/proxy.ts so auth guard redirect works
 
 ### Phase 3: Integration & Features
 **Goal**: Every CRM feature is built and connected to the live backend — the application is fully functional for daily sales and account management work
@@ -92,6 +93,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Frontend Design & UI | 3/3 | Complete | 2026-02-22 |
-| 2. Backend & Data Layer | 3/3 | Complete   | 2026-02-22 |
+| 2. Backend & Data Layer | 3/4 | UAT gap closure | - |
 | 3. Integration & Features | 0/3 | Not started | - |
 | 4. Polish & Production | 0/3 | Not started | - |
