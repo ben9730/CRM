@@ -45,12 +45,12 @@ Plans:
   2. All database tables exist with the correct schema: contact-organization junction table (not flat FK), pipeline_stages normalized table, tsvector GIN indexes on contacts and organizations, RLS enabled on every table
   3. The Next.js project is scaffolded with App Router, TypeScript, Tailwind CSS v4, and shadcn/ui — the component library from Phase 1 is integrated and builds without errors
   4. The application is deployed to Vercel and connected to Supabase — accessible from a live URL
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 02-01: Next.js project scaffold and Supabase setup (App Router, TypeScript, Tailwind v4, shadcn/ui integration, Vercel deploy)
-- [ ] 02-02: Database schema and RLS (all tables, junction table, pipeline_stages, tsvector indexes, RLS policies)
-- [ ] 02-03: Authentication flows (sign up, login, session persistence, logout, password reset)
+- [ ] 02-01-PLAN.md — Supabase project creation, Next.js restructure with route groups, Supabase client libraries, proxy.ts, Vercel deployment
+- [ ] 02-02-PLAN.md — Database schema (10 tables), RLS policies, security definer function, tsvector GIN indexes, profiles trigger, seed data
+- [ ] 02-03-PLAN.md — Auth flows (signup, login, logout, password reset, session persistence, auth guards, shadcn/ui forms)
 
 ### Phase 3: Integration & Features
 **Goal**: Every CRM feature is built and connected to the live backend — the application is fully functional for daily sales and account management work
