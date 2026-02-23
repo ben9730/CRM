@@ -222,13 +222,13 @@ export function DealDetailView({
           />
         </div>
 
-        {/* Linked Contacts */}
-        {deal.contacts && deal.contacts.length > 0 && (
-          <section>
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 mb-3 flex items-center gap-2">
-              <Users className="h-3.5 w-3.5" />
-              Linked Contacts
-            </h2>
+        {/* Linked Contacts — always visible */}
+        <section>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 mb-3 flex items-center gap-2">
+            <Users className="h-3.5 w-3.5" />
+            Linked Contacts
+          </h2>
+          {deal.contacts && deal.contacts.length > 0 ? (
             <div className="space-y-2">
               {deal.contacts.map((contact) => (
                 <Link
@@ -255,8 +255,15 @@ export function DealDetailView({
                 </Link>
               ))}
             </div>
-          </section>
-        )}
+          ) : (
+            <div
+              className="flex items-center justify-center py-6 rounded-lg text-sm text-muted-foreground/40"
+              style={{ background: 'oklch(0.12 0.004 280)', border: '1px dashed oklch(1 0 0 / 8%)' }}
+            >
+              No contacts linked to this deal yet.
+            </div>
+          )}
+        </section>
 
         {/* Notes */}
         {deal.notes && (

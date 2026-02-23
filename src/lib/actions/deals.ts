@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getAccountId } from '@/lib/queries/account'
-import type { ActionState } from '@/lib/types/app'
+import type { ActionState, DealWithRelations } from '@/lib/types/app'
 
 const DealSchema = z.object({
   title: z.string().min(1, 'Deal title is required').trim(),
@@ -113,7 +113,18 @@ export async function createDeal(
     }
   }
 
+  // Fetch the newly created deal with relations for optimistic Kanban update
+  const { data: newDeal } = await supabase
+    .from('deals')
+    .select('*, pipeline_stages(id, name, color, display_order, is_won, is_lost), organizations(id, name)')
+    .eq('id', deal.id)
+    .single()
+
   revalidatePath('/deals')
+
+  if (newDeal) {
+    return { success: 'Deal created successfully.', deal: newDeal as DealWithRelations }
+  }
   return { success: 'Deal created successfully.' }
 }
 

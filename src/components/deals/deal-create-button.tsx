@@ -1,9 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { DealForm } from './deal-form'
-import type { PipelineStageRow } from '@/lib/types/app'
+import type { DealWithRelations, PipelineStageRow } from '@/lib/types/app'
 import {
   Sheet,
   SheetContent,
@@ -21,11 +20,16 @@ interface OrgOption {
 interface DealCreateButtonProps {
   stages: PipelineStageRow[]
   organizations: OrgOption[]
+  onDealCreated?: (deal?: DealWithRelations) => void
 }
 
-export function DealCreateButton({ stages, organizations }: DealCreateButtonProps) {
+export function DealCreateButton({ stages, organizations, onDealCreated }: DealCreateButtonProps) {
   const [open, setOpen] = useState(false)
-  const router = useRouter()
+
+  function handleSuccess(deal?: DealWithRelations) {
+    setOpen(false)
+    onDealCreated?.(deal)
+  }
 
   return (
     <>
@@ -65,10 +69,7 @@ export function DealCreateButton({ stages, organizations }: DealCreateButtonProp
             <DealForm
               stages={stages}
               organizations={organizations}
-              onSuccess={() => {
-                setOpen(false)
-                router.refresh()
-              }}
+              onSuccess={handleSuccess}
             />
           </div>
         </SheetContent>

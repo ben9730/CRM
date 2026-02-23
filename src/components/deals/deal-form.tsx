@@ -5,6 +5,7 @@ import { useFormStatus } from 'react-dom'
 import { toast } from 'sonner'
 import { createDeal, updateDeal } from '@/lib/actions/deals'
 import type { DealWithRelations, PipelineStageRow, ActionState } from '@/lib/types/app'
+// ActionState now carries optional deal for optimistic Kanban update
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -34,7 +35,7 @@ interface DealFormProps {
   stages: PipelineStageRow[]
   organizations: OrgOption[]
   contacts?: ContactOption[]
-  onSuccess?: () => void
+  onSuccess?: (deal?: DealWithRelations) => void
 }
 
 function SubmitButton({ isEdit }: { isEdit: boolean }) {
@@ -67,7 +68,7 @@ export function DealForm({ deal, stages, organizations, contacts = [], onSuccess
   useEffect(() => {
     if (state?.success) {
       toast.success(state.success)
-      onSuccess?.()
+      onSuccess?.(state.deal)
     }
     if (state?.error) {
       toast.error(state.error)

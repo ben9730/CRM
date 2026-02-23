@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import {
   DndContext,
   DragEndEvent,
@@ -18,15 +18,20 @@ import { KanbanColumn } from './kanban-column'
 import { DealCard } from './deal-card'
 
 interface KanbanBoardProps {
-  initialDeals: DealWithRelations[]
+  deals: DealWithRelations[]
   stages: PipelineStageRow[]
-  onNewDeal?: () => void
+  onDealsChange?: (deals: DealWithRelations[]) => void
 }
 
-export function KanbanBoard({ initialDeals, stages, onNewDeal }: KanbanBoardProps) {
-  const [deals, setDeals] = useState<DealWithRelations[]>(initialDeals)
+export function KanbanBoard({ deals, stages, onDealsChange }: KanbanBoardProps) {
+  const [localDeals, setLocalDeals] = useState<DealWithRelations[]>(deals)
   const [activeId, setActiveId] = useState<string | null>(null)
   const [, startTransition] = useTransition()
+
+  // Sync local state when parent updates deals (e.g., after new deal added)
+  useEffect(() => {
+    setLocalDeals(deals)
+  }, [deals])
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -34,7 +39,7 @@ export function KanbanBoard({ initialDeals, stages, onNewDeal }: KanbanBoardProp
     })
   )
 
-  const activeDeal = activeId ? deals.find((d) => d.id === activeId) ?? null : null
+  const activeDeal = activeId ? localDeals.find((d) => d.id === activeId) ?? null : null
   const activeStage = activeDeal
     ? stages.find((s) => s.id === activeDeal.stage_id) ?? null
     : null
@@ -54,35 +59,36 @@ export function KanbanBoard({ initialDeals, stages, onNewDeal }: KanbanBoardProp
     // Determine target stage: either dropped on a column (stage.id) or on a deal card
     const targetStageId = stages.some((s) => s.id === overId)
       ? overId
-      : deals.find((d) => d.id === overId)?.stage_id
+      : localDeals.find((d) => d.id === overId)?.stage_id
 
     if (!targetStageId) return
 
-    const currentDeal = deals.find((d) => d.id === dealId)
+    const currentDeal = localDeals.find((d) => d.id === dealId)
     if (!currentDeal || currentDeal.stage_id === targetStageId) return
 
     // Snapshot for rollback
-    const snapshot = [...deals]
+    const snapshot = [...localDeals]
 
     // Optimistic update: move deal to new stage immediately
     const targetStage = stages.find((s) => s.id === targetStageId) ?? null
-    setDeals((prev) =>
-      prev.map((d) =>
-        d.id === dealId
-          ? {
-              ...d,
-              stage_id: targetStageId,
-              pipeline_stages: targetStage,
-            }
-          : d
-      )
+    const updatedDeals = localDeals.map((d) =>
+      d.id === dealId
+        ? {
+            ...d,
+            stage_id: targetStageId,
+            pipeline_stages: targetStage,
+          }
+        : d
     )
+    setLocalDeals(updatedDeals)
+    onDealsChange?.(updatedDeals)
 
     // Persist to DB — roll back on error
     startTransition(async () => {
       const result = await moveDealStage(dealId, targetStageId)
       if (result?.error) {
-        setDeals(snapshot)
+        setLocalDeals(snapshot)
+        onDealsChange?.(snapshot)
         toast.error(`Failed to move deal: ${result.error}`)
       }
     })
@@ -91,7 +97,7 @@ export function KanbanBoard({ initialDeals, stages, onNewDeal }: KanbanBoardProp
   // Group deals by stage_id
   const dealsByStage: Record<string, DealWithRelations[]> = {}
   for (const stage of stages) {
-    dealsByStage[stage.id] = deals.filter((d) => d.stage_id === stage.id)
+    dealsByStage[stage.id] = localDeals.filter((d) => d.stage_id === stage.id)
   }
 
   return (

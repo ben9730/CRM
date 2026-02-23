@@ -33,7 +33,7 @@ export type PaginatedResult<T> = {
 }
 
 // Generic server action state (matches AuthState pattern from auth.ts)
-export type ActionState = { error?: string; success?: string } | undefined
+export type ActionState = { error?: string; success?: string; deal?: DealWithRelations } | undefined
 
 // Deal with full relations for Kanban board and detail page
 export type DealWithRelations = DealRow & {
