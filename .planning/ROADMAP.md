@@ -81,12 +81,12 @@ Plans:
   1. User can export contacts, organizations, and deals each as a downloadable CSV file
   2. Security review is complete — auth endpoints, RLS policies, API routes, and data handling have been audited using the security-reviewer agent with no critical findings unresolved
   3. The application is live in production on Vercel + Supabase, accessible from any location, with no build errors and passing end-to-end tests
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 04-01: CSV export for contacts, organizations, and deals
-- [ ] 04-02: Security review (security-reviewer agent audit) and E2E test suite (e2e-runner)
-- [ ] 04-03: Production deployment verification and responsive polish
+- [ ] 04-01-PLAN.md — CSV export (contacts, orgs, deals) + UX polish (global search page, avatar dropdown, task auto-linking)
+- [ ] 04-02-PLAN.md — Security review (security-reviewer agent + Supabase MCP advisors) + Playwright E2E test suite
+- [ ] 04-03-PLAN.md — Production deployment verification, responsive polish, and final sign-off
 
 ## Progress
 
