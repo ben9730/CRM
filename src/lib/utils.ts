@@ -17,3 +17,11 @@ export function getLocalToday(): string {
     String(now.getDate()).padStart(2, '0'),
   ].join('-')
 }
+
+/**
+ * Extracts the YYYY-MM-DD date portion from a date string.
+ * Handles both "2026-02-23" and "2026-02-23T00:00:00+00:00" formats.
+ */
+export function toDateOnly(dateStr: string): string {
+  return dateStr.split('T')[0]
+}

@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { getLocalToday } from '@/lib/utils'
+import { getLocalToday, toDateOnly } from '@/lib/utils'
 import type { InteractionWithRelations } from '@/lib/types/app'
 
 interface PipelineStageMetric {
@@ -123,14 +123,14 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const tasks = tasksResult.data ?? []
   if (tasksResult.error) console.error('getDashboardMetrics tasks error:', tasksResult.error)
 
-  const tasksDueToday = tasks.filter((t) => t.due_date === today).length
+  const tasksDueToday = tasks.filter((t) => t.due_date && toDateOnly(t.due_date) === today).length
   const overdueTaskCount = tasks.filter(
-    (t) => t.due_date && t.due_date < today
+    (t) => t.due_date && toDateOnly(t.due_date) < today
   ).length
 
   // Upcoming tasks: due today or in future, next 6
   const upcomingTasks = tasks
-    .filter((t) => !t.due_date || t.due_date >= today)
+    .filter((t) => !t.due_date || toDateOnly(t.due_date) >= today)
     .slice(0, 6)
     .map((t) => ({
       ...t,

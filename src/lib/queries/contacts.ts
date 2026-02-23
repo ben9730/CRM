@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { getLocalToday } from '@/lib/utils'
+import { getLocalToday, toDateOnly } from '@/lib/utils'
 import type { ContactWithOrgs, InteractionWithRelations, PaginatedResult, TaskWithRelations } from '@/lib/types/app'
 
 const DEFAULT_PAGE_SIZE = 20
@@ -188,7 +188,7 @@ export async function getContactTasks(contactId: string): Promise<TaskWithRelati
       ...raw,
       contacts: raw.contacts ?? null,
       deals: raw.deals ?? null,
-      isOverdue: !raw.is_complete && !!raw.due_date && raw.due_date < today,
+      isOverdue: !raw.is_complete && !!raw.due_date && toDateOnly(raw.due_date) < today,
     } as TaskWithRelations
   })
 }
