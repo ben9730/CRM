@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** Sales and account management teams can track every customer relationship, deal, and interaction in one place — so nothing falls through the cracks.
-**Current focus:** Phase 3 COMPLETE (all 5 plans done) — ready for Phase 4 (Polish & Launch)
+**Current focus:** Phase 3 COMPLETE (all 6 plans done, 8/8 UAT passing) — ready for Phase 4 (Polish & Launch)
 
 ## Current Position
 
 Phase: 3 of 4 (Integration & Features) — COMPLETE
-Plan: 5 of 5 complete — 03-01 (orgs+contacts), 03-02 (deals/kanban), 03-03 (interactions/tasks/dashboard), 03-04 (Select crash + RLS fix), 03-05 (UAT gap closure) all done
-Status: Phase 3 complete — all UAT issues resolved; Kanban instant update, deal contacts, header search, user initials all working
-Last activity: 2026-02-23 — Kanban optimistic update, deal contacts empty state, header search navigation, real user initials from profile
+Plan: 6 of 6 complete — 03-01 (orgs+contacts), 03-02 (deals/kanban), 03-03 (interactions/tasks/dashboard), 03-04 (Select crash + RLS fix), 03-05 (UAT gap closure), 03-06 (RLS SELECT + task priority enum + deal form double-fire)
+Status: Phase 3 complete — all UAT issues resolved, all 8 UAT tests passing
+Last activity: 2026-02-23 — RLS SELECT policy fix, task priority enum fix, deal form useEffect double-fire fix
 
 Progress: [██████████] 100% (Phase 3) — overall project ~75% complete (3 of 4 phases)
 
@@ -29,7 +29,7 @@ Progress: [██████████] 100% (Phase 3) — overall project ~7
 |-------|-------|-------|----------|
 | 01-frontend-design-ui | 3 | ~20 min | ~7 min |
 | 02-backend-data-layer | 4/4 | ~54 min | ~14 min |
-| 03-integration-features | 5/5 | 55 min | 11 min |
+| 03-integration-features | 6/6 | ~60 min | ~10 min |
 
 **Recent Trend:**
 - Last 5 plans: 4 min, approval, 12 min, 24 min, 13 min, 14 min
@@ -102,5 +102,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 03-05-PLAN.md — UAT gap closure complete; Phase 3 fully done
+Stopped at: Completed 03-06-PLAN.md — final UAT gap closure; Phase 3 fully done, 8/8 UAT passing
 Resume file: .planning/phases/04-polish-launch/ (next phase)
