@@ -164,7 +164,7 @@ export function TaskForm({
               <SelectValue placeholder="Select contact (optional)" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">None</SelectItem>
+              <SelectItem value="__none__">None</SelectItem>
               {contacts.map((c) => (
                 <SelectItem key={c.id} value={c.id}>
                   {c.first_name} {c.last_name}
@@ -189,7 +189,7 @@ export function TaskForm({
               <SelectValue placeholder="Select deal (optional)" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">None</SelectItem>
+              <SelectItem value="__none__">None</SelectItem>
               {deals.map((d) => (
                 <SelectItem key={d.id} value={d.id}>
                   {d.title}

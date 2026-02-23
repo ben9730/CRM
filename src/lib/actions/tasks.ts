@@ -21,11 +21,11 @@ const TaskSchema = z.object({
     z.enum(['low', 'medium', 'high']).optional()
   ),
   contact_id: z.preprocess(
-    (v) => (v === '' || v === null || v === undefined ? undefined : v),
+    (v) => (v === '' || v === '__none__' || v === null || v === undefined ? undefined : v),
     z.string().uuid('Invalid contact').optional()
   ),
   deal_id: z.preprocess(
-    (v) => (v === '' || v === null || v === undefined ? undefined : v),
+    (v) => (v === '' || v === '__none__' || v === null || v === undefined ? undefined : v),
     z.string().uuid('Invalid deal').optional()
   ),
 })
