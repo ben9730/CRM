@@ -6,12 +6,23 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { signOut } from "@/lib/actions/auth";
 
 interface AppHeaderProps {
   userInitials: string
+  userName?: string
+  userEmail?: string
 }
 
-export function AppHeader({ userInitials }: AppHeaderProps) {
+export function AppHeader({ userInitials, userName, userEmail }: AppHeaderProps) {
   const router = useRouter()
 
   function handleSearch(e: React.FormEvent<HTMLFormElement>) {
@@ -19,7 +30,7 @@ export function AppHeader({ userInitials }: AppHeaderProps) {
     const formData = new FormData(e.currentTarget)
     const query = (formData.get('search') as string)?.trim()
     if (!query) return
-    router.push(`/contacts?search=${encodeURIComponent(query)}`)
+    router.push(`/search?q=${encodeURIComponent(query)}`)
   }
 
   return (
@@ -39,11 +50,41 @@ export function AppHeader({ userInitials }: AppHeaderProps) {
         </div>
       </form>
 
-      <Avatar className="h-7 w-7 cursor-pointer ring-1 ring-border hover:ring-primary/50 transition-all">
-        <AvatarFallback className="text-xs bg-secondary text-secondary-foreground font-medium">
-          {userInitials}
-        </AvatarFallback>
-      </Avatar>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Avatar className="h-7 w-7 cursor-pointer ring-1 ring-border hover:ring-primary/50 transition-all">
+            <AvatarFallback className="text-xs bg-secondary text-secondary-foreground font-medium">
+              {userInitials}
+            </AvatarFallback>
+          </Avatar>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuLabel className="py-2">
+            {userName && (
+              <p className="text-sm font-semibold text-foreground leading-tight">{userName}</p>
+            )}
+            {userEmail && (
+              <p className="text-xs text-muted-foreground/70 font-normal mt-0.5 leading-tight truncate">
+                {userEmail}
+              </p>
+            )}
+            {!userName && !userEmail && (
+              <p className="text-sm font-semibold text-foreground">Account</p>
+            )}
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <form action={signOut} className="w-full">
+              <button
+                type="submit"
+                className="w-full text-left text-sm cursor-pointer text-muted-foreground hover:text-foreground"
+              >
+                Log out
+              </button>
+            </form>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </header>
   );
 }

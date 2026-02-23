@@ -14,6 +14,8 @@ export async function AppShell({ children }: AppShellProps) {
   // Fetch overdue task count and user profile in parallel
   let overdueCount = 0
   let userInitials = 'U'
+  let userName: string | undefined
+  let userEmail: string | undefined
 
   try {
     const [taskCount, { data: { user } }] = await Promise.all([
@@ -36,6 +38,9 @@ export async function AppShell({ children }: AppShellProps) {
         parts.length >= 2
           ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
           : (parts[0]?.[0] ?? 'U').toUpperCase()
+
+      userName = profile?.full_name ?? undefined
+      userEmail = user.email ?? undefined
     }
   } catch {
     // Not critical — sidebar badge and initials are optional
@@ -45,7 +50,7 @@ export async function AppShell({ children }: AppShellProps) {
     <SidebarProvider>
       <AppSidebar overdueTaskCount={overdueCount} />
       <main className="flex-1 flex flex-col min-h-screen overflow-hidden">
-        <AppHeader userInitials={userInitials} />
+        <AppHeader userInitials={userInitials} userName={userName} userEmail={userEmail} />
         <div className="flex-1 overflow-auto">
           {children}
         </div>
