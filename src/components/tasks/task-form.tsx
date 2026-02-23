@@ -77,8 +77,8 @@ export function TaskForm({
     }
   }, [state, onSuccess])
 
-  const defaultContactId_ = task?.contact_id ?? defaultContactId ?? ''
-  const defaultDealId_ = task?.deal_id ?? defaultDealId ?? ''
+  const defaultContactId_ = task?.contact_id ?? defaultContactId ?? '__none__'
+  const defaultDealId_ = task?.deal_id ?? defaultDealId ?? '__none__'
 
   return (
     <form action={formAction} className="space-y-4">

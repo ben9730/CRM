@@ -93,8 +93,8 @@ export function InteractionForm({
 
   const defaultType = interaction?.type ?? 'note'
   const defaultOccurredAt = toDatetimeLocal(interaction?.occurred_at)
-  const defaultContactId_ = interaction?.contact_id ?? defaultContactId ?? ''
-  const defaultDealId_ = interaction?.deal_id ?? defaultDealId ?? ''
+  const defaultContactId_ = interaction?.contact_id ?? defaultContactId ?? '__none__'
+  const defaultDealId_ = interaction?.deal_id ?? defaultDealId ?? '__none__'
 
   return (
     <form ref={formRef} action={formAction} className="space-y-4">
