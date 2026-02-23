@@ -73,9 +73,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Data Management
 
-- [ ] **DATA-01**: User can export contacts to CSV
-- [ ] **DATA-02**: User can export organizations to CSV
-- [ ] **DATA-03**: User can export deals to CSV
+- [x] **DATA-01**: User can export contacts to CSV
+- [x] **DATA-02**: User can export organizations to CSV
+- [x] **DATA-03**: User can export deals to CSV
 
 ### Architecture & Infrastructure
 
@@ -175,9 +175,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DASH-03 | Phase 3 | Complete |
 | DASH-04 | Phase 3 | Complete |
 | DASH-05 | Phase 3 | Complete |
-| DATA-01 | Phase 4 | Pending |
-| DATA-02 | Phase 4 | Pending |
-| DATA-03 | Phase 4 | Pending |
+| DATA-01 | Phase 4 | Complete |
+| DATA-02 | Phase 4 | Complete |
+| DATA-03 | Phase 4 | Complete |
 | ARCH-01 | Phase 2 | Complete (02-02) |
 | ARCH-02 | Phase 2 | Complete (02-02) |
 | ARCH-03 | Phase 2 | Complete (02-02) |

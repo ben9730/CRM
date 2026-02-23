@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** Sales and account management teams can track every customer relationship, deal, and interaction in one place — so nothing falls through the cracks.
-**Current focus:** Phase 3 COMPLETE (all 6 plans done, 8/8 UAT passing) — ready for Phase 4 (Polish & Launch)
+**Current focus:** Phase 4 IN PROGRESS (plan 1 of 3 done) — CSV export, global search, avatar dropdown complete
 
 ## Current Position
 
-Phase: 3 of 4 (Integration & Features) — COMPLETE
-Plan: 6 of 6 complete — 03-01 (orgs+contacts), 03-02 (deals/kanban), 03-03 (interactions/tasks/dashboard), 03-04 (Select crash + RLS fix), 03-05 (UAT gap closure), 03-06 (RLS SELECT + task priority enum + deal form double-fire)
-Status: Phase 3 complete — all UAT issues resolved, all 8 UAT tests passing
-Last activity: 2026-02-23 — RLS SELECT policy fix, task priority enum fix, deal form useEffect double-fire fix
+Phase: 4 of 4 (Polish & Production) — IN PROGRESS
+Plan: 1 of 3 complete — 04-01 (CSV export + global search + avatar dropdown)
+Status: Phase 4 active — DATA-01/02/03 requirements complete, build passing
+Last activity: 2026-02-23 — CSV export Route Handler, /search page, DropdownMenu avatar, signOut wired
 
-Progress: [██████████] 100% (Phase 3) — overall project ~75% complete (3 of 4 phases)
+Progress: [██░░░░░░░░] ~85% complete overall (phase 4 at 1/3 plans)
 
 ## Performance Metrics
 
@@ -37,6 +37,7 @@ Progress: [██████████] 100% (Phase 3) — overall project ~7
 
 *Updated after each plan completion*
 | Phase 03-integration-features P05 | 277 | 2 tasks | 10 files |
+| Phase 04-polish-production P01 | 15 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,9 @@ Recent decisions affecting current work:
 - [Phase 03-05]: KanbanPageClient wraps DealCreateButton+KanbanBoard for shared useState scope — avoids Server Component boundary limitation
 - [Phase 03-05]: createDeal returns DealWithRelations for optimistic Kanban update; ActionState extended with optional deal field
 - [Phase 03-05]: AppShell uses Promise.all for parallel fetch of overdueTaskCount+user profile; passes userInitials to AppHeader
+- [Phase 04-polish-production]: Deals search uses ilike on title (no search_vector on deals table)
+- [Phase 04-polish-production]: UTF-8 BOM prepended to CSV exports for Excel/Hebrew compatibility
+- [Phase 04-polish-production]: Avatar dropdown minimal: name, email, logout only
 
 ### Pending Todos
 
@@ -102,5 +106,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 03-06-PLAN.md — final UAT gap closure; Phase 3 fully done, 8/8 UAT passing
-Resume file: .planning/phases/04-polish-launch/ (next phase)
+Stopped at: Completed 04-01-PLAN.md — CSV export, global search, avatar dropdown; DATA-01/02/03 done
+Resume file: .planning/phases/04-polish-production/ (04-02 next)
