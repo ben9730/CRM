@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** Sales and account management teams can track every customer relationship, deal, and interaction in one place — so nothing falls through the cracks.
-**Current focus:** Phase 3 COMPLETE — all 3 plans done; ready for Phase 4 (Polish & Launch)
+**Current focus:** Phase 3 gap closure in progress — 03-04 done (Select crash + RLS delete fix); 03-05 pending
 
 ## Current Position
 
-Phase: 3 of 4 (Integration & Features) — COMPLETE
-Plan: 3 of 3 complete in current phase — 03-01 (orgs+contacts), 03-02 (deals/kanban), 03-03 (interactions/tasks/dashboard) all done
-Status: Phase 3 complete — entire CRM is functional with live Supabase data
-Last activity: 2026-02-22 — interactions/tasks/dashboard wired to live data; Phase 3 complete
+Phase: 3 of 4 (Integration & Features) — gap closure plans in progress
+Plan: 4 of 5 in phase — 03-01 (orgs+contacts), 03-02 (deals/kanban), 03-03 (interactions/tasks/dashboard), 03-04 (Select crash + RLS fix) done; 03-05 (remaining UAT issues) pending
+Status: Gap closure 03-04 complete — Select crash fixed, organization delete RLS fixed
+Last activity: 2026-02-23 — fixed Select empty-string crash in forms and org delete RLS WITH CHECK violation
 
-Progress: [██████████] 100% (Phase 3) — overall project ~75% complete (3 of 4 phases)
+Progress: [█████████░] 90% (Phase 3) — overall project ~73% complete (3+ of 4 phases)
 
 ## Performance Metrics
 
@@ -29,13 +29,14 @@ Progress: [██████████] 100% (Phase 3) — overall project ~7
 |-------|-------|-------|----------|
 | 01-frontend-design-ui | 3 | ~20 min | ~7 min |
 | 02-backend-data-layer | 4/4 | ~54 min | ~14 min |
-| 03-integration-features | 3/3 | 45 min | 15 min |
+| 03-integration-features | 4/5 | 50 min | 12 min |
 
 **Recent Trend:**
 - Last 5 plans: 4 min, approval, 12 min, 24 min, 13 min, 14 min
 - Trend: stable
 
 *Updated after each plan completion*
+| Phase 03-integration-features P05 | 277 | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,11 @@ Recent decisions affecting current work:
 - [03-03]: getDashboardMetrics uses Promise.all for parallel aggregation — avoids sequential waterfall
 - [03-03]: isOverdue computed application-side at query time (due_date < today && !is_complete)
 - [03-03]: InteractionFormModal uses Dialog (not Sheet) — quick-log pattern for interactions
+- [03-04]: Radix Select defaultValue must never be empty string — use '__none__' sentinel (already supported by Zod preprocessors)
+- [03-04]: RLS UPDATE policies use USING only (no WITH CHECK) for all soft-delete tables — account_id never changes via app, WITH CHECK triggers false failure on soft-delete
+- [Phase 03-05]: KanbanPageClient wraps DealCreateButton+KanbanBoard for shared useState scope — avoids Server Component boundary limitation
+- [Phase 03-05]: createDeal returns DealWithRelations for optimistic Kanban update; ActionState extended with optional deal field
+- [Phase 03-05]: AppShell uses Promise.all for parallel fetch of overdueTaskCount+user profile; passes userInitials to AppHeader
 
 ### Pending Todos
 
@@ -95,6 +101,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-22
-Stopped at: Completed 03-03-PLAN.md — interactions/tasks/dashboard wired to live Supabase data, Phase 3 complete
-Resume file: .planning/phases/04-polish-launch/ (next phase)
+Last session: 2026-02-23
+Stopped at: Completed 03-04-PLAN.md — Select crash and RLS delete fix applied; 03-05 remaining
+Resume file: .planning/phases/03-integration-features/03-05-PLAN.md (gap closure plan 5)
