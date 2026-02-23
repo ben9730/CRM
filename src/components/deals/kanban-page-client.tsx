@@ -45,8 +45,8 @@ export function KanbanPageClient({
   return (
     <div className="flex flex-col h-full gap-0">
       {/* Page header */}
-      <div className="flex-shrink-0 px-6 pt-6 pb-5 border-b border-border/30">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex-shrink-0 px-4 sm:px-6 pt-4 sm:pt-6 pb-4 sm:pb-5 border-b border-border/30">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
@@ -56,18 +56,18 @@ export function KanbanPageClient({
                 Deal Pipeline
               </h1>
             </div>
-            <div className="flex items-center gap-4 pl-10">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pl-10">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <span>Pipeline value:</span>
                 <span className="text-gradient-violet font-bold text-sm">
                   {totalPipelineValue}
                 </span>
               </div>
-              <div className="h-3 w-px bg-border/60" />
+              <div className="hidden sm:block h-3 w-px bg-border/60" />
               <span className="text-xs text-muted-foreground">
                 <span className="text-foreground/70 font-medium">{activeDeals}</span> active
               </span>
-              <div className="h-3 w-px bg-border/60" />
+              <div className="hidden sm:block h-3 w-px bg-border/60" />
               <span className="text-xs text-muted-foreground">
                 <span className="text-emerald-400 font-medium">{wonDeals}</span> won
               </span>
@@ -75,7 +75,7 @@ export function KanbanPageClient({
           </div>
 
           {/* Actions: Export + New Deal */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <ExportButton entity="deals" />
             <DealCreateButton
               stages={stages}

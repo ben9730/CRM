@@ -107,7 +107,7 @@ export function KanbanBoard({ deals, stages, onDealsChange }: KanbanBoardProps) 
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-3 h-full overflow-x-auto overflow-y-hidden px-6 py-5 pb-6">
+      <div className="flex gap-3 h-full overflow-x-auto overflow-y-hidden px-4 sm:px-6 py-4 sm:py-5 pb-5 sm:pb-6">
         {stages.map((stage, index) => (
           <KanbanColumn
             key={stage.id}
