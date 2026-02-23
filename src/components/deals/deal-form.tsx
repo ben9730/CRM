@@ -73,7 +73,7 @@ export function DealForm({ deal, stages, organizations, contacts = [], onSuccess
     if (state?.error) {
       toast.error(state.error)
     }
-  }, [state, onSuccess])
+  }, [state])
 
   function toggleContact(contactId: string) {
     setSelectedContacts((prev) =>
