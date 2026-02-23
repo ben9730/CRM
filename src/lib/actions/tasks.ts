@@ -18,7 +18,7 @@ const TaskSchema = z.object({
   ),
   priority: z.preprocess(
     (v) => (v === '' || v === null || v === undefined ? undefined : v),
-    z.enum(['low', 'medium', 'high']).optional()
+    z.enum(['low', 'normal', 'high']).optional()
   ),
   contact_id: z.preprocess(
     (v) => (v === '' || v === '__none__' || v === null || v === undefined ? undefined : v),

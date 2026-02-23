@@ -135,7 +135,7 @@ export function TaskForm({
         <Label htmlFor="priority" className="text-xs text-muted-foreground/80">
           Priority
         </Label>
-        <Select name="priority" defaultValue={task?.priority ?? 'medium'}>
+        <Select name="priority" defaultValue={task?.priority ?? 'normal'}>
           <SelectTrigger
             id="priority"
             className="border-white/10 bg-white/4 focus:border-primary/40"
@@ -144,7 +144,7 @@ export function TaskForm({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="low">Low</SelectItem>
-            <SelectItem value="medium">Medium</SelectItem>
+            <SelectItem value="normal">Medium</SelectItem>
             <SelectItem value="high">High</SelectItem>
           </SelectContent>
         </Select>
