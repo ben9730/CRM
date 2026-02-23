@@ -1,5 +1,5 @@
 ---
-status: complete
+status: resolved
 phase: 04-polish-production
 source: 04-01-SUMMARY.md, 04-02-SUMMARY.md, 04-03-SUMMARY.md
 started: 2026-02-23T15:00:00Z
@@ -70,11 +70,15 @@ skipped: 1
 ## Gaps
 
 - truth: "Task form includes a 'Linked Contact' field, and creating a task from a contact detail page pre-selects that contact"
-  status: failed
+  status: resolved
   reason: "User reported: Task form has no 'Linked Contact' field at all — only Title, Description, Due Date, Priority, and Linked Deal. Cannot assign task to contact, and auto-linking from contact page doesn't work."
   severity: major
   test: 7
-  root_cause: ""
-  artifacts: []
-  missing: []
+  root_cause: "LinkedTasks component call in contact-detail-client.tsx was missing the allContacts prop. The contacts list defaulted to [], causing the Linked Contact field (guarded by contacts.length > 0) to never render."
+  artifacts:
+    - path: "src/components/contact-detail/contact-detail-client.tsx"
+      issue: "Missing allContacts prop on LinkedTasks component"
+  missing:
+    - "Add allContacts prop to LinkedTasks call"
   debug_session: ""
+  fix: "Added allContacts prop to LinkedTasks in contact-detail-client.tsx line 54"

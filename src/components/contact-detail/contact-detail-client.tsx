@@ -51,7 +51,7 @@ export function ContactDetailClient({
       {/* Middle section: Linked entities */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 animate-fade-in animate-delay-2">
         <LinkedDeals deals={deals} />
-        <LinkedTasks tasks={tasks} contactId={contact.id} allDeals={allDeals} />
+        <LinkedTasks tasks={tasks} contactId={contact.id} allContacts={allContacts} allDeals={allDeals} />
       </div>
 
       {/* Interaction timeline */}
