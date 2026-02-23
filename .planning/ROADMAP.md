@@ -63,12 +63,14 @@ Plans:
   3. User can log interactions (calls, emails, meetings, notes) linked to contacts and/or deals — interactions appear as a chronological timeline on contact detail and deal detail pages
   4. User can create, complete, edit, and delete tasks linked to contacts and/or deals — overdue tasks are visually flagged and a filtered task list view works by status
   5. Dashboard is the landing page after login — it shows pipeline value by stage, deal count, tasks due today, overdue task count, and a recent activity feed
-**Plans:** 3/3 plans complete
+**Plans:** 5 plans (3 original + 2 gap closure)
 
 Plans:
 - [ ] 03-01-PLAN.md — Shared foundation + organizations CRUD + contacts CRUD (search, filter, tags, multi-org junction, pagination)
 - [ ] 03-02-PLAN.md — Deal_contacts migration + deals CRUD + pipeline Kanban (optimistic drag-and-drop, stage metrics)
 - [ ] 03-03-PLAN.md — Interactions CRUD + tasks CRUD (overdue flagging, status filtering) + dashboard wiring (live metrics) + code review
+- [ ] 03-04-PLAN.md — Gap closure: fix crash blockers (Select empty defaultValue in interaction/task forms) + org delete RLS fix
+- [ ] 03-05-PLAN.md — Gap closure: Kanban instant update after deal creation + deal detail linked contacts + header search + header user initials
 
 ### Phase 4: Polish & Production
 **Goal**: The application is production-ready — data is exportable, security is audited, and the product is deployed and accessible to the team
