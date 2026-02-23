@@ -63,7 +63,7 @@ Plans:
   3. User can log interactions (calls, emails, meetings, notes) linked to contacts and/or deals — interactions appear as a chronological timeline on contact detail and deal detail pages
   4. User can create, complete, edit, and delete tasks linked to contacts and/or deals — overdue tasks are visually flagged and a filtered task list view works by status
   5. Dashboard is the landing page after login — it shows pipeline value by stage, deal count, tasks due today, overdue task count, and a recent activity feed
-**Plans:** 5/5 plans complete
+**Plans:** 6 plans
 
 Plans:
 - [ ] 03-01-PLAN.md — Shared foundation + organizations CRUD + contacts CRUD (search, filter, tags, multi-org junction, pagination)
@@ -71,6 +71,7 @@ Plans:
 - [ ] 03-03-PLAN.md — Interactions CRUD + tasks CRUD (overdue flagging, status filtering) + dashboard wiring (live metrics) + code review
 - [ ] 03-04-PLAN.md — Gap closure: fix crash blockers (Select empty defaultValue in interaction/task forms) + org delete RLS fix
 - [ ] 03-05-PLAN.md — Gap closure: Kanban instant update after deal creation + deal detail linked contacts + header search + header user initials
+- [ ] 03-06-PLAN.md — Gap closure: RLS SELECT policy fix (all 5 tables) + task priority enum fix + deal form double-fire fix
 
 ### Phase 4: Polish & Production
 **Goal**: The application is production-ready — data is exportable, security is audited, and the product is deployed and accessible to the team
@@ -96,5 +97,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Frontend Design & UI | 3/3 | Complete | 2026-02-22 |
 | 2. Backend & Data Layer | 4/4 | Complete | 2026-02-22 |
-| 3. Integration & Features | 5/5 | Complete   | 2026-02-23 |
+| 3. Integration & Features | 5/6 | In Progress | - |
 | 4. Polish & Production | 0/3 | Not started | - |
