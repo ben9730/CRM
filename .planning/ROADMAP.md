@@ -84,9 +84,9 @@ Plans:
 **Plans:** 3/3 plans complete
 
 Plans:
-- [ ] 04-01-PLAN.md — CSV export (contacts, orgs, deals) + UX polish (global search page, avatar dropdown, task auto-linking)
-- [ ] 04-02-PLAN.md — Security review (security-reviewer agent + Supabase MCP advisors) + Playwright E2E test suite
-- [ ] 04-03-PLAN.md — Production deployment verification, responsive polish, and final sign-off
+- [x] 04-01-PLAN.md — CSV export (contacts, orgs, deals) + UX polish (global search page, avatar dropdown, task auto-linking)
+- [x] 04-02-PLAN.md — Security review (security-reviewer agent + Supabase MCP advisors) + Playwright E2E test suite
+- [x] 04-03-PLAN.md — Production deployment verification, responsive polish, and final sign-off
 
 ## Progress
 
