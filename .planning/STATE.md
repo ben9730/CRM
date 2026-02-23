@@ -38,6 +38,7 @@ Progress: [██░░░░░░░░] ~85% complete overall (phase 4 at 1/3
 *Updated after each plan completion*
 | Phase 03-integration-features P05 | 277 | 2 tasks | 10 files |
 | Phase 04-polish-production P01 | 15 | 2 tasks | 8 files |
+| Phase 04-polish-production P02 | 4 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -94,6 +95,8 @@ Recent decisions affecting current work:
 - [Phase 04-polish-production]: Deals search uses ilike on title (no search_vector on deals table)
 - [Phase 04-polish-production]: UTF-8 BOM prepended to CSV exports for Excel/Hebrew compatibility
 - [Phase 04-polish-production]: Avatar dropdown minimal: name, email, logout only
+- [Phase 04-polish-production]: DnD E2E test falls back to keyboard attempt — @dnd-kit ignores HTML5 drag events (Playwright dragTo limitation)
+- [Phase 04-polish-production]: Security review complete: 0 critical/high findings; rate limiting and CSP accepted as medium/low for known-user CRM
 
 ### Pending Todos
 

@@ -91,7 +91,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **PROC-01**: Frontend design phase completed and approved BEFORE any backend implementation
 - [ ] **PROC-02**: Phase ordering strictly follows: Frontend Design → Backend & Data → Integration → Polish
 - [x] **PROC-03**: Code reviewed using `code-reviewer` agent after each major implementation step
-- [ ] **PROC-04**: Security reviewed using `security-reviewer` agent before production deployment
+- [x] **PROC-04**: Security reviewed using `security-reviewer` agent before production deployment
 
 ## v2 Requirements
 
@@ -187,7 +187,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PROC-01 | Phase 1 | Pending |
 | PROC-02 | Phase 1 | Pending |
 | PROC-03 | Phase 3 | Complete |
-| PROC-04 | Phase 4 | Pending |
+| PROC-04 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 53 total
