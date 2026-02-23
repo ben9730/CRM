@@ -1,18 +1,14 @@
 ---
-status: testing
+status: complete
 phase: 03-integration-features
 source: 03-01-SUMMARY.md, 03-02-SUMMARY.md, 03-03-SUMMARY.md
 started: 2026-02-23T10:00:00Z
-updated: 2026-02-23T10:00:00Z
+updated: 2026-02-23T12:00:00Z
 ---
 
 ## Current Test
 
-number: 15
-name: Overdue Task Flagging & Status Filter
-expected: |
-  Tasks past their due date show red text and a warning icon. On /tasks page, filter tabs (All/Pending/Completed/Overdue) filter correctly. Overdue tab shows only past-due incomplete tasks.
-awaiting: user response
+[testing complete]
 
 ## Tests
 
@@ -88,22 +84,22 @@ severity: blocker
 
 ### 15. Overdue Task Flagging & Status Filter
 expected: Tasks past their due date (and not completed) show red text and a warning icon. On /tasks page, filter tabs (All/Pending/Completed/Overdue) filter the list correctly. Overdue tab shows only past-due incomplete tasks.
-result: [pending]
+result: pass
 
 ### 16. Sidebar Overdue Badge
 expected: In the left sidebar, the "Tasks" navigation item shows a red badge with the count of overdue tasks. The number matches the actual overdue count.
-result: [pending]
+result: pass
 
 ### 17. Dashboard Live Metrics
 expected: Navigate to /dashboard (or it's the landing page after login). Four widgets visible: Metrics Cards (deal count, pipeline value, tasks due today, overdue count), Pipeline Summary (bar chart by stage with colors), Tasks Widget (due today list), Activity Feed (recent interactions). All show live data, not mock/placeholder values.
-result: [pending]
+result: pass
 
 ## Summary
 
 total: 17
-passed: 7
+passed: 10
 issues: 8
-pending: 3
+pending: 0
 skipped: 0
 
 ## Gaps
