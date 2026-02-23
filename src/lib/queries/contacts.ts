@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getLocalToday } from '@/lib/utils'
 import type { ContactWithOrgs, InteractionWithRelations, PaginatedResult, TaskWithRelations } from '@/lib/types/app'
 
 const DEFAULT_PAGE_SIZE = 20
@@ -167,7 +168,7 @@ export async function getContactDeals(contactId: string) {
 export async function getContactTasks(contactId: string): Promise<TaskWithRelations[]> {
   const supabase = await createClient()
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = getLocalToday()
 
   const { data, error } = await supabase
     .from('tasks')

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getLocalToday } from '@/lib/utils'
 import type { TaskWithRelations, PaginatedResult } from '@/lib/types/app'
 
 const DEFAULT_PAGE_SIZE = 20
@@ -19,7 +20,7 @@ export async function getTasks(
   const supabase = await createClient()
   const { status, page = 1, pageSize = DEFAULT_PAGE_SIZE } = options
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = getLocalToday()
 
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1
@@ -80,7 +81,7 @@ export async function getTasks(
  */
 export async function getTasksByContact(contactId: string): Promise<TaskWithRelations[]> {
   const supabase = await createClient()
-  const today = new Date().toISOString().split('T')[0]
+  const today = getLocalToday()
 
   const { data, error } = await supabase
     .from('tasks')
@@ -113,7 +114,7 @@ export async function getTasksByContact(contactId: string): Promise<TaskWithRela
  */
 export async function getTasksByDeal(dealId: string): Promise<TaskWithRelations[]> {
   const supabase = await createClient()
-  const today = new Date().toISOString().split('T')[0]
+  const today = getLocalToday()
 
   const { data, error } = await supabase
     .from('tasks')
@@ -146,7 +147,7 @@ export async function getTasksByDeal(dealId: string): Promise<TaskWithRelations[
  */
 export async function getTasksDueToday(): Promise<TaskWithRelations[]> {
   const supabase = await createClient()
-  const today = new Date().toISOString().split('T')[0]
+  const today = getLocalToday()
 
   const { data, error } = await supabase
     .from('tasks')
@@ -180,7 +181,7 @@ export async function getTasksDueToday(): Promise<TaskWithRelations[]> {
  */
 export async function getOverdueTaskCount(): Promise<number> {
   const supabase = await createClient()
-  const today = new Date().toISOString().split('T')[0]
+  const today = getLocalToday()
 
   const { count, error } = await supabase
     .from('tasks')

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getLocalToday } from '@/lib/utils'
 import type { InteractionWithRelations } from '@/lib/types/app'
 
 interface PipelineStageMetric {
@@ -35,7 +36,7 @@ interface DashboardMetrics {
  */
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const supabase = await createClient()
-  const today = new Date().toISOString().split('T')[0]
+  const today = getLocalToday()
 
   const [dealsResult, tasksResult, activityResult] = await Promise.all([
     // All active deals with stage info

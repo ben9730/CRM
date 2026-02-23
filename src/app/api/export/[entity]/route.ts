@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getLocalToday } from '@/lib/utils'
 import { NextRequest } from 'next/server'
 
 const ALLOWED_ENTITIES = ['contacts', 'organizations', 'deals'] as const
@@ -57,7 +58,7 @@ export async function GET(
   }
 
   // ISO date for filename
-  const today = new Date().toISOString().split('T')[0]
+  const today = getLocalToday()
   // UTF-8 BOM for Excel compatibility (handles Hebrew and other non-ASCII text)
   const BOM = '\uFEFF'
 
