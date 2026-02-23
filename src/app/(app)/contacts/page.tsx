@@ -4,6 +4,7 @@ import { getOrganizationsList } from '@/lib/queries/organizations'
 import { ContactsViewWrapper } from '@/components/contacts/contacts-view-wrapper'
 import { ContactSearchForm } from '@/components/contacts/contact-search-form'
 import { ContactCreateButton } from '@/components/contacts/contact-create-button'
+import { ExportButton } from '@/components/shared/export-button'
 import { Pagination } from '@/components/shared/pagination'
 import { Users } from 'lucide-react'
 
@@ -64,7 +65,10 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
           </div>
         </div>
 
-        <ContactCreateButton organizations={organizations} />
+        <div className="flex items-center gap-2">
+          <ExportButton entity="contacts" />
+          <ContactCreateButton organizations={organizations} />
+        </div>
       </div>
 
       {/* Gradient separator */}

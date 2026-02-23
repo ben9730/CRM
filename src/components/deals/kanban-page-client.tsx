@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import type { DealWithRelations, PipelineStageRow } from '@/lib/types/app'
 import { KanbanBoard } from './kanban-board'
 import { DealCreateButton } from './deal-create-button'
+import { ExportButton } from '@/components/shared/export-button'
 import { TrendingUp } from 'lucide-react'
 
 interface OrgOption {
@@ -73,12 +74,15 @@ export function KanbanPageClient({
             </div>
           </div>
 
-          {/* New Deal button */}
-          <DealCreateButton
-            stages={stages}
-            organizations={organizations}
-            onDealCreated={handleDealCreated}
-          />
+          {/* Actions: Export + New Deal */}
+          <div className="flex items-center gap-2">
+            <ExportButton entity="deals" />
+            <DealCreateButton
+              stages={stages}
+              organizations={organizations}
+              onDealCreated={handleDealCreated}
+            />
+          </div>
         </div>
       </div>
 

@@ -4,6 +4,7 @@ import { OrgList } from '@/components/organizations/org-list'
 import { SearchForm } from '@/components/shared/search-form'
 import { Pagination } from '@/components/shared/pagination'
 import { OrgCreateButton } from '@/components/organizations/org-create-button'
+import { ExportButton } from '@/components/shared/export-button'
 import { Building2 } from 'lucide-react'
 
 interface OrganizationsPageProps {
@@ -51,7 +52,10 @@ export default async function OrganizationsPage({ searchParams }: OrganizationsP
           </div>
         </div>
 
-        <OrgCreateButton />
+        <div className="flex items-center gap-2">
+          <ExportButton entity="organizations" />
+          <OrgCreateButton />
+        </div>
       </div>
 
       {/* Gradient separator */}
