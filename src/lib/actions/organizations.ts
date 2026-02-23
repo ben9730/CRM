@@ -135,6 +135,7 @@ export async function updateOrganization(
 }
 
 export async function deleteOrganization(id: string): Promise<ActionState> {
+  // Note: RLS update policy uses USING only (no WITH CHECK) — see migration fix_organizations_update_rls_no_with_check
   const supabase = await createClient()
 
   const {
