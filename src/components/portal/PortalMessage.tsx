@@ -3,10 +3,16 @@
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { Components } from 'react-markdown'
+import { ConfirmationCard } from './ConfirmationCard'
+import type { PendingAction } from './ConfirmationCard'
 
 interface PortalMessageProps {
   role: 'user' | 'assistant'
   content: string
+  pendingAction?: PendingAction
+  onConfirm?: () => void
+  onCancel?: () => void
+  isConfirming?: boolean
 }
 
 const markdownComponents: Components = {
@@ -54,8 +60,31 @@ const markdownComponents: Components = {
   ),
 }
 
-export function PortalMessage({ role, content }: PortalMessageProps) {
+export function PortalMessage({
+  role,
+  content,
+  pendingAction,
+  onConfirm,
+  onCancel,
+  isConfirming,
+}: PortalMessageProps) {
   const isUser = role === 'user'
+
+  // Render confirmation card for pending write actions
+  if (content === '__pending__' && pendingAction && onConfirm && onCancel) {
+    return (
+      <div className="mb-3 flex justify-start">
+        <div className="max-w-[85%]">
+          <ConfirmationCard
+            pendingAction={pendingAction}
+            onConfirm={onConfirm}
+            onCancel={onCancel}
+            isConfirming={isConfirming ?? false}
+          />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={`mb-3 flex ${isUser ? 'justify-end' : 'justify-start'}`}>

@@ -4,10 +4,12 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, Loader2, Send } from 'lucide-react'
 import { PortalMessage } from './PortalMessage'
+import type { PendingAction } from './ConfirmationCard'
 
 interface Message {
   role: 'user' | 'assistant'
   content: string
+  pendingAction?: PendingAction
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,6 +24,8 @@ export function PortalChat() {
   const [geminiHistory, setGeminiHistory] = useState<GeminiHistory>([])
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [isLoadingSession, setIsLoadingSession] = useState(true)
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
+  const [isConfirming, setIsConfirming] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -75,7 +79,7 @@ export function PortalChat() {
 
   const sendMessage = async () => {
     const trimmed = input.trim()
-    if (!trimmed || isLoading || !sessionId) return
+    if (!trimmed || isLoading || !sessionId || pendingAction) return
 
     const userMessage: Message = { role: 'user', content: trimmed }
     setMessages(prev => {
@@ -99,6 +103,23 @@ export function PortalChat() {
           data.friendlyMessage ?? "I'm taking a breather — try again in a minute"
         setMessages(prev => {
           const updated = [...prev, { role: 'assistant' as const, content: friendlyMessage }]
+          return updated.slice(-MAX_MESSAGES)
+        })
+        return
+      }
+
+      if (data.pendingAction) {
+        setPendingAction(data.pendingAction)
+        // Add a pending message that will render as ConfirmationCard
+        setMessages(prev => {
+          const updated = [
+            ...prev,
+            {
+              role: 'assistant' as const,
+              content: '__pending__',
+              pendingAction: data.pendingAction,
+            },
+          ]
           return updated.slice(-MAX_MESSAGES)
         })
         return
@@ -135,6 +156,80 @@ export function PortalChat() {
     }
   }
 
+  const handleConfirm = async () => {
+    if (!pendingAction) return
+    setIsConfirming(true)
+
+    try {
+      const res = await fetch('/api/chat/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tool: pendingAction.tool,
+          args: pendingAction.args,
+          sessionId: pendingAction.sessionId ?? sessionId,
+          history: geminiHistory,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (data.rateLimited) {
+        // Replace pending message with rate limit message
+        setMessages(prev => {
+          const withoutPending = prev.filter(m => m.content !== '__pending__')
+          return [
+            ...withoutPending,
+            {
+              role: 'assistant' as const,
+              content: data.friendlyMessage ?? "I'm taking a breather — try again in a minute",
+            },
+          ]
+        })
+      } else if (data.response) {
+        // Replace pending message with confirmation response
+        setMessages(prev => {
+          const withoutPending = prev.filter(m => m.content !== '__pending__')
+          return [...withoutPending, { role: 'assistant' as const, content: data.response }].slice(
+            -MAX_MESSAGES
+          )
+        })
+        if (data.history) {
+          setGeminiHistory(data.history)
+        }
+      } else {
+        // Error — replace with error message
+        setMessages(prev => {
+          const withoutPending = prev.filter(m => m.content !== '__pending__')
+          return [
+            ...withoutPending,
+            { role: 'assistant' as const, content: 'Something went wrong confirming the action.' },
+          ]
+        })
+      }
+    } catch {
+      setMessages(prev => {
+        const withoutPending = prev.filter(m => m.content !== '__pending__')
+        return [
+          ...withoutPending,
+          { role: 'assistant' as const, content: 'Something went wrong. Please try again.' },
+        ]
+      })
+    } finally {
+      setPendingAction(null)
+      setIsConfirming(false)
+    }
+  }
+
+  const handleCancel = () => {
+    // Replace pending message with cancelled text
+    setMessages(prev => {
+      const withoutPending = prev.filter(m => m.content !== '__pending__')
+      return [...withoutPending, { role: 'assistant' as const, content: 'Action cancelled.' }]
+    })
+    setPendingAction(null)
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -162,7 +257,15 @@ export function PortalChat() {
             </div>
           ) : (
             messages.map((msg, i) => (
-              <PortalMessage key={i} role={msg.role} content={msg.content} />
+              <PortalMessage
+                key={i}
+                role={msg.role}
+                content={msg.content}
+                pendingAction={msg.pendingAction}
+                onConfirm={msg.content === '__pending__' ? handleConfirm : undefined}
+                onCancel={msg.content === '__pending__' ? handleCancel : undefined}
+                isConfirming={isConfirming}
+              />
             ))
           )}
           {isLoading && (
@@ -178,7 +281,7 @@ export function PortalChat() {
 
       {/* Input area */}
       <div
-        className="border-t border-border/50 px-3 py-3"
+        className={`border-t border-border/50 px-3 py-3 transition-opacity ${pendingAction ? 'opacity-50' : ''}`}
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}
       >
         <div className="mx-auto max-w-2xl w-full">
@@ -190,12 +293,13 @@ export function PortalChat() {
               onKeyDown={handleKeyDown}
               placeholder="Type a message..."
               rows={1}
-              className="flex-1 resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+              disabled={!!pendingAction}
+              className="flex-1 resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed"
               style={{ maxHeight: '80px', overflowY: 'auto' }}
             />
             <button
               onClick={sendMessage}
-              disabled={!input.trim() || isLoading || isLoadingSession || !sessionId}
+              disabled={!input.trim() || isLoading || isLoadingSession || !sessionId || !!pendingAction}
               className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-40"
               aria-label="Send message"
             >
