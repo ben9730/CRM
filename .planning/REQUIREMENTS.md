@@ -102,7 +102,7 @@ Requirements for milestone v1.1. Each maps to roadmap phases 5+.
 - [ ] **PORTAL-01**: User can access a full-page chat interface at /portal that requires Supabase authentication
 - [ ] **PORTAL-02**: Portal uses mobile-first responsive layout optimized for phone usage (dvh units, safe area insets)
 - [ ] **PORTAL-03**: Portal renders AI responses with markdown formatting (bold, lists, headers, code blocks)
-- [ ] **PORTAL-04**: Portal displays a user-friendly error message when Gemini rate limit is exceeded
+- [x] **PORTAL-04**: Portal displays a user-friendly error message when Gemini rate limit is exceeded
 - [ ] **PORTAL-05**: Portal hides the existing floating chat widget to avoid duplication
 
 ### AI Tools
@@ -111,7 +111,7 @@ Requirements for milestone v1.1. Each maps to roadmap phases 5+.
 - [ ] **AITOOL-02**: User can create a new deal via natural language chat command
 - [ ] **AITOOL-03**: User can mark a task as complete via natural language chat command
 - [ ] **AITOOL-04**: User can request a daily briefing showing overdue tasks, today's tasks, and pipeline summary
-- [ ] **AITOOL-05**: Chat tool definitions extracted to shared module for maintainability
+- [x] **AITOOL-05**: Chat tool definitions extracted to shared module for maintainability
 
 ### Portal UX
 
@@ -201,9 +201,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PORTAL-01 | Phase 5 | Pending |
 | PORTAL-02 | Phase 5 | Pending |
 | PORTAL-03 | Phase 5 | Pending |
-| PORTAL-04 | Phase 5 | Pending |
+| PORTAL-04 | Phase 5 | Complete |
 | PORTAL-05 | Phase 5 | Pending |
-| AITOOL-05 | Phase 5 | Pending |
+| AITOOL-05 | Phase 5 | Complete |
 | AITOOL-01 | Phase 6 | Pending |
 | AITOOL-02 | Phase 6 | Pending |
 | AITOOL-03 | Phase 6 | Pending |

@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 5 — Portal Foundation & API Safety
-Plan: —
-Status: Roadmap created; ready to plan Phase 5
-Last activity: 2026-02-25 — v1.1 roadmap created (phases 5-7)
+Plan: 1 of 3 complete
+Status: Plan 01 complete — shared chat tools module, rate limit handling, viewport-fit=cover
+Last activity: 2026-02-25 — Phase 5 Plan 01 complete
 
-Progress: [##########] v1.0 complete — [░░░░░░░░░░] v1.1 0%
+Progress: [##########] v1.0 complete — [░░░░░░░░░░] v1.1 ~9% (1/11 plans)
 
 ## Performance Metrics
 
@@ -41,6 +41,7 @@ Progress: [##########] v1.0 complete — [░░░░░░░░░░] v1.1 0
 | Phase 04-polish-production P02 | 4 | 2 tasks | 9 files |
 | Phase 04-polish-production P03 | 10 | 1 tasks | 3 files |
 | Phase 04-polish-production P03 | 20 | 2 tasks | 4 files |
+| Phase 05-portal-foundation-api-safety P01 | 3 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -109,6 +110,10 @@ Recent decisions affecting current work:
 - [v1.1 Roadmap]: Gemini actual limits are 10 RPM / 250 RPD (not 500 RPD as in PROJECT.md) — per-user rate limiting + 429 handling required in Phase 5
 - [v1.1 Roadmap]: export const maxDuration = 30 required in /api/chat/route.ts — daily briefing with 3+ tool calls can exceed Vercel 10s default
 - [v1.1 Roadmap]: iOS Safari input layout requires h-dvh container + flex-column layout (no position: fixed) — real device test required for Phase 7 sign-off
+- [05-01]: Chat tool definitions extracted to src/lib/chat/tools.ts — pure refactor enabling clean Phase 6 tool additions
+- [05-01]: Rate limit detection checks both '429' and 'RESOURCE_EXHAUSTED' — belt-and-suspenders for SDK version variance
+- [05-01]: maxDuration = 30 added to /api/chat/route.ts — prevents Vercel 10s timeout on multi-tool queries
+- [05-01]: viewport export with viewportFit: 'cover' added to root layout.tsx — enables env(safe-area-inset-bottom) for portal iPhone layout
 
 ### Pending Todos
 
@@ -122,5 +127,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: v1.1 roadmap created — phases 5-7 defined; ready to plan Phase 5
+Stopped at: Completed 05-01-PLAN.md — shared tools module + rate limit handling complete; ready for Plan 02 portal UI
 Resume file: N/A
