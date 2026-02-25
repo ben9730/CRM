@@ -17,6 +17,13 @@ type GeminiHistory = any[]
 
 const MAX_MESSAGES = 50
 
+const QUICK_ACTIONS = [
+  { label: 'My Tasks',       message: 'Show my tasks' },
+  { label: 'Daily Briefing', message: 'Give me a daily briefing' },
+  { label: 'Add Task',       message: 'Add a task' },
+  { label: 'Add Contact',    message: 'Add a contact' },
+]
+
 export function PortalChat() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -77,8 +84,8 @@ export function PortalChat() {
     loadOrCreateSession()
   }, [])
 
-  const sendMessage = async () => {
-    const trimmed = input.trim()
+  const sendMessage = async (textOverride?: string) => {
+    const trimmed = (textOverride ?? input).trim()
     if (!trimmed || isLoading || !sessionId || pendingAction) return
 
     const userMessage: Message = { role: 'user', content: trimmed }
@@ -86,7 +93,8 @@ export function PortalChat() {
       const updated = [...prev, userMessage]
       return updated.slice(-MAX_MESSAGES)
     })
-    setInput('')
+    // Only clear input when sending from textarea (not quick action)
+    if (!textOverride) setInput('')
     setIsLoading(true)
 
     try {
@@ -292,6 +300,18 @@ export function PortalChat() {
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}
       >
         <div className="mx-auto max-w-2xl w-full">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+            {QUICK_ACTIONS.map(({ label, message }) => (
+              <button
+                key={label}
+                onClick={() => sendMessage(message)}
+                disabled={isLoading || !!pendingAction || isLoadingSession || !sessionId}
+                className="shrink-0 rounded-full border border-border/50 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
           <div className="flex items-end gap-2 rounded-xl bg-muted/30 px-3 py-2">
             <textarea
               ref={textareaRef}
@@ -305,7 +325,7 @@ export function PortalChat() {
               style={{ maxHeight: '80px', overflowY: 'auto' }}
             />
             <button
-              onClick={sendMessage}
+              onClick={() => sendMessage()}
               disabled={!input.trim() || isLoading || isLoadingSession || !sessionId || !!pendingAction}
               className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-40"
               aria-label="Send message"
