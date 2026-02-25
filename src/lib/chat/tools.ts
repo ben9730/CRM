@@ -60,7 +60,78 @@ export const chatTools: FunctionDeclaration[] = [
     description: 'Get last 10 interactions (calls, emails, meetings, notes). Use when user asks about recent activity or interactions.',
     parameters: { type: SchemaType.OBJECT, properties: {} },
   },
+  {
+    name: 'create_contact',
+    description: 'Create a new contact in the CRM. Use when user says "add contact", "create contact", or similar.',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        first_name: { type: SchemaType.STRING, description: 'Contact first name' },
+        last_name: { type: SchemaType.STRING, description: 'Contact last name' },
+        organization_name: { type: SchemaType.STRING, description: 'Name of the organization to link the contact to (optional)' },
+        title: { type: SchemaType.STRING, description: 'Job title (optional)' },
+        email: { type: SchemaType.STRING, description: 'Email address (optional)' },
+      },
+      required: ['first_name', 'last_name'],
+    },
+  },
+  {
+    name: 'create_deal',
+    description: 'Create a new deal in the pipeline. Use when user says "create deal", "add deal", "new opportunity", or similar.',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        title: { type: SchemaType.STRING, description: 'Deal title or name' },
+        organization_name: { type: SchemaType.STRING, description: 'Organization this deal is for (optional)' },
+        value: { type: SchemaType.NUMBER, description: 'Deal value in USD (optional)' },
+        stage_name: { type: SchemaType.STRING, description: 'Pipeline stage name (optional, defaults to first stage)' },
+      },
+      required: ['title'],
+    },
+  },
+  {
+    name: 'complete_task',
+    description: 'Mark a task as complete. Use when user says "complete task", "mark task done", "finish task", or similar.',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        task_title: { type: SchemaType.STRING, description: 'Title or partial title of the task to mark complete' },
+      },
+      required: ['task_title'],
+    },
+  },
+  {
+    name: 'daily_briefing',
+    description: "Get a daily briefing: overdue tasks, tasks due today, and deals closing soon. Use for \"daily briefing\", \"what's on today\", \"what do I have today\", \"morning summary\", or similar.",
+    parameters: { type: SchemaType.OBJECT, properties: {} },
+  },
 ]
+
+export const WRITE_TOOLS = new Set(['create_contact', 'create_deal', 'complete_task'])
+
+export function buildActionPreview(toolName: string, args: Record<string, unknown>): { title: string; details: string[] } {
+  switch (toolName) {
+    case 'create_contact': {
+      const name = `${args.first_name ?? ''} ${args.last_name ?? ''}`.trim()
+      const details: string[] = []
+      if (args.organization_name) details.push(`Organization: ${args.organization_name}`)
+      if (args.title) details.push(`Title: ${args.title}`)
+      if (args.email) details.push(`Email: ${args.email}`)
+      return { title: `Create contact: ${name}`, details }
+    }
+    case 'create_deal': {
+      const details: string[] = []
+      if (args.organization_name) details.push(`Organization: ${args.organization_name}`)
+      if (args.value) details.push(`Value: $${Number(args.value).toLocaleString()}`)
+      if (args.stage_name) details.push(`Stage: ${args.stage_name}`)
+      return { title: `Create deal: ${args.title}`, details }
+    }
+    case 'complete_task':
+      return { title: `Mark complete: ${args.task_title}`, details: [] }
+    default:
+      return { title: toolName, details: [] }
+  }
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function executeTool(name: string, args: Record<string, unknown>, supabase: any): Promise<unknown> {
@@ -234,6 +305,231 @@ export async function executeTool(name: string, args: Record<string, unknown>, s
       })
 
       return { activity }
+    }
+
+    case 'create_contact': {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return { error: 'Not authenticated' }
+
+      const accountId = await getAccountId(supabase, user.id)
+      const first_name = args.first_name as string
+      const last_name = args.last_name as string
+      const title = (args.title as string | undefined) || null
+      const email = (args.email as string | undefined) || null
+      const organization_name = args.organization_name as string | undefined
+
+      let orgId: string | null = null
+      let orgName: string | null = null
+
+      if (organization_name) {
+        const { data: org } = await supabase
+          .from('organizations')
+          .select('id, name')
+          .ilike('name', organization_name)
+          .is('deleted_at', null)
+          .limit(1)
+          .maybeSingle()
+
+        if (!org) {
+          return { error: `Organization "${organization_name}" not found. Please check the name and try again.` }
+        }
+        orgId = org.id
+        orgName = org.name
+      }
+
+      const { data: contact, error: contactError } = await supabase
+        .from('contacts')
+        .insert({
+          account_id: accountId,
+          created_by: user.id,
+          updated_by: user.id,
+          first_name,
+          last_name,
+          title,
+          email,
+        })
+        .select('id, first_name, last_name')
+        .single()
+
+      if (contactError) return { error: 'Failed to create contact: ' + contactError.message }
+
+      if (orgId) {
+        await supabase
+          .from('contact_organizations')
+          .insert({ contact_id: contact.id, organization_id: orgId, is_primary: true })
+      }
+
+      return { created: true, contact: { id: contact.id, name: `${first_name} ${last_name}`, organization: orgName } }
+    }
+
+    case 'create_deal': {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return { error: 'Not authenticated' }
+
+      const accountId = await getAccountId(supabase, user.id)
+      const title = args.title as string
+      const organization_name = args.organization_name as string | undefined
+      const value = args.value as number | undefined
+      const stage_name = args.stage_name as string | undefined
+
+      let stageId: string
+      let stageName: string
+
+      if (stage_name) {
+        const { data: stage } = await supabase
+          .from('pipeline_stages')
+          .select('id, name')
+          .ilike('name', stage_name)
+          .eq('account_id', accountId)
+          .limit(1)
+          .maybeSingle()
+
+        if (!stage) {
+          return { error: `Pipeline stage "${stage_name}" not found. Please check the name and try again.` }
+        }
+        stageId = stage.id
+        stageName = stage.name
+      } else {
+        const { data: stage, error: stageError } = await supabase
+          .from('pipeline_stages')
+          .select('id, name')
+          .eq('account_id', accountId)
+          .eq('is_won', false)
+          .eq('is_lost', false)
+          .order('display_order', { ascending: true })
+          .limit(1)
+          .single()
+
+        if (stageError || !stage) return { error: 'No active pipeline stages found.' }
+        stageId = stage.id
+        stageName = stage.name
+      }
+
+      let orgId: string | null = null
+      let orgName: string | null = null
+
+      if (organization_name) {
+        const { data: org } = await supabase
+          .from('organizations')
+          .select('id, name')
+          .ilike('name', organization_name)
+          .is('deleted_at', null)
+          .limit(1)
+          .maybeSingle()
+
+        if (!org) {
+          return { error: `Organization "${organization_name}" not found. Please check the name and try again.` }
+        }
+        orgId = org.id
+        orgName = org.name
+      }
+
+      const { data: deal, error: dealError } = await supabase
+        .from('deals')
+        .insert({
+          account_id: accountId,
+          created_by: user.id,
+          updated_by: user.id,
+          owner_id: user.id,
+          title,
+          stage_id: stageId,
+          value: value ?? null,
+          organization_id: orgId,
+        })
+        .select('id, title, value, pipeline_stages(name)')
+        .single()
+
+      if (dealError) return { error: 'Failed to create deal: ' + dealError.message }
+
+      return { created: true, deal: { id: deal.id, title: deal.title, value: deal.value, stage: stageName, organization: orgName } }
+    }
+
+    case 'complete_task': {
+      const task_title = args.task_title as string
+
+      const { data: matches } = await supabase
+        .from('tasks')
+        .select('id, title, due_date')
+        .ilike('title', `%${task_title}%`)
+        .eq('is_complete', false)
+        .is('deleted_at', null)
+        .limit(5)
+
+      const tasks = matches ?? []
+
+      if (tasks.length === 0) {
+        return { error: `No incomplete task found matching "${task_title}".` }
+      }
+
+      if (tasks.length >= 2) {
+        return {
+          matches: tasks.map((t: { id: string; title: string }) => ({ id: t.id, title: t.title })),
+          message: 'Multiple tasks found. Which did you mean?',
+        }
+      }
+
+      const task = tasks[0]
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return { error: 'Not authenticated' }
+
+      await supabase
+        .from('tasks')
+        .update({ is_complete: true, completed_at: new Date().toISOString(), updated_by: user.id })
+        .eq('id', task.id)
+
+      return { completed: true, task: { id: task.id, title: task.title } }
+    }
+
+    case 'daily_briefing': {
+      const weekEnd = new Date()
+      weekEnd.setDate(weekEnd.getDate() + 7)
+      const weekEndStr = weekEnd.toISOString().split('T')[0]
+
+      const [overdueResult, todayResult, dealsResult] = await Promise.all([
+        supabase
+          .from('tasks')
+          .select('id, title, due_date')
+          .eq('is_complete', false)
+          .lt('due_date', today)
+          .is('deleted_at', null)
+          .order('due_date', { ascending: true })
+          .limit(20),
+        supabase
+          .from('tasks')
+          .select('id, title, due_date')
+          .eq('is_complete', false)
+          .eq('due_date', today)
+          .is('deleted_at', null)
+          .order('due_date', { ascending: true })
+          .limit(20),
+        supabase
+          .from('deals')
+          .select('id, title, value, expected_close, pipeline_stages(name, is_won, is_lost)')
+          .is('deleted_at', null)
+          .gte('expected_close', today)
+          .lte('expected_close', weekEndStr)
+          .limit(20),
+      ])
+
+      const overdueTasks = overdueResult.data ?? []
+      const dueTodayTasks = todayResult.data ?? []
+      const allDeals = dealsResult.data ?? []
+
+      const closingSoonDeals = allDeals.filter((d: { pipeline_stages: { is_won: boolean; is_lost: boolean } | null }) => {
+        const s = d.pipeline_stages
+        return s && !s.is_won && !s.is_lost
+      })
+
+      return {
+        summary: {
+          overdue_count: overdueTasks.length,
+          due_today_count: dueTodayTasks.length,
+          closing_soon_count: closingSoonDeals.length,
+        },
+        overdue_tasks: overdueTasks,
+        due_today_tasks: dueTodayTasks,
+        closing_soon_deals: closingSoonDeals,
+      }
     }
 
     default:
