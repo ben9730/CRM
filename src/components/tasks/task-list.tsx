@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { AlertTriangle, CheckCircle2, Circle, Pencil, Trash2, Clock } from 'lucide-react'
+import { CheckCircle2, Circle, Pencil, Trash2, Clock } from 'lucide-react'
 import Link from 'next/link'
 import type { TaskWithRelations } from '@/lib/types/app'
 import { completeTask, deleteTask } from '@/lib/actions/tasks'
@@ -151,15 +151,10 @@ export function TaskList({ tasks, contacts = [], deals = [] }: TaskListProps) {
                       className="h-4 w-4"
                       style={{ color: 'oklch(0.65 0.18 150)' }}
                     />
-                  ) : isOverdue ? (
-                    <AlertTriangle
-                      className="h-4 w-4"
-                      style={{ color: 'oklch(0.60 0.22 25)' }}
-                    />
                   ) : (
                     <Circle
                       className="h-4 w-4"
-                      style={{ color: 'oklch(0.35 0 0)' }}
+                      style={{ color: isOverdue ? 'oklch(0.60 0.22 25)' : 'oklch(0.35 0 0)' }}
                     />
                   )}
                 </button>
