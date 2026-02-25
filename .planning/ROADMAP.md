@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Integration & Features** - All CRM features built and wired to live backend (completed 2026-02-23)
 - [x] **Phase 4: Polish & Production** - CSV export, security review, and production deployment (completed 2026-02-23)
 - [x] **Phase 5: Portal Foundation & API Safety** - Working /portal route with auth gate, mobile layout, markdown rendering, rate limit protection, and safe API infrastructure (completed 2026-02-25)
-- [ ] **Phase 6: Conversation Persistence & AI Write Tools** - Messages saved to Supabase per user; write tools (create contact, create deal, complete task, daily briefing) with confirmation flow
+- [x] **Phase 6: Conversation Persistence & AI Write Tools** - Messages saved to Supabase per user; write tools (create contact, create deal, complete task, daily briefing) with confirmation flow (completed 2026-02-25)
 - [ ] **Phase 7: Mobile UX Polish** - Quick action buttons, iOS Safari validation, and portal UX refinements
 
 ## Phase Details
@@ -119,7 +119,7 @@ Plans:
   3. User can type "create deal [name] for [org]" and a new deal is created in the pipeline — the chat displays a confirmation card with deal name, stage, and a link to the deal
   4. User can type "mark task [description] complete" and the task is marked done in the CRM — the chat confirms with the task title and completion status
   5. User can type "daily briefing" or "what's on today" and receive a structured summary of overdue tasks, tasks due today, and pipeline deals closing soon
-**Plans:** 1/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 06-01-PLAN.md -- Chat tables (chat_sessions + chat_messages) with RLS, session API, PortalChat persistence wiring, auth redirect preservation
@@ -148,5 +148,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 3. Integration & Features | 6/6 | Complete | 2026-02-23 |
 | 4. Polish & Production | 3/3 | Complete | 2026-02-23 |
 | 5. Portal Foundation & API Safety | 2/2 | Complete   | 2026-02-25 |
-| 6. Conversation Persistence & AI Write Tools | 1/3 | In Progress|  |
+| 6. Conversation Persistence & AI Write Tools | 3/3 | Complete   | 2026-02-25 |
 | 7. Mobile UX Polish | 0/? | Not started | - |
