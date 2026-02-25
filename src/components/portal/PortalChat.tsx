@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, Loader2, Send } from 'lucide-react'
+import { ChevronLeft, Loader2, Send, RotateCcw } from 'lucide-react'
 import { PortalMessage } from './PortalMessage'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import type { PendingAction } from './ConfirmationCard'
 
 interface Message {
@@ -33,6 +34,8 @@ export function PortalChat() {
   const [isLoadingSession, setIsLoadingSession] = useState(true)
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
   const [isConfirming, setIsConfirming] = useState(false)
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
+  const [isClearing, setIsClearing] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -171,6 +174,30 @@ export function PortalChat() {
     }
   }
 
+  const handleClearChat = async () => {
+    if (!sessionId) return
+    setIsClearing(true)
+    try {
+      const res = await fetch('/api/chat/clear', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setMessages([])
+        setGeminiHistory([])
+        setSessionId(data.sessionId)
+        setPendingAction(null)
+      }
+    } catch {
+      // silently fail — messages will remain visible
+    } finally {
+      setIsClearing(false)
+      setShowClearConfirm(false)
+    }
+  }
+
   const handleConfirm = async () => {
     if (!pendingAction) return
     setIsConfirming(true)
@@ -254,18 +281,30 @@ export function PortalChat() {
 
   return (
     <div className="h-dvh flex flex-col bg-background">
-      {/* Back navigation */}
-      <Link
-        href="/dashboard"
-        className="absolute top-4 left-4 z-10 flex items-center justify-center rounded-lg p-1.5 text-muted-foreground/60 hover:text-foreground transition-colors"
-        aria-label="Back to dashboard"
-      >
-        <ChevronLeft className="size-5" />
-      </Link>
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-1 text-sm text-muted-foreground/60 hover:text-foreground transition-colors"
+          aria-label="Back to dashboard"
+        >
+          <ChevronLeft className="size-4" />
+          <span className="text-xs">Back</span>
+        </Link>
+        <button
+          onClick={() => setShowClearConfirm(true)}
+          disabled={messages.length === 0 || isLoading || !!pendingAction}
+          className="flex items-center justify-center rounded-lg p-1.5 text-muted-foreground/60 hover:text-foreground transition-colors disabled:opacity-30"
+          aria-label="Clear chat"
+          title="Clear chat"
+        >
+          <RotateCcw className="size-4" />
+        </button>
+      </div>
 
       {/* Message area */}
       <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-2xl w-full px-4 py-4 pt-14">
+        <div className="mx-auto max-w-2xl w-full px-4 py-4">
           {isLoadingSession ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="size-5 animate-spin text-muted-foreground" />
@@ -335,6 +374,16 @@ export function PortalChat() {
           </div>
         </div>
       </div>
+
+      {/* Clear chat confirmation dialog */}
+      <ConfirmDialog
+        open={showClearConfirm}
+        onOpenChange={setShowClearConfirm}
+        title="Clear chat history?"
+        description="This will permanently delete all messages in this conversation and start a fresh session. This action cannot be undone."
+        onConfirm={handleClearChat}
+        loading={isClearing}
+      />
     </div>
   )
 }
