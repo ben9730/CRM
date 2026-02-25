@@ -20,6 +20,8 @@ export function PortalChat() {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [geminiHistory, setGeminiHistory] = useState<GeminiHistory>([])
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [isLoadingSession, setIsLoadingSession] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -44,9 +46,36 @@ export function PortalChat() {
     adjustTextareaHeight()
   }, [input, adjustTextareaHeight])
 
+  // Load or create session on mount
+  useEffect(() => {
+    async function loadOrCreateSession() {
+      try {
+        const res = await fetch('/api/chat/session')
+        if (!res.ok) {
+          setIsLoadingSession(false)
+          return
+        }
+        const data = await res.json()
+        setSessionId(data.sessionId)
+        if (data.messages?.length > 0) {
+          setMessages(
+            data.messages.map((m: { role: string; content: string }) => ({
+              role: m.role as 'user' | 'assistant',
+              content: m.content,
+            }))
+          )
+        }
+      } catch {
+        // silently continue with empty session
+      }
+      setIsLoadingSession(false)
+    }
+    loadOrCreateSession()
+  }, [])
+
   const sendMessage = async () => {
     const trimmed = input.trim()
-    if (!trimmed || isLoading) return
+    if (!trimmed || isLoading || !sessionId) return
 
     const userMessage: Message = { role: 'user', content: trimmed }
     setMessages(prev => {
@@ -60,7 +89,7 @@ export function PortalChat() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: trimmed, history: geminiHistory }),
+        body: JSON.stringify({ message: trimmed, history: geminiHistory, sessionId }),
       })
 
       const data = await res.json()
@@ -127,9 +156,15 @@ export function PortalChat() {
       {/* Message area */}
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-2xl w-full px-4 py-4 pt-14">
-          {messages.map((msg, i) => (
-            <PortalMessage key={i} role={msg.role} content={msg.content} />
-          ))}
+          {isLoadingSession ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="size-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            messages.map((msg, i) => (
+              <PortalMessage key={i} role={msg.role} content={msg.content} />
+            ))
+          )}
           {isLoading && (
             <div className="mb-3 flex justify-start">
               <div className="flex items-center gap-2 rounded-2xl rounded-bl-sm bg-muted/50 px-4 py-2.5 text-muted-foreground">
@@ -160,7 +195,7 @@ export function PortalChat() {
             />
             <button
               onClick={sendMessage}
-              disabled={!input.trim() || isLoading}
+              disabled={!input.trim() || isLoading || isLoadingSession || !sessionId}
               className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-40"
               aria-label="Send message"
             >

@@ -34,6 +34,7 @@ export async function signIn(_prevState: AuthState, formData: FormData): Promise
 
   const email = formData.get('email') as string
   const password = formData.get('password') as string
+  const next = formData.get('next') as string | null
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
@@ -44,7 +45,9 @@ export async function signIn(_prevState: AuthState, formData: FormData): Promise
     return { error: error.message }
   }
 
-  redirect('/dashboard')
+  // Validate next starts with / to prevent open redirect attacks
+  const redirectTo = next && next.startsWith('/') ? next : '/dashboard'
+  redirect(redirectTo)
 }
 
 export async function signOut() {

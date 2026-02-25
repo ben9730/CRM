@@ -2,8 +2,25 @@ import { GoogleGenerativeAI, type FunctionResponsePart } from '@google/generativ
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { chatTools, executeTool, SYSTEM_PROMPT } from '@/lib/chat/tools'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 export const maxDuration = 30
+
+async function saveMessages(
+  supabase: SupabaseClient,
+  sessionId: string,
+  userMessage: string,
+  assistantMessage: string
+) {
+  await supabase.from('chat_messages').insert([
+    { session_id: sessionId, role: 'user', content: userMessage },
+    { session_id: sessionId, role: 'assistant', content: assistantMessage },
+  ])
+  await supabase
+    .from('chat_sessions')
+    .update({ updated_at: new Date().toISOString() })
+    .eq('id', sessionId)
+}
 
 export async function POST(request: Request) {
   const apiKey = process.env.GEMINI_API_KEY
@@ -17,7 +34,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
   }
 
-  const { message, history } = await request.json()
+  const { message, history, sessionId } = await request.json()
   if (!message || typeof message !== 'string') {
     return NextResponse.json({ error: 'Message is required' }, { status: 400 })
   }
@@ -58,6 +75,11 @@ export async function POST(request: Request) {
     }
 
     const text = response.text()
+
+    // Save messages to DB if sessionId provided
+    if (sessionId) {
+      await saveMessages(supabase, sessionId, message, text)
+    }
 
     // Build the updated history to send back
     const updatedHistory = await chat.getHistory()

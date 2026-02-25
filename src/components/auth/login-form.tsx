@@ -19,7 +19,7 @@ function SubmitButton() {
   )
 }
 
-export function LoginForm() {
+export function LoginForm({ redirectTo }: { redirectTo?: string }) {
   const [state, formAction] = useActionState<AuthState, FormData>(signIn, undefined)
 
   return (
@@ -30,6 +30,7 @@ export function LoginForm() {
       </CardHeader>
       <CardContent>
         <form action={formAction} className="space-y-4">
+          {redirectTo && <input type="hidden" name="next" value={redirectTo} />}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
