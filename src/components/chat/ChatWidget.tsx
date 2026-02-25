@@ -20,6 +20,8 @@ export function ChatWidget() {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [geminiHistory, setGeminiHistory] = useState<GeminiHistory>([])
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [isLoadingSession, setIsLoadingSession] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -37,6 +39,30 @@ export function ChatWidget() {
     }
   }, [isOpen])
 
+  // Load session when widget is opened (only once)
+  useEffect(() => {
+    if (!isOpen || sessionId) return
+    async function loadSession() {
+      setIsLoadingSession(true)
+      try {
+        const res = await fetch('/api/chat/session')
+        if (!res.ok) { setIsLoadingSession(false); return }
+        const data = await res.json()
+        setSessionId(data.sessionId)
+        if (data.messages?.length > 0) {
+          setMessages(
+            data.messages.map((m: { role: string; content: string }) => ({
+              role: m.role as 'user' | 'assistant',
+              content: m.content,
+            }))
+          )
+        }
+      } catch { /* silently continue */ }
+      setIsLoadingSession(false)
+    }
+    loadSession()
+  }, [isOpen, sessionId])
+
   const sendMessage = async () => {
     const trimmed = input.trim()
     if (!trimmed || isLoading) return
@@ -53,7 +79,7 @@ export function ChatWidget() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: trimmed, history: geminiHistory }),
+        body: JSON.stringify({ message: trimmed, history: geminiHistory, sessionId }),
       })
 
       const data = await res.json()
@@ -90,9 +116,9 @@ export function ChatWidget() {
 
   return (
     <>
-      {/* Chat Panel */}
+      {/* Chat Panel — hidden on mobile (below md:768px) */}
       {isOpen && (
-        <div className="fixed bottom-20 right-4 z-50 flex w-[350px] flex-col rounded-2xl border border-border/50 bg-[#0f0f0f] shadow-2xl shadow-primary/5">
+        <div className="fixed bottom-20 right-4 z-50 hidden md:flex w-[350px] flex-col rounded-2xl border border-border/50 bg-[#0f0f0f] shadow-2xl shadow-primary/5">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border/50 px-4 py-3">
             <div className="flex items-center gap-2">
@@ -101,7 +127,7 @@ export function ChatWidget() {
               </div>
               <div>
                 <p className="text-sm font-medium text-foreground">CRM Assistant</p>
-                <p className="text-[11px] text-muted-foreground">Powered by Gemini</p>
+                <p className="text-[11px] text-muted-foreground">Powered by AI</p>
               </div>
             </div>
             <button
@@ -114,40 +140,48 @@ export function ChatWidget() {
 
           {/* Messages */}
           <div className="flex h-[400px] flex-col gap-3 overflow-y-auto px-3 py-3">
-            {messages.length === 0 && (
-              <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
-                <div className="flex size-12 items-center justify-center rounded-full bg-primary/10">
-                  <MessageCircle className="size-6 text-primary" />
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Ask me about your tasks, deals, contacts, or pipeline
-                </p>
-                <div className="mt-2 flex flex-wrap justify-center gap-1.5">
-                  {['Show urgent tasks', 'Pipeline status', 'Recent activity'].map(
-                    (suggestion) => (
-                      <button
-                        key={suggestion}
-                        onClick={() => {
-                          setInput(suggestion)
-                          inputRef.current?.focus()
-                        }}
-                        className="rounded-full border border-border/50 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                      >
-                        {suggestion}
-                      </button>
-                    )
-                  )}
-                </div>
+            {isLoadingSession ? (
+              <div className="flex flex-1 items-center justify-center">
+                <Loader2 className="size-5 animate-spin text-muted-foreground" />
               </div>
-            )}
-            {messages.map((msg, i) => (
-              <ChatMessage key={i} role={msg.role} content={msg.content} />
-            ))}
-            {isLoading && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Loader2 className="size-4 animate-spin" />
-                <span className="text-xs">Thinking...</span>
-              </div>
+            ) : (
+              <>
+                {messages.length === 0 && (
+                  <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
+                    <div className="flex size-12 items-center justify-center rounded-full bg-primary/10">
+                      <MessageCircle className="size-6 text-primary" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Ask me about your tasks, deals, contacts, or pipeline
+                    </p>
+                    <div className="mt-2 flex flex-wrap justify-center gap-1.5">
+                      {['Show urgent tasks', 'Pipeline status', 'Recent activity'].map(
+                        (suggestion) => (
+                          <button
+                            key={suggestion}
+                            onClick={() => {
+                              setInput(suggestion)
+                              inputRef.current?.focus()
+                            }}
+                            className="rounded-full border border-border/50 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                          >
+                            {suggestion}
+                          </button>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+                {messages.map((msg, i) => (
+                  <ChatMessage key={i} role={msg.role} content={msg.content} />
+                ))}
+                {isLoading && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Loader2 className="size-4 animate-spin" />
+                    <span className="text-xs">Thinking...</span>
+                  </div>
+                )}
+              </>
             )}
             <div ref={messagesEndRef} />
           </div>
@@ -166,7 +200,7 @@ export function ChatWidget() {
               />
               <button
                 onClick={sendMessage}
-                disabled={!input.trim() || isLoading}
+                disabled={!input.trim() || isLoading || isLoadingSession || !sessionId}
                 className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-40"
               >
                 <Send className="size-3.5" />
@@ -176,10 +210,10 @@ export function ChatWidget() {
         </div>
       )}
 
-      {/* Floating Button */}
+      {/* Floating Button — hidden on mobile (below md:768px) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-4 right-4 z-50 flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30"
+        className="fixed bottom-4 right-4 z-50 hidden md:flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30"
       >
         {isOpen ? (
           <X className="size-5" />
