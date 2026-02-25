@@ -23,23 +23,24 @@ async function saveMessages(
 }
 
 export async function POST(request: Request) {
-  const apiKey = process.env.GROQ_API_KEY
-  if (!apiKey) {
-    return NextResponse.json({ error: 'Groq API key not configured' }, { status: 500 })
-  }
-
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-  }
-
-  const { message, history, sessionId } = await request.json()
-  if (!message || typeof message !== 'string') {
-    return NextResponse.json({ error: 'Message is required' }, { status: 400 })
-  }
-
   try {
+    const apiKey = process.env.GROQ_API_KEY
+    if (!apiKey) {
+      return NextResponse.json({ error: 'Groq API key not configured' }, { status: 500 })
+    }
+
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { message, history, sessionId } = body
+    if (!message || typeof message !== 'string') {
+      return NextResponse.json({ error: 'Message is required' }, { status: 400 })
+    }
+
     const groq = new Groq({ apiKey })
 
     const messages: Groq.Chat.ChatCompletionMessageParam[] = [

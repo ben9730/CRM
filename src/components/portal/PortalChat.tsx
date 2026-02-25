@@ -129,10 +129,12 @@ export function PortalChat() {
       }
 
       if (!res.ok) {
+        const errDetail = data.error || `HTTP ${res.status}`
+        console.error('[PortalChat] API error:', res.status, data)
         setMessages(prev => {
           const updated = [
             ...prev,
-            { role: 'assistant' as const, content: 'Something went wrong. Please try again.' },
+            { role: 'assistant' as const, content: `Something went wrong: ${errDetail}` },
           ]
           return updated.slice(-MAX_MESSAGES)
         })
@@ -146,11 +148,13 @@ export function PortalChat() {
       if (data.history) {
         setGeminiHistory(data.history)
       }
-    } catch {
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : 'Unknown error'
+      console.error('[PortalChat] Catch block error:', err)
       setMessages(prev => {
         const updated = [
           ...prev,
-          { role: 'assistant' as const, content: 'Something went wrong. Please try again.' },
+          { role: 'assistant' as const, content: `Something went wrong: ${errMsg}` },
         ]
         return updated.slice(-MAX_MESSAGES)
       })

@@ -6,17 +6,17 @@ import { chatTools, executeTool, SYSTEM_PROMPT } from '@/lib/chat/tools'
 export const maxDuration = 30
 
 export async function POST(request: Request) {
-  const apiKey = process.env.GROQ_API_KEY
-  if (!apiKey) return NextResponse.json({ error: 'Not configured' }, { status: 500 })
-
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-
-  const { tool, args, sessionId, history } = await request.json()
-  if (!tool || !args) return NextResponse.json({ error: 'Missing tool or args' }, { status: 400 })
-
   try {
+    const apiKey = process.env.GROQ_API_KEY
+    if (!apiKey) return NextResponse.json({ error: 'Not configured' }, { status: 500 })
+
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+
+    const { tool, args, sessionId, history } = await request.json()
+    if (!tool || !args) return NextResponse.json({ error: 'Missing tool or args' }, { status: 400 })
+
     // Execute the confirmed write tool
     const toolResult = await executeTool(tool, args as Record<string, unknown>, supabase)
 
