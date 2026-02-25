@@ -1,3 +1,16 @@
+---
+gsd_state_version: 1.0
+milestone: v1.1
+milestone_name: milestone
+status: unknown
+last_updated: "2026-02-25T17:55:26.461Z"
+progress:
+  total_phases: 7
+  completed_phases: 7
+  total_plans: 23
+  completed_plans: 23
+---
+
 # Project State
 
 ## Project Reference
@@ -5,16 +18,16 @@
 See: .planning/PROJECT.md (updated 2026-02-25)
 
 **Core value:** Sales and account management teams can track every customer relationship, deal, and interaction in one place — so nothing falls through the cracks.
-**Current focus:** Milestone v1.1 — Team Command Portal (Phase 6: Conversation Persistence & AI Write Tools)
+**Current focus:** Milestone v1.1 — Team Command Portal (Phase 7 complete — v1.1 DONE)
 
 ## Current Position
 
 Phase: 7 — Mobile UX Polish
-Plan: 1 of 2 complete
-Status: Plan 01 complete — Quick action pill buttons + iOS Safari keyboard fix; Phase 7 in progress
-Last activity: 2026-02-25 — Phase 7 Plan 01 complete
+Plan: 2 of 2 complete
+Status: Phase 7 complete — ChatWidget mobile hide + shared session + clear chat; v1.1 milestone DONE
+Last activity: 2026-02-25 — Phase 7 Plan 02 complete
 
-Progress: [##########] v1.0 complete — [█████░░░░░] v1.1 ~55% (6/11 plans)
+Progress: [##########] v1.0 complete — [██████████] v1.1 ~100% (11/11 plans)
 
 ## Performance Metrics
 
@@ -47,6 +60,7 @@ Progress: [##########] v1.0 complete — [█████░░░░░] v1.1 ~
 | Phase 06-conversation-persistence-ai-write-tools P02 | 3 | 2 tasks | 3 files |
 | Phase 06-conversation-persistence-ai-write-tools P03 | 45 | 2 tasks | 4 files |
 | Phase 07-mobile-ux-polish P01 | 2 | 2 tasks | 3 files |
+| Phase 07-mobile-ux-polish P02 | 10 | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -139,6 +153,9 @@ Recent decisions affecting current work:
 - [Phase 07-01]: Send button onClick arrow-wrapped (() => sendMessage()) — direct reference causes TS2322 because optional string param conflicts with MouseEvent
 - [Phase 07-01]: interactiveWidget: "resizes-content" in viewport export — shrinks layout when iOS keyboard appears, keeping input visible
 - [Phase 07-01]: scrollbar-none not in Tailwind v4 by default — added as plain CSS in globals.css
+- [Phase 07-02]: ChatWidget isLoadingSession starts false — session fetched lazily on open, not on mount; PortalChat starts true since it always needs session immediately
+- [Phase 07-02]: ChatWidget hidden md:flex on both panel and button — single Tailwind breakpoint hides widget below 768px; mobile users directed to /portal
+- [Phase 07-02]: Clear chat: DELETE messages then session explicitly, create fresh session — returns new sessionId to client so PortalChat can continue sending
 
 ### Pending Todos
 
@@ -152,5 +169,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Phase 7 Plan 01 complete — quick action pill buttons + iOS keyboard fix (a0b3059 feat, dea4702 feat); 2 tasks done
+Stopped at: Phase 7 Plan 02 complete — ChatWidget mobile hide + shared session + clear chat (ba3b25b feat, eb43c2c feat); v1.1 milestone DONE
 Resume file: N/A
