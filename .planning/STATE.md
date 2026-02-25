@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 6 — Conversation Persistence & AI Write Tools
-Plan: 1 of 3 complete
-Status: Plan 01 complete — chat_sessions/chat_messages tables, session API, PortalChat persistence, auth redirect preservation
-Last activity: 2026-02-25 — Phase 6 Plan 01 complete
+Plan: 2 of 3 complete
+Status: Plan 02 complete — 4 AI write tools (create_contact, create_deal, complete_task, daily_briefing), write detection in chat route, /api/chat/confirm endpoint
+Last activity: 2026-02-25 — Phase 6 Plan 02 complete
 
-Progress: [##########] v1.0 complete — [██░░░░░░░░] v1.1 ~27% (3/11 plans)
+Progress: [##########] v1.0 complete — [███░░░░░░░] v1.1 ~36% (4/11 plans)
 
 ## Performance Metrics
 
@@ -44,6 +44,7 @@ Progress: [##########] v1.0 complete — [██░░░░░░░░] v1.1 ~
 | Phase 05-portal-foundation-api-safety P01 | 3 | 2 tasks | 3 files |
 | Phase 05-portal-foundation-api-safety P02 | 5 | 3 tasks | 6 files |
 | Phase 06-conversation-persistence-ai-write-tools P01 | 6 | 2 tasks | 8 files |
+| Phase 06-conversation-persistence-ai-write-tools P02 | 3 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -123,6 +124,11 @@ Recent decisions affecting current work:
 - [Phase 06-01]: DB messages are display-only: Gemini context starts fresh per portal visit, no history reconstruction
 - [Phase 06-01]: Session freshness: 24h gap on updated_at triggers new session creation
 - [Phase 06-01]: Open redirect prevention: next param validated to start with / before redirect
+- [Phase 06-02]: WRITE_TOOLS Set exported from tools.ts — chat route imports it to detect write tools before execution
+- [Phase 06-02]: Write tools save user message to DB before returning pendingAction — persists even if user cancels
+- [Phase 06-02]: Confirm route receives history from client (Gemini history state) for NL confirmation context
+- [Phase 06-02]: daily_briefing is NOT in WRITE_TOOLS — read-only, executes directly without confirmation
+- [Phase 06-02]: org not found returns error not cascade-create — per CONTEXT.md locked decision
 
 ### Pending Todos
 
@@ -136,5 +142,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 06-01-PLAN.md — chat_sessions/chat_messages tables with RLS, session API, PortalChat persistence, auth redirect preservation complete; ready for Plan 02 write tools
+Stopped at: Completed 06-02-PLAN.md — 4 AI write tool definitions + executors, write detection in chat route (pendingAction), /api/chat/confirm endpoint complete; ready for Plan 03 PortalChat confirmation UI
 Resume file: N/A
