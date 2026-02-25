@@ -1,9 +1,9 @@
 ---
-status: complete
+status: resolved
 phase: 06-conversation-persistence-ai-write-tools
 source: 06-01-SUMMARY.md, 06-02-SUMMARY.md
 started: 2026-02-25T13:10:00Z
-updated: 2026-02-25T13:25:00Z
+updated: 2026-02-25T13:35:00Z
 ---
 
 ## Current Test
@@ -65,20 +65,28 @@ skipped: 2
 ## Gaps
 
 - truth: "User can confirm a pending write action via /api/chat/confirm and the record is created/updated in the database"
-  status: failed
+  status: resolved
   reason: "User reported: When clicking confirm, get 'Something went wrong' error message"
   severity: major
   test: 5
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Gemini history not passed through pendingAction flow — chat route returned early without history, PortalChat sent stale geminiHistory to confirm endpoint, Gemini rejected functionResponse without matching functionCall"
+  artifacts:
+    - path: "src/app/api/chat/route.ts"
+      issue: "pendingAction response missing history field"
+    - path: "src/components/portal/PortalChat.tsx"
+      issue: "early return in pendingAction branch skipped setGeminiHistory"
+  missing:
+    - "Include chat.getHistory() in pendingAction response"
+    - "Update geminiHistory before early return in pendingAction branch"
+  debug_session: ".planning/debug/confirm-endpoint-error.md"
+  fix_commit: "ef0a391"
 - truth: "User can confirm complete_task action and the task is marked complete"
-  status: failed
+  status: resolved
   reason: "User reported: Confirmation card appears but confirm action fails, same error as test 5"
   severity: major
   test: 7
-  root_cause: ""
+  root_cause: "Same root cause as test 5 — stale Gemini history in confirm flow"
   artifacts: []
   missing: []
-  debug_session: ""
+  debug_session: ".planning/debug/confirm-endpoint-error.md"
+  fix_commit: "ef0a391"
