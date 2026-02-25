@@ -103,7 +103,11 @@ Plans:
   3. AI responses containing bold text, bullet lists, headers, and code blocks render as formatted markdown — not as raw symbols like ** or ##
   4. When the Gemini rate limit is exceeded, the portal displays a friendly message explaining the limit and when to retry — not a raw error or blank screen
   5. The floating ChatWidget is not visible on /portal; tool definitions are extracted to a shared module used by both the widget and the portal
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Extract chat tools to shared module, add rate limit detection to API, add viewport-fit=cover and maxDuration
+- [ ] 05-02-PLAN.md — Portal route group with mobile-first chat UI, bubble messages, markdown rendering, sidebar nav link
 
 ### Phase 6: Conversation Persistence & AI Write Tools
 **Goal**: Field reps can take real action from the portal — creating contacts, deals, and completing tasks via chat — with messages saved to Supabase so history survives across sessions
@@ -138,6 +142,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 2. Backend & Data Layer | 4/4 | Complete | 2026-02-22 |
 | 3. Integration & Features | 6/6 | Complete | 2026-02-23 |
 | 4. Polish & Production | 3/3 | Complete | 2026-02-23 |
-| 5. Portal Foundation & API Safety | 0/? | Not started | - |
+| 5. Portal Foundation & API Safety | 0/2 | Planning complete | - |
 | 6. Conversation Persistence & AI Write Tools | 0/? | Not started | - |
 | 7. Mobile UX Polish | 0/? | Not started | - |
