@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-25)
 
 **Core value:** Sales and account management teams can track every customer relationship, deal, and interaction in one place — so nothing falls through the cracks.
-**Current focus:** Milestone v1.1 — Team Command Portal (Phase 5: Portal Foundation & API Safety)
+**Current focus:** Milestone v1.1 — Team Command Portal (Phase 6: Conversation Persistence & AI Write Tools)
 
 ## Current Position
 
-Phase: 5 — Portal Foundation & API Safety
-Plan: 2 of 3 complete
-Status: Plan 02 complete — /portal route, bubble chat UI, react-markdown rendering, sidebar AI Chat link
-Last activity: 2026-02-25 — Phase 5 Plan 02 complete
+Phase: 6 — Conversation Persistence & AI Write Tools
+Plan: 1 of 3 complete
+Status: Plan 01 complete — chat_sessions/chat_messages tables, session API, PortalChat persistence, auth redirect preservation
+Last activity: 2026-02-25 — Phase 6 Plan 01 complete
 
-Progress: [##########] v1.0 complete — [█░░░░░░░░░] v1.1 ~18% (2/11 plans)
+Progress: [##########] v1.0 complete — [██░░░░░░░░] v1.1 ~27% (3/11 plans)
 
 ## Performance Metrics
 
@@ -43,6 +43,7 @@ Progress: [##########] v1.0 complete — [█░░░░░░░░░] v1.1 ~
 | Phase 04-polish-production P03 | 20 | 2 tasks | 4 files |
 | Phase 05-portal-foundation-api-safety P01 | 3 | 2 tasks | 3 files |
 | Phase 05-portal-foundation-api-safety P02 | 5 | 3 tasks | 6 files |
+| Phase 06-conversation-persistence-ai-write-tools P01 | 6 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -118,6 +119,10 @@ Recent decisions affecting current work:
 - [Phase 05-02]: (portal) route group as sibling to (app) — portal layout excludes AppShell, ChatWidget, Toaster; /portal URL from nested portal/ folder
 - [Phase 05-02]: h-dvh + flex-col layout for iOS keyboard compat — no position:fixed; input area pinned via flex push
 - [Phase 05-02]: Rate limit errors rendered as assistant chat bubbles using data.rateLimited + data.friendlyMessage from /api/chat
+- [Phase 06-01]: chat_messages INSERT policy uses WITH CHECK (not USING) — correct RLS for INSERT rows
+- [Phase 06-01]: DB messages are display-only: Gemini context starts fresh per portal visit, no history reconstruction
+- [Phase 06-01]: Session freshness: 24h gap on updated_at triggers new session creation
+- [Phase 06-01]: Open redirect prevention: next param validated to start with / before redirect
 
 ### Pending Todos
 
@@ -126,10 +131,10 @@ Recent decisions affecting current work:
 ### Blockers/Concerns
 
 - [Phase 4]: Supabase BAA must be signed before production launch if any patient-adjacent data is stored (business action, not code task)
-- [v1.1 Phase 6]: Two-step AI confirmation flow (card display → user tap → DB write within Gemini function calling loop) has no established reference implementation — design session required before Phase 6 coding begins
+- [v1.1 Phase 6]: Two-step AI confirmation flow — RESOLVED in RESEARCH.md: pendingAction pattern (API detects write tool, returns pendingAction, client shows ConfirmationCard, confirm route executes DB write)
 
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 05-02-PLAN.md — portal UI with bubble messages and markdown rendering complete; ready for Plan 03 persistence
+Stopped at: Completed 06-01-PLAN.md — chat_sessions/chat_messages tables with RLS, session API, PortalChat persistence, auth redirect preservation complete; ready for Plan 02 write tools
 Resume file: N/A

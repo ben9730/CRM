@@ -107,10 +107,10 @@ Requirements for milestone v1.1. Each maps to roadmap phases 5+.
 
 ### AI Tools
 
-- [ ] **AITOOL-01**: User can create a new contact via natural language chat command
-- [ ] **AITOOL-02**: User can create a new deal via natural language chat command
-- [ ] **AITOOL-03**: User can mark a task as complete via natural language chat command
-- [ ] **AITOOL-04**: User can request a daily briefing showing overdue tasks, today's tasks, and pipeline summary
+- [x] **AITOOL-01**: User can create a new contact via natural language chat command
+- [x] **AITOOL-02**: User can create a new deal via natural language chat command
+- [x] **AITOOL-03**: User can mark a task as complete via natural language chat command
+- [x] **AITOOL-04**: User can request a daily briefing showing overdue tasks, today's tasks, and pipeline summary
 - [x] **AITOOL-05**: Chat tool definitions extracted to shared module for maintainability
 
 ### Portal UX
@@ -204,10 +204,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PORTAL-04 | Phase 5 | Complete |
 | PORTAL-05 | Phase 5 | Complete |
 | AITOOL-05 | Phase 5 | Complete |
-| AITOOL-01 | Phase 6 | Pending |
-| AITOOL-02 | Phase 6 | Pending |
-| AITOOL-03 | Phase 6 | Pending |
-| AITOOL-04 | Phase 6 | Pending |
+| AITOOL-01 | Phase 6 | Complete |
+| AITOOL-02 | Phase 6 | Complete |
+| AITOOL-03 | Phase 6 | Complete |
+| AITOOL-04 | Phase 6 | Complete |
 | PUX-01 | Phase 7 | Pending |
 
 **Coverage:**
