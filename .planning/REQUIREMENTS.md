@@ -198,13 +198,24 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PROC-02 | Phase 1 | Pending |
 | PROC-03 | Phase 3 | Complete |
 | PROC-04 | Phase 4 | Complete |
+| PORTAL-01 | Phase 5 | Pending |
+| PORTAL-02 | Phase 5 | Pending |
+| PORTAL-03 | Phase 5 | Pending |
+| PORTAL-04 | Phase 5 | Pending |
+| PORTAL-05 | Phase 5 | Pending |
+| AITOOL-05 | Phase 5 | Pending |
+| AITOOL-01 | Phase 6 | Pending |
+| AITOOL-02 | Phase 6 | Pending |
+| AITOOL-03 | Phase 6 | Pending |
+| AITOOL-04 | Phase 6 | Pending |
+| PUX-01 | Phase 7 | Pending |
 
 **Coverage:**
 - v1 requirements: 53 total (all complete)
-- v1.1 requirements: 11 total
-- Mapped to phases: 53 (v1) + 0 (v1.1, pending roadmap)
-- Unmapped: 11 (v1.1, pending roadmap)
+- v1.1 requirements: 11 total (all mapped)
+- Mapped to phases: 53 (v1) + 11 (v1.1)
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-21*
-*Last updated: 2026-02-25 after milestone v1.1 requirements definition*
+*Last updated: 2026-02-25 after milestone v1.1 roadmap creation (phases 5-7)*

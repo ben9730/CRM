@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-25)
 
 **Core value:** Sales and account management teams can track every customer relationship, deal, and interaction in one place — so nothing falls through the cracks.
-**Current focus:** Milestone v1.1 — Team Command Portal
+**Current focus:** Milestone v1.1 — Team Command Portal (Phase 5: Portal Foundation & API Safety)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 5 — Portal Foundation & API Safety
 Plan: —
-Status: Defining requirements for milestone v1.1
-Last activity: 2026-02-25 — Milestone v1.1 started
+Status: Roadmap created; ready to plan Phase 5
+Last activity: 2026-02-25 — v1.1 roadmap created (phases 5-7)
 
-Progress: [░░░░░░░░░░] 0% — requirements phase
+Progress: [##########] v1.0 complete — [░░░░░░░░░░] v1.1 0%
 
 ## Performance Metrics
 
@@ -101,17 +101,26 @@ Recent decisions affecting current work:
 - [Phase 04-polish-production]: Security review complete: 0 critical/high findings; rate limiting and CSP accepted as medium/low for known-user CRM
 - [Phase 04-polish-production]: Responsive polish: 3 targeted fixes (kanban header, kanban board padding, tasks header) — all other pages already had correct responsive patterns
 - [Phase 04-polish-production]: UAT bug fix: allContacts prop missing from LinkedTasks in contact-detail-client.tsx — contacts.length > 0 guard silently suppressed the Linked Contact dropdown
+- [v1.1 Roadmap]: Portal uses sibling (portal) route group — not nested inside (app); no sidebar, separate layout, clean /portal URL
+- [v1.1 Roadmap]: Single /api/chat endpoint extended with optional conversation_id — no new portal-specific route; ChatWidget unchanged
+- [v1.1 Roadmap]: Tool definitions extracted to src/lib/chat/tools.ts in Phase 5 before any new tools added in Phase 6
+- [v1.1 Roadmap]: Normalized chat_messages table (one row per message) — not JSON blob; enables sliding window queries and future pagination
+- [v1.1 Roadmap]: Two-step confirmation flow required for all AI write tools — card displayed first, DB write only on user confirm tap
+- [v1.1 Roadmap]: Gemini actual limits are 10 RPM / 250 RPD (not 500 RPD as in PROJECT.md) — per-user rate limiting + 429 handling required in Phase 5
+- [v1.1 Roadmap]: export const maxDuration = 30 required in /api/chat/route.ts — daily briefing with 3+ tool calls can exceed Vercel 10s default
+- [v1.1 Roadmap]: iOS Safari input layout requires h-dvh container + flex-column layout (no position: fixed) — real device test required for Phase 7 sign-off
 
 ### Pending Todos
 
-None.
+- Update PROJECT.md: Gemini limits are 10 RPM / 250 RPD (not 500 RPD / 15 RPM) — reconcile before Phase 5 is planned
 
 ### Blockers/Concerns
 
 - [Phase 4]: Supabase BAA must be signed before production launch if any patient-adjacent data is stored (business action, not code task)
+- [v1.1 Phase 6]: Two-step AI confirmation flow (card display → user tap → DB write within Gemini function calling loop) has no established reference implementation — design session required before Phase 6 coding begins
 
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Milestone v1.1 initialization — defining requirements
+Stopped at: v1.1 roadmap created — phases 5-7 defined; ready to plan Phase 5
 Resume file: N/A

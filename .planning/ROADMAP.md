@@ -4,6 +4,8 @@
 
 HealthCRM is built in four phases that strictly follow the mandated order: visual design first, then backend infrastructure, then all CRM features integrated together, then production polish. Phase 1 produces approved prototypes and a component library before a single line of backend code is written. Phase 2 builds the database schema and auth layer that all features depend on. Phase 3 wires every CRM entity (orgs, contacts, deals, interactions, tasks, dashboard) to the live backend. Phase 4 adds export, security review, and production deployment.
 
+Milestone v1.1 (Team Command Portal) extends the application with three additional phases (5-7) that add a mobile-first AI command portal, write-capable AI tools with confirmation flow, and mobile UX polish.
+
 ## Phases
 
 **Phase Numbering:**
@@ -16,6 +18,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Backend & Data Layer** - Database schema, RLS, auth, and infrastructure scaffolded — all 8/8 UAT tests pass
 - [x] **Phase 3: Integration & Features** - All CRM features built and wired to live backend (completed 2026-02-23)
 - [x] **Phase 4: Polish & Production** - CSV export, security review, and production deployment (completed 2026-02-23)
+- [ ] **Phase 5: Portal Foundation & API Safety** - Working /portal route with auth gate, mobile layout, markdown rendering, rate limit protection, and safe API infrastructure
+- [ ] **Phase 6: Conversation Persistence & AI Write Tools** - Messages saved to Supabase per user; write tools (create contact, create deal, complete task, daily briefing) with confirmation flow
+- [ ] **Phase 7: Mobile UX Polish** - Quick action buttons, iOS Safari validation, and portal UX refinements
 
 ## Phase Details
 
@@ -88,14 +93,51 @@ Plans:
 - [x] 04-02-PLAN.md — Security review (security-reviewer agent + Supabase MCP advisors) + Playwright E2E test suite
 - [x] 04-03-PLAN.md — Production deployment verification, responsive polish, and final sign-off
 
+### Phase 5: Portal Foundation & API Safety
+**Goal**: Field sales reps can open /portal on their phone and have a working full-page AI chat with markdown rendering — built on a safe API foundation that won't corrupt data or exhaust quota
+**Depends on**: Phase 4
+**Requirements**: PORTAL-01, PORTAL-02, PORTAL-03, PORTAL-04, PORTAL-05, AITOOL-05
+**Success Criteria** (what must be TRUE):
+  1. User can navigate to /portal and is redirected to login if not authenticated; authenticated users see a full-page chat interface with no CRM sidebar
+  2. On a phone, the chat input stays above the iOS virtual keyboard, messages scroll correctly, and the layout uses full viewport height without layout shift
+  3. AI responses containing bold text, bullet lists, headers, and code blocks render as formatted markdown — not as raw symbols like ** or ##
+  4. When the Gemini rate limit is exceeded, the portal displays a friendly message explaining the limit and when to retry — not a raw error or blank screen
+  5. The floating ChatWidget is not visible on /portal; tool definitions are extracted to a shared module used by both the widget and the portal
+**Plans**: TBD
+
+### Phase 6: Conversation Persistence & AI Write Tools
+**Goal**: Field reps can take real action from the portal — creating contacts, deals, and completing tasks via chat — with messages saved to Supabase so history survives across sessions
+**Depends on**: Phase 5
+**Requirements**: AITOOL-01, AITOOL-02, AITOOL-03, AITOOL-04
+**Success Criteria** (what must be TRUE):
+  1. When a user returns to /portal, their previous conversation messages are loaded and visible — history persists across browser refreshes and sessions
+  2. User can type "add contact [name] at [org]" and a new contact is created in the CRM — the chat displays a confirmation card with the contact's name and a link to their record
+  3. User can type "create deal [name] for [org]" and a new deal is created in the pipeline — the chat displays a confirmation card with deal name, stage, and a link to the deal
+  4. User can type "mark task [description] complete" and the task is marked done in the CRM — the chat confirms with the task title and completion status
+  5. User can type "daily briefing" or "what's on today" and receive a structured summary of overdue tasks, tasks due today, and pipeline deals closing soon
+**Plans**: TBD
+
+### Phase 7: Mobile UX Polish
+**Goal**: The portal works correctly on a real iPhone and common operations are one tap away — the portal is ready for daily field use
+**Depends on**: Phase 6
+**Requirements**: PUX-01
+**Success Criteria** (what must be TRUE):
+  1. Always-visible quick action buttons are displayed above the chat input — tapping one (e.g. "My Tasks", "Daily Briefing", "Add Task") immediately sends that command without typing
+  2. The portal layout passes a real-device iOS Safari test: the keyboard does not cover the input, scrolling works naturally, and no layout elements clip or overflow
+  3. The floating ChatWidget is confirmed absent on /portal across all tested screen sizes and browsers
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Frontend Design & UI | 3/3 | Complete | 2026-02-22 |
 | 2. Backend & Data Layer | 4/4 | Complete | 2026-02-22 |
 | 3. Integration & Features | 6/6 | Complete | 2026-02-23 |
-| 4. Polish & Production | 3/3 | Complete   | 2026-02-23 |
+| 4. Polish & Production | 3/3 | Complete | 2026-02-23 |
+| 5. Portal Foundation & API Safety | 0/? | Not started | - |
+| 6. Conversation Persistence & AI Write Tools | 0/? | Not started | - |
+| 7. Mobile UX Polish | 0/? | Not started | - |
