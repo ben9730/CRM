@@ -12,27 +12,49 @@ Sales and account management teams can track every customer relationship, deal, 
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ Contact management (customers, leads, companies) with search, filter, and tags — v1.0
+- ✓ Deal/opportunity pipeline with drag-and-drop Kanban board — v1.0
+- ✓ Interaction history (calls, emails, meetings, notes) linked to contacts — v1.0
+- ✓ Task management and reminders tied to contacts/deals — v1.0
+- ✓ Dashboard with key metrics and activity feed — v1.0
+- ✓ User authentication and basic role management — v1.0
+- ✓ Responsive design (desktop + mobile) — v1.0
+- ✓ Cloud deployment (accessible from anywhere) — v1.0
+- ✓ AI chat assistant with CRM function calling (Gemini) — v1.0
 
 ### Active
 
-- [ ] Contact management (customers, leads, companies) with search, filter, and tags
-- [ ] Deal/opportunity pipeline with drag-and-drop Kanban board
-- [ ] Interaction history (calls, emails, meetings, notes) linked to contacts
-- [ ] Task management and reminders tied to contacts/deals
-- [ ] Dashboard with key metrics and activity feed
-- [ ] User authentication and basic role management
-- [ ] Responsive design (desktop + mobile)
-- [ ] Cloud deployment (accessible from anywhere)
+- [ ] Team command portal — shared `/portal` page with full-page AI chat for remote CRM management
+- [ ] Expanded AI tools — create/search/complete tasks, add/search contacts, create deals, daily summary
+- [ ] Mobile-first portal design — optimized for phone usage from the field
+- [ ] Action confirmation cards — rich formatted responses showing created/modified data
+- [ ] Persistent conversation history — chat history saved per user across sessions
+- [ ] Quick action buttons — one-tap common operations (my tasks, pipeline summary, add task)
 
 ### Out of Scope
 
 - Patient/health record storage — CRM tracks business relationships, not clinical data
-- HIPAA compliance — no protected health information (PHI) stored; only business-level facility data (e.g., bed count, departments, volume references)
-- Mobile native app — web-responsive is sufficient for v1
-- Email integration (send/receive from CRM) — log manually for v1
+- HIPAA compliance — no protected health information (PHI) stored; only business-level facility data
+- Mobile native app — web-responsive is sufficient
+- Email integration (send/receive from CRM) — log manually
 - Billing/invoicing — separate system
 - Marketing automation — not needed at this scale
+- Real-time sync between portal users — deferred to v2 (Supabase Realtime)
+- Voice input for portal — deferred to v2
+- Push notifications — deferred to v2
+
+## Current Milestone: v1.1 Team Command Portal
+
+**Goal:** Give team members a shared, mobile-friendly web portal where they can manage CRM tasks, contacts, and deals via natural language chat — enabling lightweight remote work without needing the full CRM interface.
+
+**Target features:**
+- Full-page AI chat interface at `/portal` with Supabase auth
+- Expanded AI tools: create/search/complete tasks, add/search contacts, create deals, reports
+- Mobile-first responsive design (primary use case is from phone)
+- Rich action confirmation cards (not just text responses)
+- Persistent conversation history per user
+- Quick action suggestion buttons for common operations
+- Daily briefing command (overdue tasks, today's schedule, pipeline changes)
 
 ## Context
 
@@ -61,6 +83,10 @@ Sales and account management teams can track every customer relationship, deal, 
 | Cloud hosted (Vercel + Supabase likely) | Accessibility from any location, minimal ops overhead | — Pending |
 | Frontend-first development | Visual approval before backend investment; design drives architecture | — Pending |
 | No PHI storage | Avoids HIPAA compliance burden; CRM tracks business relationships only | — Pending |
+| AI chat via Gemini 2.5 Flash (free tier) | Zero cost, sufficient for small team usage (500 RPD, 15 RPM) | ✓ Good |
+| Portal uses existing Supabase auth | No need for separate Google OAuth; registered CRM users access portal | — Pending |
+| Shared URL (not per-user links) | /portal route with standard auth; simpler and more secure | — Pending |
+| Persist to DB, no real-time sync | Actions save immediately; real-time sync deferred to v2 | — Pending |
 
 ## Resource Map
 
@@ -104,4 +130,4 @@ Sales and account management teams can track every customer relationship, deal, 
 | Task (subagents) | Parallel research, code review, testing |
 
 ---
-*Last updated: 2026-02-21 after initialization*
+*Last updated: 2026-02-25 after milestone v1.1 start*
