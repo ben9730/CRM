@@ -9,6 +9,7 @@ import {
   Briefcase,
   CheckSquare,
   MessageSquare,
+  Bot,
 } from "lucide-react";
 
 import {
@@ -67,6 +68,12 @@ export function AppSidebar({ overdueTaskCount = 0 }: AppSidebarProps) {
       title: "Interactions",
       href: "/interactions",
       icon: MessageSquare,
+      badge: null,
+    },
+    {
+      title: "AI Chat",
+      href: "/portal",
+      icon: Bot,
       badge: null,
     },
   ];
