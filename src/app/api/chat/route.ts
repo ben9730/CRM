@@ -75,13 +75,15 @@ export async function POST(request: Request) {
             .eq('id', sessionId)
         }
 
+        const updatedHistory = await chat.getHistory()
         return NextResponse.json({
           pendingAction: {
             tool: fc.name,
             args: fc.args,
             preview,
             sessionId,
-          }
+          },
+          history: updatedHistory,
         })
       }
 

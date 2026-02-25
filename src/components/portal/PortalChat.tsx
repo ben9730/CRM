@@ -109,6 +109,9 @@ export function PortalChat() {
       }
 
       if (data.pendingAction) {
+        if (data.history) {
+          setGeminiHistory(data.history)
+        }
         setPendingAction(data.pendingAction)
         // Add a pending message that will render as ConfirmationCard
         setMessages(prev => {
