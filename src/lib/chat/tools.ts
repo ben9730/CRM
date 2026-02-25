@@ -1,4 +1,4 @@
-import { type FunctionDeclaration, type FunctionResponsePart, SchemaType } from '@google/generative-ai'
+import Groq from 'groq-sdk'
 import { getAccountId } from '@/lib/queries/account'
 import { getLocalToday, toDateOnly } from '@/lib/utils'
 
@@ -11,99 +11,134 @@ export const SYSTEM_PROMPT = `You are an AI assistant built into a B2B Health CR
 - When creating a task, confirm what was created
 - If a query returns no results, let the user know politely`
 
-export const chatTools: FunctionDeclaration[] = [
+export type ChatTool = Groq.Chat.Completions.ChatCompletionTool
+
+export const chatTools: ChatTool[] = [
   {
-    name: 'get_urgent_tasks',
-    description: 'Fetch overdue and high priority incomplete tasks. Use when user asks about urgent, important, or overdue tasks.',
-    parameters: { type: SchemaType.OBJECT, properties: {} },
-  },
-  {
-    name: 'get_all_tasks',
-    description: 'Fetch all pending (incomplete) tasks with due dates. Use when user asks to see all their tasks or task list.',
-    parameters: { type: SchemaType.OBJECT, properties: {} },
-  },
-  {
-    name: 'get_pipeline_status',
-    description: 'Get total pipeline value, deals per stage, and active deals count. Use when user asks about pipeline, deals overview, or sales status.',
-    parameters: { type: SchemaType.OBJECT, properties: {} },
-  },
-  {
-    name: 'get_analytics',
-    description: 'Get deals by stage, recent interactions count, and conversion info. Use when user asks about analytics, performance, or stats.',
-    parameters: { type: SchemaType.OBJECT, properties: {} },
-  },
-  {
-    name: 'create_task',
-    description: 'Create a new task. Use when user asks to add, create, or schedule a task.',
-    parameters: {
-      type: SchemaType.OBJECT,
-      properties: {
-        title: { type: SchemaType.STRING, description: 'Task title' },
-        priority: { type: SchemaType.STRING, description: 'Priority level. Must be one of: high, normal, low' },
-        due_date: { type: SchemaType.STRING, description: 'Due date in YYYY-MM-DD format (optional)' },
-      },
-      required: ['title'],
+    type: 'function',
+    function: {
+      name: 'get_urgent_tasks',
+      description: 'Fetch overdue and high priority incomplete tasks. Use when user asks about urgent, important, or overdue tasks.',
+      parameters: { type: 'object', properties: {} },
     },
   },
   {
-    name: 'get_contacts',
-    description: 'Search contacts by name or return recent contacts. Use when user asks about contacts or people.',
-    parameters: {
-      type: SchemaType.OBJECT,
-      properties: {
-        search: { type: SchemaType.STRING, description: 'Search term to filter contacts by name (optional)' },
+    type: 'function',
+    function: {
+      name: 'get_all_tasks',
+      description: 'Fetch all pending (incomplete) tasks with due dates. Use when user asks to see all their tasks or task list.',
+      parameters: { type: 'object', properties: {} },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_pipeline_status',
+      description: 'Get total pipeline value, deals per stage, and active deals count. Use when user asks about pipeline, deals overview, or sales status.',
+      parameters: { type: 'object', properties: {} },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_analytics',
+      description: 'Get deals by stage, recent interactions count, and conversion info. Use when user asks about analytics, performance, or stats.',
+      parameters: { type: 'object', properties: {} },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'create_task',
+      description: 'Create a new task. Use when user asks to add, create, or schedule a task.',
+      parameters: {
+        type: 'object',
+        properties: {
+          title: { type: 'string', description: 'Task title' },
+          priority: { type: 'string', description: 'Priority level. Must be one of: high, normal, low' },
+          due_date: { type: 'string', description: 'Due date in YYYY-MM-DD format (optional)' },
+        },
+        required: ['title'],
       },
     },
   },
   {
-    name: 'get_recent_activity',
-    description: 'Get last 10 interactions (calls, emails, meetings, notes). Use when user asks about recent activity or interactions.',
-    parameters: { type: SchemaType.OBJECT, properties: {} },
-  },
-  {
-    name: 'create_contact',
-    description: 'Create a new contact in the CRM. Use when user says "add contact", "create contact", or similar.',
-    parameters: {
-      type: SchemaType.OBJECT,
-      properties: {
-        first_name: { type: SchemaType.STRING, description: 'Contact first name' },
-        last_name: { type: SchemaType.STRING, description: 'Contact last name' },
-        organization_name: { type: SchemaType.STRING, description: 'Name of the organization to link the contact to (optional)' },
-        title: { type: SchemaType.STRING, description: 'Job title (optional)' },
-        email: { type: SchemaType.STRING, description: 'Email address (optional)' },
+    type: 'function',
+    function: {
+      name: 'get_contacts',
+      description: 'Search contacts by name or return recent contacts. Use when user asks about contacts or people.',
+      parameters: {
+        type: 'object',
+        properties: {
+          search: { type: 'string', description: 'Search term to filter contacts by name (optional)' },
+        },
       },
-      required: ['first_name', 'last_name'],
     },
   },
   {
-    name: 'create_deal',
-    description: 'Create a new deal in the pipeline. Use when user says "create deal", "add deal", "new opportunity", or similar.',
-    parameters: {
-      type: SchemaType.OBJECT,
-      properties: {
-        title: { type: SchemaType.STRING, description: 'Deal title or name' },
-        organization_name: { type: SchemaType.STRING, description: 'Organization this deal is for (optional)' },
-        value: { type: SchemaType.NUMBER, description: 'Deal value in USD (optional)' },
-        stage_name: { type: SchemaType.STRING, description: 'Pipeline stage name (optional, defaults to first stage)' },
-      },
-      required: ['title'],
+    type: 'function',
+    function: {
+      name: 'get_recent_activity',
+      description: 'Get last 10 interactions (calls, emails, meetings, notes). Use when user asks about recent activity or interactions.',
+      parameters: { type: 'object', properties: {} },
     },
   },
   {
-    name: 'complete_task',
-    description: 'Mark a task as complete. Use when user says "complete task", "mark task done", "finish task", or similar.',
-    parameters: {
-      type: SchemaType.OBJECT,
-      properties: {
-        task_title: { type: SchemaType.STRING, description: 'Title or partial title of the task to mark complete' },
+    type: 'function',
+    function: {
+      name: 'create_contact',
+      description: 'Create a new contact in the CRM. Use when user says "add contact", "create contact", or similar.',
+      parameters: {
+        type: 'object',
+        properties: {
+          first_name: { type: 'string', description: 'Contact first name' },
+          last_name: { type: 'string', description: 'Contact last name' },
+          organization_name: { type: 'string', description: 'Name of the organization to link the contact to (optional)' },
+          title: { type: 'string', description: 'Job title (optional)' },
+          email: { type: 'string', description: 'Email address (optional)' },
+        },
+        required: ['first_name', 'last_name'],
       },
-      required: ['task_title'],
     },
   },
   {
-    name: 'daily_briefing',
-    description: "Get a daily briefing: overdue tasks, tasks due today, and deals closing soon. Use for \"daily briefing\", \"what's on today\", \"what do I have today\", \"morning summary\", or similar.",
-    parameters: { type: SchemaType.OBJECT, properties: {} },
+    type: 'function',
+    function: {
+      name: 'create_deal',
+      description: 'Create a new deal in the pipeline. Use when user says "create deal", "add deal", "new opportunity", or similar.',
+      parameters: {
+        type: 'object',
+        properties: {
+          title: { type: 'string', description: 'Deal title or name' },
+          organization_name: { type: 'string', description: 'Organization this deal is for (optional)' },
+          value: { type: 'number', description: 'Deal value in USD (optional)' },
+          stage_name: { type: 'string', description: 'Pipeline stage name (optional, defaults to first stage)' },
+        },
+        required: ['title'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'complete_task',
+      description: 'Mark a task as complete. Use when user says "complete task", "mark task done", "finish task", or similar.',
+      parameters: {
+        type: 'object',
+        properties: {
+          task_title: { type: 'string', description: 'Title or partial title of the task to mark complete' },
+        },
+        required: ['task_title'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'daily_briefing',
+      description: "Get a daily briefing: overdue tasks, tasks due today, and deals closing soon. Use for \"daily briefing\", \"what's on today\", \"what do I have today\", \"morning summary\", or similar.",
+      parameters: { type: 'object', properties: {} },
+    },
   },
 ]
 

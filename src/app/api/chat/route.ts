@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, type FunctionResponsePart } from '@google/generative-ai'
+import Groq from 'groq-sdk'
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { chatTools, executeTool, SYSTEM_PROMPT, WRITE_TOOLS, buildActionPreview } from '@/lib/chat/tools'
@@ -23,9 +23,9 @@ async function saveMessages(
 }
 
 export async function POST(request: Request) {
-  const apiKey = process.env.GEMINI_API_KEY
+  const apiKey = process.env.GROQ_API_KEY
   if (!apiKey) {
-    return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 })
+    return NextResponse.json({ error: 'Groq API key not configured' }, { status: 500 })
   }
 
   const supabase = await createClient()
@@ -40,29 +40,30 @@ export async function POST(request: Request) {
   }
 
   try {
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      systemInstruction: SYSTEM_PROMPT,
-      tools: [{ functionDeclarations: chatTools }],
+    const groq = new Groq({ apiKey })
+
+    const messages: Groq.Chat.ChatCompletionMessageParam[] = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      ...(history ?? []),
+      { role: 'user', content: message },
+    ]
+
+    let response = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages,
+      tools: chatTools,
+      tool_choice: 'auto',
     })
 
-    const chat = model.startChat({
-      history: history ?? [],
-    })
+    let assistantMessage = response.choices[0].message
 
-    let result = await chat.sendMessage(message)
-    let response = result.response
-
-    // Handle tool calls in a loop (Gemini may call multiple tools sequentially)
-    while (response.candidates?.[0]?.content?.parts?.some(p => p.functionCall)) {
-      const functionCalls = response.candidates[0].content.parts.filter(p => p.functionCall)
-
+    // Handle tool calls in a loop
+    while (assistantMessage.tool_calls && assistantMessage.tool_calls.length > 0) {
       // Check for write tools — return pendingAction instead of executing
-      const writeCall = functionCalls.find(p => WRITE_TOOLS.has(p.functionCall!.name))
+      const writeCall = assistantMessage.tool_calls.find(tc => WRITE_TOOLS.has(tc.function.name))
       if (writeCall) {
-        const fc = writeCall.functionCall!
-        const preview = buildActionPreview(fc.name, (fc.args ?? {}) as Record<string, unknown>)
+        const args = JSON.parse(writeCall.function.arguments) as Record<string, unknown>
+        const preview = buildActionPreview(writeCall.function.name, args)
 
         // Save the user message before returning pendingAction
         if (sessionId) {
@@ -75,11 +76,17 @@ export async function POST(request: Request) {
             .eq('id', sessionId)
         }
 
-        const updatedHistory = await chat.getHistory()
+        // Build history up to and including the tool call
+        const updatedHistory = [
+          ...(history ?? []),
+          { role: 'user' as const, content: message },
+          assistantMessage,
+        ]
+
         return NextResponse.json({
           pendingAction: {
-            tool: fc.name,
-            args: fc.args,
+            tool: writeCall.function.name,
+            args,
             preview,
             sessionId,
           },
@@ -88,41 +95,51 @@ export async function POST(request: Request) {
       }
 
       // Execute non-write tools normally
-      const toolResults: FunctionResponsePart[] = []
-      for (const part of functionCalls) {
-        const fc = part.functionCall!
-        const toolResult = await executeTool(fc.name, (fc.args ?? {}) as Record<string, unknown>, supabase)
-        toolResults.push({
-          functionResponse: {
-            name: fc.name,
-            response: toolResult as object,
-          },
+      messages.push(assistantMessage)
+      for (const toolCall of assistantMessage.tool_calls) {
+        const toolResult = await executeTool(
+          toolCall.function.name,
+          JSON.parse(toolCall.function.arguments) as Record<string, unknown>,
+          supabase
+        )
+        messages.push({
+          role: 'tool',
+          tool_call_id: toolCall.id,
+          content: JSON.stringify(toolResult),
         })
       }
 
-      result = await chat.sendMessage(toolResults)
-      response = result.response
+      response = await groq.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages,
+        tools: chatTools,
+        tool_choice: 'auto',
+      })
+      assistantMessage = response.choices[0].message
     }
 
-    const text = response.text()
+    const text = assistantMessage.content ?? ''
 
     // Save messages to DB if sessionId provided
     if (sessionId) {
       await saveMessages(supabase, sessionId, message, text)
     }
 
-    // Build the updated history to send back
-    const updatedHistory = await chat.getHistory()
+    // Build the updated history to send back (without system prompt)
+    const updatedHistory = [
+      ...(history ?? []),
+      { role: 'user' as const, content: message },
+      assistantMessage,
+    ]
 
     return NextResponse.json({ response: text, history: updatedHistory })
   } catch (err) {
     console.error('Chat API error:', err)
     const errorMessage = err instanceof Error ? err.message : 'Unknown error'
 
-    // Detect Gemini rate limit (RPM or RPD exceeded)
     const isRateLimited =
       errorMessage.includes('429') ||
-      errorMessage.includes('RESOURCE_EXHAUSTED')
+      errorMessage.includes('rate_limit')
 
     if (isRateLimited) {
       return NextResponse.json(

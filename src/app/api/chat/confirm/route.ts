@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, type FunctionResponsePart } from '@google/generative-ai'
+import Groq from 'groq-sdk'
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { chatTools, executeTool, SYSTEM_PROMPT } from '@/lib/chat/tools'
@@ -6,7 +6,7 @@ import { chatTools, executeTool, SYSTEM_PROMPT } from '@/lib/chat/tools'
 export const maxDuration = 30
 
 export async function POST(request: Request) {
-  const apiKey = process.env.GEMINI_API_KEY
+  const apiKey = process.env.GROQ_API_KEY
   if (!apiKey) return NextResponse.json({ error: 'Not configured' }, { status: 500 })
 
   const supabase = await createClient()
@@ -20,22 +20,35 @@ export async function POST(request: Request) {
     // Execute the confirmed write tool
     const toolResult = await executeTool(tool, args as Record<string, unknown>, supabase)
 
-    // Send tool result to Gemini to get a natural language confirmation
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      systemInstruction: SYSTEM_PROMPT,
-      tools: [{ functionDeclarations: chatTools }],
+    // Find the tool call ID from history (last assistant message with tool_calls)
+    const lastAssistant = [...(history ?? [])].reverse().find(
+      (m: { role: string; tool_calls?: unknown[] }) => m.role === 'assistant' && m.tool_calls
+    )
+    const toolCallId = lastAssistant?.tool_calls?.find(
+      (tc: { function: { name: string } }) => tc.function.name === tool
+    )?.id ?? 'call_confirmed'
+
+    // Send tool result to Groq to get a natural language confirmation
+    const groq = new Groq({ apiKey })
+
+    const messages: Groq.Chat.ChatCompletionMessageParam[] = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      ...(history ?? []),
+      {
+        role: 'tool',
+        tool_call_id: toolCallId,
+        content: JSON.stringify(toolResult),
+      },
+    ]
+
+    const response = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages,
+      tools: chatTools,
+      tool_choice: 'none',
     })
 
-    const chat = model.startChat({ history: history ?? [] })
-
-    // Send function response to Gemini
-    const functionResponse: FunctionResponsePart = {
-      functionResponse: { name: tool, response: toolResult as object },
-    }
-    const result = await chat.sendMessage([functionResponse])
-    const text = result.response.text()
+    const text = response.choices[0].message.content ?? ''
 
     // Save assistant confirmation message to DB
     if (sessionId) {
@@ -48,13 +61,22 @@ export async function POST(request: Request) {
         .eq('id', sessionId)
     }
 
-    const updatedHistory = await chat.getHistory()
+    const updatedHistory = [
+      ...(history ?? []),
+      {
+        role: 'tool' as const,
+        tool_call_id: toolCallId,
+        content: JSON.stringify(toolResult),
+      },
+      response.choices[0].message,
+    ]
+
     return NextResponse.json({ response: text, history: updatedHistory })
   } catch (err) {
     console.error('Confirm API error:', err)
     const errorMessage = err instanceof Error ? err.message : 'Unknown error'
 
-    const isRateLimited = errorMessage.includes('429') || errorMessage.includes('RESOURCE_EXHAUSTED')
+    const isRateLimited = errorMessage.includes('429') || errorMessage.includes('rate_limit')
     if (isRateLimited) {
       return NextResponse.json(
         { rateLimited: true, friendlyMessage: "I'm taking a breather -- try again in a minute" },
