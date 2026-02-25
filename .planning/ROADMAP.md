@@ -119,7 +119,12 @@ Plans:
   3. User can type "create deal [name] for [org]" and a new deal is created in the pipeline — the chat displays a confirmation card with deal name, stage, and a link to the deal
   4. User can type "mark task [description] complete" and the task is marked done in the CRM — the chat confirms with the task title and completion status
   5. User can type "daily briefing" or "what's on today" and receive a structured summary of overdue tasks, tasks due today, and pipeline deals closing soon
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 06-01-PLAN.md -- Chat tables (chat_sessions + chat_messages) with RLS, session API, PortalChat persistence wiring, auth redirect preservation
+- [ ] 06-02-PLAN.md -- Four new AI tool definitions (create_contact, create_deal, complete_task, daily_briefing) with executors, write tool detection in chat route, /api/chat/confirm endpoint
+- [ ] 06-03-PLAN.md -- ConfirmationCard component, PortalChat pendingAction state with confirm/cancel flow, human verification checkpoint
 
 ### Phase 7: Mobile UX Polish
 **Goal**: The portal works correctly on a real iPhone and common operations are one tap away — the portal is ready for daily field use
