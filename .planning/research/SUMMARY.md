@@ -1,17 +1,29 @@
 # Project Research Summary
 
-**Project:** Healthcare B2B CRM Web Application
-**Domain:** B2B SaaS CRM — Health Technology Sales (hospitals, clinics, labs)
-**Researched:** 2026-02-21
-**Confidence:** HIGH (stack), MEDIUM-HIGH (features, pitfalls), HIGH (architecture)
+**Project:** HealthCRM — including Team Command Portal (v1.1)
+**Domain:** B2B SaaS CRM (Health Technology) + AI-Powered Mobile Chat Portal
+**Researched:** 2026-02-21 (v1.0 CRM) / 2026-02-25 (v1.1 Team Command Portal)
+**Confidence:** HIGH
+
+---
+
+> **Note:** This summary has been updated from the original v1.0 CRM research (2026-02-21) to incorporate
+> v1.1 Team Command Portal research (2026-02-25). The v1.0 CRM section is retained in full below.
+> The v1.1 portal section covers only the delta — new stack, new features, new architecture, new pitfalls.
+
+---
 
 ## Executive Summary
 
-This is a B2B sales CRM purpose-built for a health technology company selling to hospitals, clinics, and labs. The domain is characterized by long deal cycles (12+ months), multiple decision-makers per account (~9 on average), and account-based selling where the organization (hospital, clinic) is the primary unit — not the individual contact. The research consensus points to a Next.js 16 + Supabase + shadcn/ui stack as the clear optimal choice for this context: React Server Components reduce client-side complexity, Supabase delivers PostgreSQL with built-in auth and row-level security, and shadcn/ui produces the premium SaaS aesthetic required without the bundle overhead of Material UI alternatives. All versions are verified current as of 2026-02-21.
+### v1.0 CRM (baseline, in production)
 
-The recommended approach is to build an opinionated, focused CRM rather than a feature-broad one. The research strongly indicates that CRM adoption fails for small teams when logging is tedious and features exceed what the workflow demands. The v1 scope should cover eleven core capabilities (auth, organizations, contacts, deals, Kanban pipeline, interaction history, tasks, dashboard, tagging, roles, data export) and defer everything that would bloat the product — including native email, marketing automation, AI scoring, and custom report builders. Healthtech-specific defaults (pre-configured deal stages, structured stakeholder roles) add differentiation at near-zero implementation cost and should ship with v1.
+This is a B2B sales CRM purpose-built for a health technology company selling to hospitals, clinics, and labs. The domain is characterized by long deal cycles (12+ months), multiple decision-makers per account (~9 on average), and account-based selling where the organization (hospital, clinic) is the primary unit — not the individual contact. The research consensus points to a Next.js 16 + Supabase + shadcn/ui stack as the clear optimal choice for this context: React Server Components reduce client-side complexity, Supabase delivers PostgreSQL with built-in auth and row-level security, and shadcn/ui produces the premium SaaS aesthetic required without the bundle overhead of Material UI alternatives.
 
-The biggest risks are all in data modeling. Three database decisions made in Phase 1 are extremely costly to reverse later: using a flat contact-organization FK instead of a junction table, storing pipeline stages as plain text strings instead of a normalized table, and skipping row-level security. Research documents real-world incidents where each of these was deferred and required painful migrations. Treat all three as non-negotiable constraints during schema design, before any feature is built on top of the data model.
+### v1.1 Team Command Portal (current milestone)
+
+The v1.1 milestone adds a full-page AI command portal (`/portal`) to the existing HealthCRM. The portal is a mobile-first dedicated surface for field sales reps who need to take action between hospital visits — not just view data. The recommended approach follows the patterns established by HubSpot Breeze and Salesforce Einstein Copilot: a dedicated chat route, write-capable AI tools, rich action confirmation cards, persistent conversation history, and a daily briefing aggregation command. The stack additions are minimal: three new npm packages (`react-markdown`, `remark-gfm`, `react-textarea-autosize`) on top of the existing stack with no AI SDK migration.
+
+The dominant risks for v1.1 are infrastructure-level and must be addressed before any multi-user testing: the Gemini free tier quota is shared across all users at the project level (actual limits are 10 RPM / 250 RPD — lower than PROJECT.md's 500 RPD figure), multi-tool AI calls can breach Vercel's 10-second serverless timeout, and AI write operations will create incorrect CRM data if a confirmation step is not built into the architecture from the start. None of these are hard to prevent, but all become expensive to retrofit after the first phase ships.
 
 ---
 
@@ -19,183 +31,181 @@ The biggest risks are all in data modeling. Three database decisions made in Pha
 
 ### Recommended Stack
 
-The stack centers on Next.js 16 (App Router + Turbopack) with React 19, TypeScript 5.9, Tailwind CSS v4, and Supabase as the managed backend. This combination is well-matched to the CRM domain: Server Components handle data-heavy list pages with zero client-side boilerplate, Server Actions eliminate separate API route files for mutations, and Supabase RLS enforces data access control at the database level without application-layer guards. The Supabase MCP and Playwright MCP are both available for this project and should be used during development.
+#### v1.0 CRM (existing stack — do not re-research)
 
-TanStack Query manages server state with caching and optimistic updates; Zustand handles lightweight client UI state (modal open/close, filter panels, selected rows). React Hook Form with Zod handles the CRM's heavy form surface. TanStack Table renders contact and deal lists headlessly with sorting, filtering, and pagination. Recharts provides pipeline analytics and dashboard charts.
+The stack centers on Next.js 16 (App Router + Turbopack) with React 19, TypeScript 5.x, Tailwind CSS v4, and Supabase as the managed backend. TanStack Query manages server state; React Hook Form + Zod handles forms; TanStack Table renders data grids; Recharts provides charts; dnd-kit powers the Kanban board.
 
-**Core technologies:**
-- **Next.js 16.1.6** — Full-stack framework; App Router + RSC is the 2026 standard for React; Turbopack default
-- **Supabase (supabase-js 2.97.0 + @supabase/ssr 0.8.0)** — PostgreSQL + Auth + Realtime + RLS; use `@supabase/ssr` for server components, never the base client directly
-- **shadcn/ui 3.8.5 + Tailwind CSS 4.2.0** — Copy-owned components on Tailwind v4; premium SaaS aesthetic; ~5KB vs MUI's 80KB
-- **TanStack Query 5.90.21** — Server state caching, optimistic mutations, background refetch
-- **React Hook Form 7.71.2 + Zod 4.3.6** — Uncontrolled form management + TypeScript-first validation; Formik is abandoned and must not be used
-- **TanStack Table 8.21.3** — Headless data grid for contact/deal lists
-- **Recharts 3.7.0** — Pipeline funnel, revenue, and activity charts
-- **Vercel Pro** — First-class Next.js 16 hosting; git-push-to-deploy; zero ops
+**Core v1.0 technologies:**
+- **Next.js 16.1.6** — Full-stack framework; App Router + RSC
+- **Supabase (supabase-js 2.97.0 + @supabase/ssr 0.8.0)** — PostgreSQL + Auth + Realtime + RLS
+- **shadcn/ui 3.x + Tailwind CSS 4.x** — Component library on Tailwind v4
+- **TanStack Query 5.x** — Server state caching and optimistic mutations
+- **React Hook Form 7.71.2 + Zod 4.3.6** — Form management + validation
+- **TanStack Table 8.21.3** — Headless data grid
+- **@google/generative-ai 0.24.1** — Gemini 2.5 Flash function calling (existing ChatWidget)
+- **dnd-kit 6.x / 10.x** — Drag-and-drop Kanban
 
-**Critical version constraints:**
-- Next.js 16 requires TypeScript 5.1+ (5.9.3 recommended)
-- shadcn/ui v3 targets Tailwind v4 by default — do not mix with Tailwind v3
-- Use `@supabase/ssr` (not legacy auth-helpers) for cookie-based sessions in App Router
-- `middleware.ts` is deprecated in Next.js 16; use `proxy.ts` for new projects
+#### v1.1 Portal Additions (3 new packages only)
+
+| Library | Version | Purpose |
+|---------|---------|---------|
+| `react-markdown` | 10.1.0 | Render AI responses as formatted markdown; must be used inside `'use client'` component (ESM-only + Next.js 16) |
+| `remark-gfm` | 4.0.1 | GitHub Flavored Markdown plugin for react-markdown; adds tables, task lists, strikethrough |
+| `react-textarea-autosize` | 8.5.9 | Auto-growing textarea for chat input; handles iOS Safari edge cases CSS `field-sizing: content` does not yet cover |
+
+**What was explicitly rejected for v1.1:**
+- Vercel AI SDK migration (`ai` + `@ai-sdk/google`) — would require rewriting the entire API route and client state; deferred to v2 if streaming becomes a requirement
+- `socket.io` / Supabase Realtime for portal — real-time shared sessions deferred per PROJECT.md
+- Zustand for portal state — local `useState` + `useRef` is correct for single-user chat UI state
 
 ### Expected Features
 
-The CRM must serve account-based B2B selling for a small team (1-5 users). Features are stratified into three tiers. The MVP scope is what is required to replace a spreadsheet; v1.x adds features once core workflows are validated; v2+ defers until product-market fit.
+#### v1.1 Portal — Must Have (P1)
 
-**Must have (table stakes) — v1:**
-- User authentication + session management — gates all data; build first
-- Organization (account) records — hospitals/clinics are the deal unit; build before contacts
-- Contact management linked to organizations — multiple contacts per org (buying committee)
-- Deal management with stage, value, close date, linked org/contacts
-- Visual pipeline Kanban board — drag-and-drop; Pipedrive popularized this; now expected
-- Interaction/activity history — calls, emails, meetings, notes linked to contacts and deals
-- Task management with reminders and overdue flagging
-- Dashboard with 5-7 metrics (pipeline value by stage, overdue tasks, recent activity)
-- Search and filtering by name, tag, stage, owner
-- Basic role management — Admin (full access) and Rep (own + shared read)
-- Data export (CSV) for contacts, orgs, deals
+| Feature | Complexity | Notes |
+|---------|------------|-------|
+| Full-page portal route at `/portal`, auth-gated, mobile-first | LOW | New `(portal)` route group, no sidebar |
+| Formatted markdown rendering for AI responses | LOW | `react-markdown` + `remark-gfm`; replaces `whitespace-pre-wrap` |
+| Persistent conversation history (Supabase, per user) | MEDIUM | `chat_conversations` + `chat_messages` tables; loaded on mount |
+| Write AI tools: `create_contact`, `create_deal`, `complete_task` | MEDIUM | Field reps need to take action; read-only tools are insufficient |
+| `get_daily_briefing` tool — overdue tasks, due today, stale deals, closing soon | MEDIUM | Morning game-plan command; triggered via quick action button |
+| Rich action confirmation cards for all write operations | MEDIUM | Visual proof action happened; link to CRM record; required before write tools ship |
+| Quick action buttons (always visible): My tasks, Urgent, Pipeline, Briefing, Add task | LOW | Horizontal row above input; sends command on tap |
 
-**Should have (competitive) — v1.x:**
-- Deal stall detection — flag deals with no activity in configurable period
-- Stakeholder role tracking — structured role field (Clinical Champion, Economic Buyer, etc.)
-- Pipeline forecast view — weighted revenue by close month/quarter
-- Activity-based selling reminders — require "next action" per deal
-- Custom fields on contacts, orgs, deals
+#### v1.1 Portal — Should Have (P2, same sprint if capacity)
 
-**Defer (v2+):**
-- Email client integration (BCC-to-CRM is sufficient in v1)
-- Marketing automation or email sequences
-- AI features (no sufficient training data until post-launch)
-- Native mobile app (responsive web covers v1 needs)
-- Webhooks / integration API
-- Contact relationship mapping (complex; defer until needed)
-- Document/file attachments
+- `search_deals` keyword/stage filter tool
+- Context-aware suggestion chips after AI actions
+- Session history list (slide-in panel of past conversations)
 
-**Anti-features to reject entirely:**
-- Native email client (build time far exceeds value)
-- Marketing automation (separate product category)
-- AI lead scoring (garbage outputs without substantial deal history)
-- Two-way calendar sync (OAuth complexity + edge cases)
-- Custom drag-and-drop report builder (pre-built reports serve small teams better)
-- Social media monitoring (zero ROI for hospital procurement B2B)
+#### Defer to v2+
 
-**Healthtech defaults (zero extra cost):**
-Pre-configure pipeline stages: Prospecting, Discovery/Needs Assessment, Demo/Evaluation, Proposal Sent, Procurement/Legal Review, Contract Negotiation, Closed Won/Closed Lost. Pre-configure stakeholder roles: Clinical Champion, Economic Buyer, Procurement, IT/Informatics, End User, Legal/Compliance, Executive Sponsor.
+- Voice input (iOS mic + hospital noise = unreliable)
+- AI response streaming (function calling + streaming is architecturally complex)
+- Real-time shared portal (Supabase Realtime)
+- Push notifications (Service Worker + corporate device restrictions)
+- Conversation export / session naming UI
+
+**Anti-features explicitly rejected:** Real-time multi-user chat, markdown editor in input, separate portal authentication, conversation AI-naming flows.
 
 ### Architecture Approach
 
-The architecture is a three-tier system: browser client (React components), Next.js App Router server layer (Server Components, Server Actions, Route Handlers), and Supabase backend (PostgreSQL + Auth + Realtime). Server Components fetch data from Supabase and render HTML — no client-side data fetching for initial page loads. Server Actions handle all CRUD mutations without separate API routes. Supabase Realtime (WAL subscriptions) delivers live Kanban updates to connected clients. RLS enforces data access at the database level on every table.
+#### v1.1 Portal Architecture
 
-The data model is built around five core tables: `organizations`, `contacts`, `deals`, `interactions`, and `tasks`. The contact-organization relationship uses a junction table (`contact_organizations`) — not a direct FK. Pipeline stages are a separate `pipeline_stages` table referenced by FK from deals. Kanban ordering uses lexicographic text positions (not integer sequences) to avoid re-indexing on drag-and-drop. Activities (interactions, tasks) use the two-FK pattern (nullable `contact_id`, `deal_id`, `organization_id`) with a CHECK constraint — not polymorphic string type columns.
+The portal integrates into the existing codebase with minimal footprint. Four structural decisions are final:
 
-**Major components:**
-1. **Next.js Server Components** — Data fetching, auth-gated rendering, HTML streaming; no client JS for read-heavy pages
-2. **Next.js Server Actions** — Mutations (create/update/delete); Zod validation; `revalidatePath()` triggers fresh server renders
-3. **Supabase PostgreSQL + RLS** — Source of truth; RLS with `(SELECT auth.uid())` wrapper pattern for performance
-4. **Supabase Realtime** — WAL subscriptions on `deals` table for live Kanban; filtered by org to prevent cross-org data leakage
-5. **Client Components** — Kanban drag-and-drop with `useOptimistic` (React 19), form state, modals, filter panels
-6. **TanStack Query** — Client-side mutation state, optimistic updates, cache invalidation after server actions
+1. **Sibling `(portal)` route group** — Not nested inside `(app)`. The portal is a fundamentally different surface (no sidebar, no ChatWidget). Auth guard is two lines — not meaningful duplication. URL resolves to `/portal` cleanly.
 
-**Recommended build order (from ARCHITECTURE.md):**
-Database schema + RLS → Auth → Organizations CRUD → Contacts CRUD → Pipeline stages + Deals → Kanban board → Interactions → Tasks/Reminders → Dashboard
+2. **Single `/api/chat` endpoint, extended** — No new `/api/portal/chat` route. The existing route handler is extended to accept an optional `conversation_id` parameter. When present, each turn is saved to Supabase (fire-and-forget). The ChatWidget sends no `conversation_id` and is unchanged.
+
+3. **Tools extracted to `src/lib/chat/tools.ts`** — As tool count grows from 7 to 12, `FunctionDeclaration[]` and `executeTool()` move out of `route.ts` into a shared module. Both the widget and portal share the same tool set via the same endpoint.
+
+4. **Normalized `chat_messages` table** — One row per message, not a JSON blob. Enables sliding-window queries, future pagination, and history pruning. `gemini_parts jsonb` per message stores raw Gemini `Content` parts for accurate history replay on session load.
+
+**Major components (new in v1.1):**
+
+| Component | Responsibility | Type |
+|-----------|----------------|------|
+| `src/app/(portal)/layout.tsx` | Auth guard + minimal wrapper; no sidebar | Server Component |
+| `src/app/(portal)/portal/page.tsx` | Loads last 10 conversations; passes to PortalChat | Server Component |
+| `src/components/portal/PortalChat.tsx` | Full-page chat UI; message state; history management | Client Component |
+| `src/components/portal/MessageRenderer.tsx` | Markdown + action card routing | Client Component |
+| `src/components/portal/QuickActions.tsx` | Tap-to-send preset buttons | Client Component |
+| `src/components/portal/cards/` | TaskCard, ContactCard, DealCard, SummaryCard | Client Components |
+| `src/lib/chat/tools.ts` | `FunctionDeclaration[]` + `executeTool()` shared by widget + portal | Shared lib |
+| `src/lib/chat/history.ts` | `saveTurn()` (fire-and-forget) + `loadHistory()` (sliding window) | Shared lib |
+| `src/app/api/chat/route.ts` | Modified: optional `conversation_id` + `saveTurn()` call | Route Handler |
+
+**Build order (from ARCHITECTURE.md):**
+DB migration → extract tools to `tools.ts` → add new tools → modify route → history helpers → `(portal)` route group → portal page → PortalChat → MessageRenderer + cards → QA widget regression
 
 ### Critical Pitfalls
 
-1. **Flat contact-organization FK** — Storing `contacts.organization_id` as a direct FK makes it impossible to represent contacts who work across multiple orgs or change roles. Build a `contact_organizations` junction table from Day 1. Recovery cost is HIGH if deferred.
+#### v1.0 CRM Pitfalls (retained — still apply)
 
-2. **Missing or misconfigured RLS** — Skipping RLS during prototyping then adding it hastily leads to policies that miss INSERT scoping or entire tables. Enable RLS on every table at creation time. Wrap `auth.uid()` in `(SELECT auth.uid())` for performance (reduces query time from ~179ms to ~9ms per-row). Index all columns used in RLS policies. Recovery cost is HIGH.
+1. **Flat contact-organization FK** — Build `contact_organizations` junction table from Day 1. Recovery cost is HIGH if deferred.
 
-3. **Pipeline stages as plain text** — Storing stage as a `VARCHAR` column causes inconsistent data variants ("Proposal", "proposal", "PROPOSAL"), broken reports, silent automation failures, and expensive migration when renaming stages. Use a `pipeline_stages` table with `is_won`/`is_lost` boolean flags and a `sort_order` column. Recovery cost is MEDIUM.
+2. **Missing or misconfigured RLS** — Enable RLS on every table at creation, including new `chat_conversations` and `chat_messages` tables. Wrap `auth.uid()` in `(SELECT auth.uid())` for performance.
 
-4. **Dashboard aggregation via N+1 queries** — Fetching each dashboard metric as a separate Supabase query creates 6-10 round-trips per page load. Build a PostgreSQL RPC function (`get_dashboard_stats`) that returns all metrics in one call. Index `org_id`, `stage_id`, `created_at`, and `assigned_to` on deals and tasks. Recovery cost is LOW but painful to diagnose.
+3. **Pipeline stages as plain text** — Use a `pipeline_stages` table with FK from deals; not a VARCHAR column.
 
-5. **Full-text search computed at query time** — Using `ILIKE '%term%'` performs full table scans. Add a precomputed `tsvector` generated column with a GIN index on `contacts` and `organizations` during schema creation. Use `websearch_to_tsquery()` for user queries. Degrades at ~500 rows. Recovery cost is MEDIUM.
+4. **Dashboard N+1 queries** — Use a single PostgreSQL RPC function for all dashboard metrics.
 
-6. **Optimistic Kanban without server-side conflict resolution** — Drag-and-drop with `useOptimistic` must include an `updated_at` timestamp check server-side, an `onError` rollback handler, and a conflict toast notification. Without this, two users dragging the same card cause silent data divergence.
+5. **Full-text search computed at query time** — Add precomputed `tsvector` GIN index on contacts and organizations during schema creation.
 
-7. **Unbounded activity log queries** — All interaction/activity queries must have a `LIMIT` clause. The activity feed must use cursor-based pagination. Index `(org_id, created_at DESC)` on interactions. Failure manifests at ~5,000 rows.
+#### v1.1 Portal Pitfalls (new — highest priority)
+
+1. **Gemini free-tier quota is project-level, not per-user** — Verified limits: 10 RPM / 250 RPD (lower than PROJECT.md's 500 RPD). One user can exhaust the daily budget for all users. Prevention: per-user rate limit (3 RPM), user-friendly 429 handling with retry guidance, daily usage logging in Supabase, send button debounce.
+
+2. **Vercel function timeout on multi-tool calls** — Daily briefing with 3+ sequential tool calls can exceed Vercel's 10-second default limit. Prevention: `export const maxDuration = 30` in route file; cap tool loop at 5 iterations; parallelize independent tool calls with `Promise.all`.
+
+3. **AI write tools create wrong data without confirmation** — Gemini function calling executes writes based on natural language and may invent field values. Prevention: two-step confirmation flow (card display first, DB write only on user tap confirm); strict server-side argument validation before any Supabase insert.
+
+4. **AI tools bypass Server Action validation** — Direct Supabase inserts in `executeTool` bypass Zod + Server Action business rules. Prevention: extract mutation logic into shared functions (`lib/mutations/`) used by both Server Actions and `executeTool` — never write inline Supabase inserts in the tool executor.
+
+5. **iOS Safari virtual keyboard breaks fixed-bottom input** — `position: fixed` inputs get covered by the virtual keyboard on iOS. Prevention: use CSS flex-column layout (no `position: fixed` for input); `h-dvh` container; test on a real iPhone before calling mobile layout complete.
+
+6. **Gemini history growing unbounded** — Full history sent to Gemini on every request causes latency to grow linearly. Prevention: sliding window of 12-15 turns in API calls regardless of stored history length; normalized `chat_messages` table (not JSON blob).
 
 ---
 
 ## Implications for Roadmap
 
-The feature dependency graph and pitfall-to-phase mapping from the research strongly suggest an 8-phase build sequence. Earlier phases establish constraints that later phases depend on.
+### Current Milestone: v1.1 Team Command Portal (3-phase structure)
 
-### Phase 1: Foundation — Database Schema + Auth
-**Rationale:** Everything downstream depends on the data model being correct from the start. Three pitfalls (flat contact-org model, missing RLS, stage as string) are impossible to avoid cheaply if deferred. Auth gates all app routes and must exist before any feature ships.
-**Delivers:** Supabase project scaffolded; all tables created with correct schema; RLS enabled on every table; Auth working (login, session, password reset); Next.js project bootstrapped with correct folder structure
-**Addresses:** User authentication (table stakes)
-**Avoids:** Flat contact-org pitfall, missing RLS pitfall, stage-as-string pitfall, JSONB for queryable fields
-**Research flag:** Standard patterns — no deeper research needed; ARCHITECTURE.md provides complete schema SQL
+The pitfall-to-phase mapping and feature dependency graph from research drive a clear 3-phase sequence. Phase 1 must establish safe foundations before multi-user testing; Phase 2 builds persistence and write capabilities; Phase 3 finishes the mobile UX and P2 features.
 
-### Phase 2: Organizations + Contacts
-**Rationale:** Organizations are the top of the entity hierarchy. Contacts belong to organizations. Both must exist before deals, interactions, or tasks can be linked. Building contacts without organizations first forces a painful data migration.
-**Delivers:** Full CRUD for organizations and contacts; organization-contact junction table; contact list with search (tsvector indexes built here); tagging on both entities; basic filtering
-**Uses:** TanStack Table (list views), React Hook Form + Zod (create/edit forms), Server Components (list pages), Server Actions (mutations)
-**Avoids:** Full-text search at query time (add tsvector + GIN indexes now, not later), too-many-required-fields UX pitfall
-**Research flag:** Standard patterns — well-documented CRUD with shadcn/ui + TanStack Table
+#### Phase 1: Portal Foundation and API Safety
 
-### Phase 3: Pipeline Stages + Deals
-**Rationale:** Pipeline stages must be seeded and normalized before any deal is created. Deals reference both organizations and contacts, so Phases 2 must complete first. The Kanban board is a rendering of deals — deals come before the Kanban view.
-**Delivers:** `pipeline_stages` table seeded with healthtech defaults; full deal CRUD (stage, value, close date, linked org/contacts); deal list view with filtering; foundational state for Kanban
-**Avoids:** Stage-as-string pitfall, orphaned deals on stage deletion (prevent or prompt to reassign)
-**Research flag:** Standard patterns
+**Rationale:** The most critical pitfalls (Vercel timeout, rate limiting, AI data integrity architecture) must be addressed before the portal is tested by more than one user. The shared mutation layer must be established before any write tools are built — it cannot be retrofitted. The portal must have markdown rendering from day one; the existing `whitespace-pre-wrap` renders Gemini responses as literal symbols on structured CRM data.
 
-### Phase 4: Kanban Board (Visual Pipeline)
-**Rationale:** Depends on Phase 3 (deals + stages complete). This is the highest-complexity UI component — drag-and-drop with optimistic updates, multi-user conflict resolution, and Realtime sync. Isolating it in its own phase prevents it from being rushed.
-**Delivers:** Drag-and-drop Kanban; deal cards with value and close date visible; lexicographic position ordering; `useOptimistic` + `updated_at` conflict check; Supabase Realtime subscription on deals table; rollback on mutation failure
-**Uses:** Supabase Realtime, `useOptimistic` (React 19), Zustand for drag state
-**Avoids:** Optimistic UI without conflict resolution, integer sequence position ordering, realtime subscription on full table (filter by org)
-**Research flag:** Needs phase research — Kanban drag-and-drop library choice (dnd-kit vs react-beautiful-dnd status) should be validated before build
+**Delivers:** Working `/portal` route with full-page layout, auth guard, markdown rendering, quick action buttons, and a safe API foundation. Uses existing 7 read-only tools — no write operations yet.
 
-### Phase 5: Interactions + Activity History
-**Rationale:** Interactions reference both contacts and deals (both must exist). The two-FK pattern (nullable `contact_id` + `deal_id`) must be implemented correctly here. The activity feed is the primary content area of every contact and organization detail page.
-**Delivers:** Log calls, emails, meetings, notes linked to contacts and/or deals; interaction timeline on contact detail and deal detail pages; global activity feed; interaction indexing for performance
-**Uses:** Two-FK pattern (not polymorphic), `(org_id, created_at DESC)` index, paginated queries with LIMIT
-**Avoids:** Unbounded activity log queries, polymorphic type column anti-pattern
-**Research flag:** Standard patterns
+**Addresses (from FEATURES.md):** Full-page portal route, formatted message rendering, auth gate, mobile input layout, scroll-to-bottom, loading indicator, send-on-Enter.
 
-### Phase 6: Tasks + Reminders
-**Rationale:** Tasks are largely independent of interactions but reference contacts and deals. Building tasks after interactions allows the task detail to include relevant context from the interaction feed. Overdue tasks are a key dashboard metric (Phase 7 depends on tasks existing).
-**Delivers:** Task create/edit/complete; due dates; priority; linked to contacts, deals, or orgs; overdue flagging; in-app task reminders
-**Uses:** Partial index on tasks (`WHERE is_complete = false`) for fast overdue queries
-**Research flag:** Standard patterns
+**Avoids (from PITFALLS.md):** B7 (Vercel timeout — `maxDuration = 30` + loop cap), B1 (rate limits — per-user throttle + 429 handling), B9 (markdown not rendering), B4 (AI bypassing business rules — shared mutation layer established here), Anti-Pattern 5 (portal inside app layout).
 
-### Phase 7: Dashboard
-**Rationale:** The dashboard is an aggregation of all completed tables. Building it last ensures all data sources exist. The PostgreSQL RPC function for dashboard stats should be designed during Phase 1 schema work so it is available here without a schema change.
-**Delivers:** Pipeline value by stage; overdue task count; recent activity feed (paginated, last 30 days); deals closing this month; top-level KPIs (5-7 metrics); empty-state guided prompts for new users
-**Uses:** Supabase RPC (`get_dashboard_stats`), Recharts (pipeline funnel), single-call dashboard stats pattern
-**Avoids:** Dashboard N+1 query pitfall, empty state abandonment UX pitfall
-**Research flag:** Standard patterns — pre-built opinionated dashboard, no custom report builder
+**Research flag:** Standard patterns — sibling route group, Tailwind flex layout, react-markdown integration are all well-documented with official sources. No additional research-phase needed.
 
-### Phase 8: Polish + Role Management + Export
-**Rationale:** Role management (Admin vs Rep) can be added after core features are working; it does not block feature development for a 1-5 user team where all early users may be admins. Data export and UX polish (quick-add global button, mobile responsiveness, inline edit protection) complete the v1 scope.
-**Delivers:** Admin / Rep roles enforced via RLS and UI; CSV export of contacts, orgs, deals; quick-add slide-over; mobile-responsive layout audit; unsaved-changes navigation guard
-**Avoids:** Lack of BAA for health data (confirm Supabase Pro plan + BAA before any real patient-adjacent data)
-**Research flag:** Standard patterns for roles + export; BAA/compliance check is a business action, not a code task
+#### Phase 2: Conversation Persistence and Write Tools
+
+**Rationale:** Persistence and write tools are independent of each other but both depend on the Phase 1 API foundation. They can be built in parallel within this phase. The confirmation flow architecture must be designed before any write tool is implemented. The normalized schema must be established before any data is written — there is no safe path from a JSON blob to a normalized table once data is in production.
+
+**Delivers:** Messages saved to Supabase and loaded on mount; new AI write tools (`create_contact`, `create_deal`, `complete_task`, `get_daily_briefing`); rich action confirmation cards; `search_deals` tool.
+
+**Addresses (from FEATURES.md):** Persistent conversation history, expanded AI write tools, daily briefing tool, rich action confirmation cards.
+
+**Avoids (from PITFALLS.md):** B2 (history unbounded — sliding window in `loadHistory()`), B3 (AI wrong data — two-step confirmation flow), B8 (JSON blob schema — normalized `chat_messages` from the start), B5 (prompt injection — content scanning on tool results, minimal return payloads).
+
+**Research flag:** The two-step confirmation flow within a Gemini function calling loop is non-standard and has no established reference implementation. A focused design session during Phase 2 planning is recommended before writing any write-tool code.
+
+#### Phase 3: Mobile UX Polish and P2 Features
+
+**Rationale:** iOS Safari layout issues cannot be fully validated until core chat functionality works end-to-end. P2 features (suggestion chips, session history) depend on the action confirmation cards built in Phase 2. The "looks done but isn't" checklist from PITFALLS.md provides the QA gate for this phase.
+
+**Delivers:** Validated iOS Safari mobile layout (real device tested); context-aware suggestion chips; session history list; undo button on action cards; floating ChatWidget hidden on `/portal` route; full QA checklist passes.
+
+**Addresses (from FEATURES.md):** Context-aware suggestion chips, session history list, widget hidden on portal route.
+
+**Avoids (from PITFALLS.md):** B6 (iOS Safari keyboard layout — real device required), UX pitfalls (no undo for AI actions, quick actions only on empty state, widget visible on portal).
+
+**Research flag:** iOS Safari layout must be tested on a real iPhone — Chrome DevTools does not reproduce keyboard behavior. No research-phase needed but physical device access is a prerequisite for sign-off.
 
 ### Phase Ordering Rationale
 
-- **Data model before features:** The three highest-cost pitfalls (flat contact-org, missing RLS, stage-as-string) are data model decisions. Fixing them early costs 2 hours. Fixing them after data is loaded costs days plus potential data loss.
-- **Hierarchy-first:** Organizations before contacts before deals — the entity dependency graph from FEATURES.md makes any other order require re-work.
-- **Kanban isolated:** Drag-and-drop is the highest UI complexity in the app and the one area with non-trivial conflict resolution requirements. It deserves its own phase rather than being appended to Phase 3.
-- **Dashboard last:** Intentionally built after all data sources exist. Do not build a dashboard placeholder early — empty dashboards cause abandonment during stakeholder review.
-- **Interactions before tasks:** Tasks are more independent but the activity timeline on contact pages should display interaction history (Phase 5) and tasks (Phase 6) together, so interactions build the pattern first.
+- Phase 1 before Phase 2 because the shared mutation layer and API safety infrastructure must exist before any write tools are added. Adding write tools to an unprotected API risks data corruption and quota exhaustion.
+- Within Phase 2, persistence and write tools are parallel workstreams — they share the same DB schema foundation but are otherwise independent.
+- Phase 3 after Phase 2 because suggestion chips and undo buttons depend on the action confirmation cards built in Phase 2.
+- The build order from ARCHITECTURE.md (DB migration → extract tools → add new tools → modify route → history helpers → portal route group → portal page → PortalChat → MessageRenderer) maps directly onto Phase 1 (steps 1-6) and Phase 2 (steps 7-9).
 
 ### Research Flags
 
-Phases needing deeper research during planning:
-- **Phase 4 (Kanban):** Drag-and-drop library choice needs verification. `react-beautiful-dnd` is in maintenance mode; `dnd-kit` is the current recommendation but needs version/compatibility confirmation against React 19 before committing.
+**Needs design/research during planning:**
+- **Phase 2 confirmation flow:** How to structure a two-step AI action confirmation (card display → user tap → DB write) within the Gemini function calling loop. Pattern needs a concrete implementation design before coding begins.
 
-Phases with standard patterns (skip `/gsd:research-phase`):
-- **Phase 1:** Complete schema SQL provided in ARCHITECTURE.md; RLS patterns documented in PITFALLS.md
-- **Phase 2:** Standard CRUD with well-documented TanStack Table + shadcn/ui patterns
-- **Phase 3:** Pipeline stages table pattern fully specified in research
-- **Phase 5:** Two-FK pattern and pagination patterns fully specified
-- **Phase 6:** Standard task CRUD
-- **Phase 7:** Dashboard RPC pattern specified in PITFALLS.md
-- **Phase 8:** Standard role + export patterns
+**Standard patterns (skip research-phase):**
+- **Phase 1:** Route group structure, react-markdown integration, Tailwind flex layout, Vercel `maxDuration`, Supabase RLS — all well-documented with official sources.
+- **Phase 3:** iOS Safari layout fix (flex column + `h-dvh`), widget visibility via route detection — established implementation paths.
 
 ---
 
@@ -203,56 +213,63 @@ Phases with standard patterns (skip `/gsd:research-phase`):
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All versions verified live from npm registry 2026-02-21; framework choices verified against official docs |
-| Features | MEDIUM-HIGH | Multi-source consensus on table stakes and anti-features; healthtech-specific details (Sunshine Act compliance) are LOW — single source, flag for legal review before building |
-| Architecture | HIGH | Next.js and Supabase official docs; schema patterns verified across multiple consistent sources |
-| Pitfalls | MEDIUM-HIGH | Core pitfalls (RLS, schema) verified with official docs and real incident data; UX pitfalls from practitioner case studies |
+| Stack (v1.0 CRM) | HIGH | All versions verified live from npm registry 2026-02-21 |
+| Stack (v1.1 Portal additions) | HIGH | react-markdown, remark-gfm, react-textarea-autosize versions verified 2026-02-25; React 19 compatibility confirmed |
+| Features (v1.0 CRM) | MEDIUM-HIGH | Multi-source consensus on table stakes and anti-features |
+| Features (v1.1 Portal) | MEDIUM-HIGH | P1 feature set has multi-source agreement; P2/P3 is prioritized opinion; competitor analysis (HubSpot, Salesforce) is current |
+| Architecture (v1.0 CRM) | HIGH | Official Next.js/Supabase docs + schema patterns |
+| Architecture (v1.1 Portal) | HIGH | Based on direct codebase inspection of existing files + official Next.js/Supabase docs |
+| Pitfalls (v1.0 CRM) | MEDIUM-HIGH | Core pitfalls verified with official docs and real incident data |
+| Pitfalls (v1.1 Portal) | HIGH | Rate limit figures verified from official Gemini docs; iOS Safari keyboard issue widely reproduced; OWASP LLM Top 10 2025 for prompt injection |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Contact-org junction table vs. simple FK:** ARCHITECTURE.md uses a simple `organization_id` FK on contacts; PITFALLS.md explicitly identifies this as a critical pitfall and recommends a junction table. These are in direct conflict. **Decision required before Phase 1 schema is written.** Recommendation: follow PITFALLS.md — build the junction table. The extra complexity in v1 is a one-time cost; the migration cost later is much higher.
+- **Gemini quota discrepancy:** PROJECT.md references 500 RPD / 15 RPM but current verified limits are 10 RPM / 250 RPD (reduced December 2025). This must be reconciled in PROJECT.md before Phase 1 is planned. Planning usage around 500 RPD will cause unexpected production limits.
 
-- **Drag-and-drop library:** No specific library was locked in for Kanban drag-and-drop. `dnd-kit` is the current community recommendation but React 19 compatibility should be verified before Phase 4 begins. Flag this for `/gsd:research-phase` on Phase 4.
+- **Confirmation flow implementation pattern:** No reference implementation found for two-step AI confirmation within a Gemini function calling loop. Architecture is clear conceptually; exact code pattern needs to be designed in Phase 2 planning.
 
-- **Sunshine Act / HIPAA compliance scope:** Research flagged that medtech CRMs may need Sunshine Act tracking (transfers of value to HCPs). This is LOW confidence (single source) and explicitly out of scope for a system-sales CRM — but requires a legal review before any feature that logs gifts, meals, or samples to clinicians. Confirm with product owner whether this will ever be in scope.
+- **Contact-org junction table (v1.0 conflict):** ARCHITECTURE.md used a simple `organization_id` FK on contacts; PITFALLS.md identified this as a critical pitfall and recommended a junction table. The v1.0 build resolved this — confirm existing schema uses junction table before any AI tool creates contacts.
 
-- **BAA with Supabase:** Before any real patient-adjacent data is stored, a Business Associate Agreement must be signed with Supabase (available on Pro+ plan). This is a business action, not a code task, but it must happen before production launch. Flag for the pre-launch checklist.
+- **`field-sizing: content` CSS:** Native CSS auto-resize has ~85% browser support but is unreliable on mobile Safari. `react-textarea-autosize` is correct now; revisit in 6-12 months as Safari support matures.
 
-- **Next.js 16 `proxy.ts` vs `middleware.ts`:** STACK.md notes that `middleware.ts` is deprecated in Next.js 16 in favor of `proxy.ts`. However, ARCHITECTURE.md still references `middleware.ts` in the project structure. Verify the correct filename for the session refresh middleware before scaffolding the project.
+- **Vercel AI SDK migration path (v2):** `ai` + `@ai-sdk/google` is a valid v2 upgrade enabling streaming + `useChat` abstraction. Deferred, but noted for v2 roadmap consideration.
 
 ---
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- [Next.js 16 Official Blog](https://nextjs.org/blog/next-16) — Release notes, breaking changes, Turbopack default
-- [Next.js Server and Client Components](https://nextjs.org/docs/app/getting-started/server-and-client-components) — RSC patterns
-- [Next.js Project Structure](https://nextjs.org/docs/app/getting-started/project-structure) — Folder conventions
-- [Supabase Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security) — RLS policy patterns
-- [Supabase RLS Performance Docs](https://supabase.com/docs/guides/troubleshooting/rls-performance-and-best-practices-Z5Jjwv) — `(SELECT auth.uid())` optimization
-- [Supabase Security Retro 2025](https://supabase.com/blog/supabase-security-2025-retro) — RLS bypass incidents, new API key model
+- npm registry live queries (2026-02-21, 2026-02-25) — all package versions confirmed
+- [Gemini API Rate Limits (official)](https://ai.google.dev/gemini-api/docs/rate-limits) — quota figures, RESOURCE_EXHAUSTED handling
+- [Gemini API Function Calling (official)](https://ai.google.dev/gemini-api/docs/function-calling) — declaration format, history reconstruction
+- [react-markdown GitHub](https://github.com/remarkjs/react-markdown) — ESM-only, React 18+ requirement, `'use client'` component requirement
+- [Next.js Route Groups documentation](https://nextjs.org/docs/app/building-your-application/routing/route-groups) — sibling route group pattern
+- [Next.js Nested Layouts](https://nextjs.org/docs/app/building-your-application/routing/layouts-and-templates) — layout override behavior
+- [Supabase Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security) — RLS policy patterns, `(SELECT auth.uid())` performance wrapper
+- [OWASP LLM Top 10 2025 — LLM01 Prompt Injection](https://genai.owasp.org/llmrisk/llm01-prompt-injection/) — indirect injection via tool results
+- [Next.js 16 Official Blog](https://nextjs.org/blog/next-16) — Release notes, breaking changes
 - [Supabase Realtime with Next.js](https://supabase.com/docs/guides/realtime/realtime-with-nextjs) — WAL subscription patterns
-- [Next.js Server Actions docs](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations) — Mutation patterns
-- npm registry live queries — All version numbers verified 2026-02-21
-- [PostgreSQL full-text search](https://www.postgresql.org/docs/current/datatype-textsearch.html) — tsvector / tsquery
+- Direct codebase inspection: `src/app/api/chat/route.ts`, `src/components/chat/ChatWidget.tsx`, `src/app/(app)/layout.tsx` — existing implementation patterns
+- iOS Safari `position: fixed` + virtual keyboard behavior — widely reproduced across multiple sources
 
 ### Secondary (MEDIUM confidence)
+- [HubSpot AI — Breeze Features](https://www.hubspot.com/products/artificial-intelligence) — competitor feature comparison, action confirmation card pattern
+- [Salesforce Einstein Copilot (2025)](https://www.techcronus.com/blog/einstein-copilot-is-transforming-salesforce-crm-in-2025/) — AI CRM feature patterns
+- [UX for AI Chatbots (2026)](https://www.parallelhq.com/blog/ux-ai-chatbots) — table stakes UX patterns for chat interfaces
+- [Design Patterns For AI Interfaces — Smashing Magazine](https://www.smashingmagazine.com/2025/07/design-patterns-ai-interfaces/) — quick action and chip patterns
+- [Building Stateful Conversations with Postgres and LLMs](https://medium.com/@levi_stringer/building-stateful-conversations-with-postgres-and-llms-e6bb2a5ff73e) — normalized chat schema pattern
+- [Gemini 2.5 Flash free tier limits — December 2025 changes](https://blog.laozhang.ai/en/posts/gemini-api-rate-limits-guide) — quota reduction corroboration
+- [Virtual Keyboard API browser support](https://ishadeed.com/article/virtual-keyboard-api/) — iOS Safari `window.virtualKeyboard` unavailability
 - [Healthcare Sales in 2025 — Martal](https://martal.ca/b2b-healthcare-sales-lb/) — B2B healthtech deal cycle characteristics
-- [CRM Software Features 2025 — Webuters](https://www.webuters.com/crm-software-features) — Table stakes features
-- [B2B CRM buyer's guide — Capsule CRM](https://capsulecrm.com/blog/b2b-crm/) — Feature expectations
-- [Pipedrive vs HubSpot 2025](https://www.capitalsconsulting.com/resources/pipedrive-vs-hubspot) — Competitor feature analysis
-- [CRM Mistakes Small Teams Make 2025](https://rapitek.com/en/blog/2025/7/top-7-crm-mistakes-small-teams-make-2025-how-to-avoid/) — Anti-features
 - [Kanban Indexing Patterns — Nick McCleery](https://nickmccleery.com/posts/08-kanban-indexing/) — Lexicographic position ordering
-- [CRM Database Schema — DragonflyDB](https://www.dragonflydb.io/databases/schema/crm) — Schema patterns
-- [PostgreSQL tsvector optimization — Thoughtbot](https://thoughtbot.com/blog/optimizing-full-text-search-with-postgres-tsvector-columns-and-triggers) — Full-text search
-- [CRM UX design pitfalls — Eleken](https://www.eleken.co/blog-posts/how-to-design-a-crm-system-all-you-need-to-know-about-custom-crm) — UX patterns
 
 ### Tertiary (LOW confidence — needs validation)
-- [CRM Compliance for Regulated Industries](https://syncmatters.com/blog/crm-compliance) — Sunshine Act mention; single source; verify with legal
-- [HIPAA CRM requirements — Blaze](https://www.blaze.tech/post/hipaa-compliant-crm) — HIPAA/BAA guidance; verify with Supabase directly
+- `field-sizing: content` CSS browser support ~85% — inferred from multiple scattered sources; exact Safari mobile timeline not confirmed
+- [CRM Compliance for Regulated Industries](https://syncmatters.com/blog/crm-compliance) — Sunshine Act mention; single source; verify with legal before any HCP value-transfer features
 
 ---
-*Research completed: 2026-02-21*
+*v1.0 research completed: 2026-02-21*
+*v1.1 Team Command Portal research completed: 2026-02-25*
 *Ready for roadmap: yes*

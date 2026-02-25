@@ -1,180 +1,208 @@
 # Stack Research
 
 **Domain:** Modern CRM Web Application (Healthcare B2B SaaS)
-**Researched:** 2026-02-21
-**Confidence:** HIGH — All versions verified live from npm registry; framework choices verified against official docs and multiple current sources.
+**Researched:** 2026-02-21 (initial) / 2026-02-25 (v1.1 update — Team Command Portal)
+**Confidence:** HIGH — All new versions verified live from npm registry; recommendations verified against official docs.
 
 ---
 
-## Recommended Stack
-
-### Core Technologies
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Next.js | 16.1.6 | Full-stack React framework | App Router is the 2026 standard for React full-stack apps. Turbopack is now the default bundler (2-5x faster builds). Vercel deploys it first-class. React Server Components eliminate most client-side data fetching boilerplate. Cache Components (new in v16) make explicit caching easy. Backed by Vercel — Next.js 16 shipped October 2025. |
-| React | 19.2.4 | UI component runtime | Included with Next.js 16. React 19 brings Actions (form mutation primitives), View Transitions, `useEffectEvent`, and Activity component — all relevant to CRM data entry workflows. |
-| TypeScript | 5.9.3 | Type safety across the stack | Non-negotiable for maintainable CRM code. Zod schemas derive TypeScript types automatically. Supabase generates typed client from DB schema. Next.js 16 requires TypeScript 5.1+. |
-| Tailwind CSS | 4.2.0 | Utility-first styling | v4 ships CSS-first config (no `tailwind.config.js`). shadcn/ui now targets Tailwind v4 by default. Produces the smallest possible CSS bundle via dead-code elimination. Enables premium visual customization without fighting a design system. |
-| Supabase | @supabase/supabase-js 2.97.0 | Database + Auth + Realtime | PostgreSQL with row-level security baked in. Auth handles JWT sessions. MCP tooling is available for this project (Supabase MCP). Realtime subscriptions for live pipeline updates. Built-in storage for file attachments. RLS policies enforce multi-user data isolation without application code. |
-
-### UI Component Layer
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| shadcn/ui | 3.8.5 (CLI: `shadcn`) | Component collection | Copy-own components — you own the code, not a dependency. Tailwind v4 + React 19 compatible as of 2026. Produces the premium, modern SaaS aesthetic required (comparable to HubSpot/Pipedrive quality). Components are accessible (Radix UI primitives underneath). Widely adopted: most dev examples and AI tooling reference shadcn/ui patterns. |
-| Radix UI | (via shadcn/ui) | Headless component primitives | shadcn/ui wraps Radix UI — Dialog, DropdownMenu, Select, Popover, Tooltip all come from Radix. Accessible by default, keyboard-navigable. No separate installation needed beyond shadcn/ui. |
-| Lucide React | 0.575.0 | Icon library | Ships with shadcn/ui. 1000+ consistent icons, tree-shakeable, React-native. Standard choice for shadcn/ui projects. |
-
-### Data & State
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| TanStack Query | @tanstack/react-query 5.90.21 | Server state management | Best-in-class for async server data: caching, stale-while-revalidate, optimistic updates, background refetch. At 1-5 users, the cache + mutation patterns eliminate most loading state boilerplate. Garbage collection prevents stale data. DevTools included. |
-| Zustand | 5.0.11 | Client-side UI state | Minimal (~3KB). For CRM UI state that doesn't belong in server state: modal open/close, filter panel, selected rows, sidebar collapse. Simple API, no provider wrapping needed. Works alongside TanStack Query cleanly. |
-| React Hook Form | 7.71.2 | Form management | Uncontrolled components = zero re-renders per keystroke. 12KB vs Formik's 44KB. Formik is no longer actively maintained (last commit 1+ year ago). Native integration with Zod via `@hookform/resolvers`. Required for CRM's heavy form surface (contacts, deals, tasks, interactions). |
-| Zod | 4.3.6 | Schema validation | TypeScript-first — write schema once, get runtime validation + compile-time types. Works with React Hook Form via resolver. Works with Next.js Server Actions for API input validation. Standard choice for tRPC and Next.js stacks in 2026. 17.7KB bundle. |
-
-### Data Display
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| TanStack Table | @tanstack/react-table 8.21.3 | Data grid / contact & deal lists | Headless — you control the UI, shadcn/ui provides the table shell. Handles sorting, filtering, pagination, row selection natively. For 1-5 users with hundreds of contacts/deals, no virtualization needed. MIT licensed. Pairs perfectly with TanStack Query for server-side pagination. |
-| Recharts | 3.7.0 | Charts and pipeline analytics | Composable, React-native, Tailwind v4 compatible (Tailwind v4 removed need for hsl() wrappers in chart config). Best for SaaS dashboards requiring deal pipeline funnels, activity timelines, revenue charts. 200KB but tree-shakeable. Native Supabase + shadcn/ui integration patterns exist. |
-
-### Infrastructure
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Vercel | Pro plan ($20/user/month) | Hosting + deployment | First-class Next.js 16 support — Vercel ships Next.js features. Git-push-to-deploy. Global CDN. Serverless functions auto-scale. For 1-5 users, Pro plan is adequate and affordable. Zero ops overhead. |
-| Supabase | Free → Pro ($25/month) | Managed PostgreSQL + Auth | Supabase MCP available for this project. Free tier sufficient for development; Pro for production. Auth, RLS, Realtime, Storage, Edge Functions all included. No separate auth service needed. |
-
-### Development Tools
-
-| Tool | Purpose | Notes |
-|------|---------|-------|
-| Playwright | E2E testing | Playwright MCP available for this project. Current version: 1.58.2. Write tests for critical CRM flows: create contact, advance deal stage, log interaction. |
-| ESLint + `@next/eslint-plugin-next` | Linting | Next.js 16 defaults to ESLint Flat Config (ESLint v10 alignment). `next lint` command removed in v16 — run ESLint directly. |
-| Biome (optional) | Fast formatting | Alternative to Prettier+ESLint. Rust-based, significantly faster. Viable alternative now that `next lint` is removed. |
-| `@supabase/ssr` | Server-side Supabase client | 0.8.0. Required for Next.js App Router — provides cookie-based session management for server components and route handlers. Do NOT use the base `@supabase/supabase-js` directly in server components. |
-| `date-fns` | Date manipulation | 4.1.0. For formatting interaction timestamps, deal close dates, task due dates. Lighter than moment.js, tree-shakeable. |
+> **SCOPE NOTE (v1.1 update):** This file has been updated to cover stack additions and changes
+> for the Team Command Portal milestone. The existing stack section is unchanged — only new
+> sections have been added. Scroll to "v1.1 Additions" for portal-specific research.
 
 ---
 
-## Alternatives Considered
+## Existing Stack (v1.0 — Validated, Do Not Re-Research)
 
-### Framework
+*(Already in production — kept here for reference only)*
 
-| Recommended | Alternative | When to Use Alternative |
-|-------------|-------------|-------------------------|
-| Next.js 16 | Remix / React Router v7 | Remix is excellent for form-heavy apps with web-standard mutations. However, Next.js has a larger ecosystem, better Vercel integration, and React Server Components reduce client bundle size. For a CRM requiring premium dashboard design and charts, Next.js App Router is the stronger choice. |
-| Next.js 16 | SvelteKit 2 | SvelteKit has the smallest JS footprint and fastest hydration. Choose it if bundle size is the primary concern. However, SvelteKit's ecosystem is smaller (fewer CRM-relevant component libraries), and the team would be working outside the React ecosystem. |
-
-### Database / Backend
-
-| Recommended | Alternative | When to Use Alternative |
-|-------------|-------------|-------------------------|
-| Supabase | Neon + custom auth | Neon is "true" serverless Postgres (acquired by Databricks in 2025, signals AI-first direction). Choose Neon if you need scale-to-zero economics and will build auth separately. For this CRM, Supabase's integrated auth + RLS + realtime eliminates building an auth system. |
-| Supabase | PlanetScale (MySQL) | PlanetScale now offers PostgreSQL but is MySQL-first historically. Database branching is more mature than Supabase. Choose PlanetScale if you need Vitess-scale MySQL. For a 1-5 user CRM, Supabase PostgreSQL is superior: pgvector for future AI features, better ecosystem, better Row Level Security. |
-
-### UI Components
-
-| Recommended | Alternative | When to Use Alternative |
-|-------------|-------------|-------------------------|
-| shadcn/ui | Material UI (MUI) v7 | MUI provides 100+ ready-made components with Google Material Design. Choose MUI if the team needs fast component coverage and is comfortable with Material Design aesthetics. However, MUI's 80KB bundle vs shadcn/ui's ~5KB is significant, and MUI produces a "generic" look vs the premium custom feel required here. |
-| shadcn/ui | Mantine v7 | Mantine includes more built-in components (DatePicker, RichTextEditor, etc.) that a CRM needs. If building speed matters more than visual differentiation, Mantine is a faster path. Trade-off: less flexible theming, harder to match HubSpot/Pipedrive quality. |
-
-### State Management
-
-| Recommended | Alternative | When to Use Alternative |
-|-------------|-------------|-------------------------|
-| TanStack Query + Zustand | Redux Toolkit | Redux Toolkit is appropriate for large teams (10+) with complex shared state and strict patterns. For a 1-5 user CRM with 1-2 developers, RTK's boilerplate is unnecessary overhead. TanStack Query handles server state better than Redux. |
-| TanStack Query | SWR | SWR is simpler (4.2KB vs 13KB) and adequate for basic data fetching. Choose SWR for simple projects. TanStack Query wins here because CRM needs: mutations with optimistic updates, complex cache invalidation (update contact → invalidate deal list), and offline support for intermittent connectivity. |
-
-### Form Management
-
-| Recommended | Alternative | When to Use Alternative |
-|-------------|-------------|-------------------------|
-| React Hook Form | Formik | Formik is no longer actively maintained (no commits for 1+ year as of 2025). Do not use Formik for new projects. |
-| React Hook Form | TanStack Form | TanStack Form is the emerging competitor (from the TanStack ecosystem). Currently less mature. Consider for future projects once ecosystem stabilizes. |
-
-### Charts
-
-| Recommended | Alternative | When to Use Alternative |
-|-------------|-------------|-------------------------|
-| Recharts | Nivo | Nivo offers more chart types and better animation. Choose Nivo if you need complex network graphs or heatmaps. Recharts wins for CRM use case: simpler API, smaller bundle for common chart types (bar, line, area, pie). |
-| Recharts | Victory | Victory has strong accessibility (ARIA support) and React Native support. Choose Victory if cross-platform (web + native) is a requirement. |
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Next.js | 16.1.6 | Full-stack React framework (App Router) |
+| React | 19.2.3 | UI runtime |
+| TypeScript | 5.x | Type safety |
+| Tailwind CSS | 4.x | Utility-first styling |
+| shadcn/ui | 3.x | Component collection |
+| Supabase | @supabase/supabase-js 2.97.0 | Database + Auth + RLS |
+| @supabase/ssr | 0.8.0 | Server-side Supabase client |
+| @google/generative-ai | 0.24.1 | Gemini 2.5 Flash function calling |
+| Lucide React | 0.575.0 | Icons |
+| Sonner | 2.0.7 | Toast notifications |
+| React Hook Form | 7.71.2 | Form management |
+| Zod | 4.3.6 | Schema validation |
+| @tanstack/react-table | 8.21.3 | Data tables |
+| @dnd-kit/* | 6.x / 10.x | Drag-and-drop Kanban |
 
 ---
 
-## What NOT to Use
+## v1.1 Additions: Team Command Portal
 
-| Avoid | Why | Use Instead |
-|-------|-----|-------------|
-| Formik | Not actively maintained since 2024. Last commit 1+ year ago. Security patches not guaranteed. | React Hook Form 7.x |
-| `next/legacy/image` | Deprecated in Next.js 16, scheduled for removal. | `next/image` |
-| `middleware.ts` | Deprecated in Next.js 16 in favor of `proxy.ts`. New projects should not use the old name. | `proxy.ts` |
-| `@supabase/supabase-js` in server components directly | Does not handle cookie-based sessions correctly in Next.js App Router. | `@supabase/ssr` for server components and route handlers |
-| Service role key in client code | Supabase 2025 security retro flagged this as the #1 RLS bypass. New API distinguishes publishable vs secret keys. | Publishable key client-side, secret key server-only |
-| Material UI for premium SaaS UI | 80KB bundle, rigid Google Material Design aesthetic, hard to escape "generic admin" look. | shadcn/ui + Tailwind v4 for premium custom feel |
-| Redux Toolkit | Overkill for 1-5 user CRM. Significant boilerplate. Server state better handled by TanStack Query. | TanStack Query (server state) + Zustand (UI state) |
-| `create-react-app` | Unmaintained, no SSR, no App Router support. | `create-next-app` |
-| Moment.js | 67KB, deprecated by its own maintainers. | `date-fns` 4.x |
-| AG Grid (Enterprise) | Commercial licensing required for advanced features. Overkill for a CRM with hundreds of records. | TanStack Table (MIT, headless, integrates with shadcn/ui) |
-| Yup | Slower than Zod for TypeScript projects; Zod has better type inference and ecosystem momentum in 2026. | Zod 4.x |
+### Decision Summary
+
+The portal requires three new capabilities beyond the existing chat widget:
+1. **Markdown rendering** — AI responses use markdown; currently rendered as raw text
+2. **Conversation persistence** — DB-backed history across sessions; currently session-only
+3. **Auto-resizing textarea** — Full-page mobile input that grows with content
+
+Everything else (auth, data fetching, styling, AI SDK) already exists and requires no new libraries.
+
+---
+
+## New Dependencies to Add
+
+### Core Additions (Install These)
+
+| Library | Version | Purpose | Why This, Not Something Else |
+|---------|---------|---------|------------------------------|
+| `react-markdown` | 10.1.0 | Render AI responses as formatted markdown | The standard React markdown renderer. Used in thousands of production chat UIs. Works in `'use client'` components without any Next.js transpile configuration. v10 is ESM-only — use inside a client component (the ChatMessage component already is one). Remark/rehype plugin ecosystem means bold, lists, tables, code blocks all work out of the box. |
+| `remark-gfm` | 4.0.1 | GitHub Flavored Markdown plugin for react-markdown | Adds tables, task lists, strikethrough — the specific markdown features Gemini uses in responses. Without it, `**bold**` and `- lists` work but pipe tables don't. Required companion to react-markdown. |
+| `react-textarea-autosize` | 8.5.9 | Auto-growing textarea for chat input | The de-facto standard drop-in textarea replacement. 1.3KB gzipped. Handles resize via JS measurement, not CSS tricks, so it works reliably on iOS Safari (where `field-sizing: content` is still unreliable). Drop-in replacement — same props as `<textarea>`. Used by Vercel's own AI chatbot templates. |
+
+### What NOT to Add
+
+| Avoid | Why | What to Use Instead |
+|-------|-----|---------------------|
+| Vercel AI SDK (`ai`, `@ai-sdk/google`, `@ai-sdk/react`) | The existing `/api/chat` route uses `@google/generative-ai` directly with custom function-calling logic. The AI SDK's `useChat` hook + `streamText` abstraction would require rewriting the entire API route and client logic. For 1-5 users with no streaming requirement, the custom route works. Migration cost exceeds benefit. | Keep existing `@google/generative-ai` 0.24.1 |
+| `marked` + `DOMPurify` | Lower-level markdown-to-HTML pipeline requires manual XSS sanitization. react-markdown handles sanitization via its React-element tree (never touches `innerHTML`). Extra complexity for no benefit. | `react-markdown` |
+| `@uiw/react-md-editor` | Full markdown editor (toolbar, edit/preview modes). The portal only needs to render AI responses, not let users write markdown. 120KB overkill. | `react-markdown` |
+| `framer-motion` | Smooth message animations would be nice but add 100KB+ to bundle. shadcn/ui already includes `tw-animate-css`. Tailwind CSS transitions are sufficient for message fade-in. | Tailwind `animate-in fade-in` utilities via `tw-animate-css` |
+| `socket.io` / Supabase Realtime | Real-time multi-user sync is explicitly deferred to v2 in PROJECT.md. Each user's conversation is independent. | Not needed until v2 |
+| Zustand (new) | Already not in the project. The portal's state (messages, input, loading) is local UI state — `useState` + `useRef` is exactly right for this scope. | React `useState` / `useRef` |
+
+---
+
+## Database: Conversation Persistence Schema
+
+The only new database work for v1.1 is a `chat_conversations` table (sessions) and `chat_messages` table (rows). No new npm package is needed — the existing Supabase client handles this.
+
+### Recommended Schema
+
+```sql
+-- One row per chat session per user
+CREATE TABLE public.chat_conversations (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  account_id  uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  user_id     uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  title       text,                          -- auto-generated from first message, optional
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  updated_at  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX ON public.chat_conversations(user_id, updated_at DESC);
+
+-- One row per message in a conversation
+CREATE TABLE public.chat_messages (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  conversation_id uuid NOT NULL REFERENCES public.chat_conversations(id) ON DELETE CASCADE,
+  role            text NOT NULL CHECK (role IN ('user', 'assistant')),
+  content         text NOT NULL,
+  -- Gemini history blob stored per-message for accurate context reconstruction
+  -- Avoids re-serializing the full history on every load
+  gemini_parts    jsonb,                     -- raw Gemini Content part for history replay
+  created_at      timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX ON public.chat_messages(conversation_id, created_at ASC);
+```
+
+### RLS Policies
+
+Users can only see their own conversations and messages. The existing `private.is_account_member()` security-definer pattern applies.
+
+```sql
+-- chat_conversations
+ALTER TABLE public.chat_conversations ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "chat_conversations_own" ON public.chat_conversations
+  FOR ALL TO authenticated
+  USING ((SELECT auth.uid()) = user_id)
+  WITH CHECK ((SELECT auth.uid()) = user_id);
+
+-- chat_messages (through conversation ownership)
+ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "chat_messages_own" ON public.chat_messages
+  FOR ALL TO authenticated
+  USING (
+    conversation_id IN (
+      SELECT id FROM public.chat_conversations
+      WHERE user_id = (SELECT auth.uid())
+    )
+  )
+  WITH CHECK (
+    conversation_id IN (
+      SELECT id FROM public.chat_conversations
+      WHERE user_id = (SELECT auth.uid())
+    )
+  );
+```
+
+### Gemini History Persistence Strategy
+
+The existing chat API passes the full `gemini_history` array (raw Gemini `Content[]` objects) back to the client in each response. For persistence:
+
+- On each assistant response, upsert user message + assistant message to `chat_messages`
+- Store the raw Gemini `Content` part in `gemini_parts` jsonb column
+- On conversation load, reconstruct history by reading messages ordered by `created_at ASC`
+- Pass reconstructed history array to `model.startChat({ history: [...] })`
+
+This avoids the complexity of serializing/deserializing the full conversation on every request. Each message is already the atomic unit Gemini needs.
+
+---
+
+## Full-Page Chat Layout: CSS Pattern
+
+No new library needed. Tailwind CSS v4 includes `h-dvh` and `min-h-dvh` classes (confirmed present since v3.4, carried forward). This is the correct approach for mobile chat layouts where the browser address bar appearing/disappearing otherwise causes layout jump.
+
+```tsx
+// Portal page shell — correct mobile-safe full-height chat layout
+<div className="flex h-dvh flex-col overflow-hidden">
+  {/* Fixed header */}
+  <header className="shrink-0 border-b ...">...</header>
+
+  {/* Scrollable messages — takes remaining space */}
+  <div className="flex-1 overflow-y-auto px-4 py-4">
+    {/* messages */}
+  </div>
+
+  {/* Fixed input bar */}
+  <div className="shrink-0 border-t p-3 pb-[env(safe-area-inset-bottom,0px)]">
+    {/* textarea + send button */}
+  </div>
+</div>
+```
+
+Key CSS details:
+- `h-dvh` not `h-screen` — dynamic viewport height prevents layout shift when mobile browser UI appears/hides
+- `pb-[env(safe-area-inset-bottom,0px)]` on input bar — prevents content from hiding behind iPhone home indicator
+- `overflow-y-auto` on message area only — parent `overflow-hidden` prevents double scrollbars
 
 ---
 
 ## Installation
 
 ```bash
-# Bootstrap project
-npx create-next-app@latest crm --typescript --tailwind --eslint --app --turbopack
+# Markdown rendering
+npm install react-markdown remark-gfm
 
-# Supabase
-npm install @supabase/supabase-js @supabase/ssr
-
-# shadcn/ui (after project created)
-npx shadcn@latest init
-
-# Data fetching and state
-npm install @tanstack/react-query zustand
-
-# Forms and validation
-npm install react-hook-form zod @hookform/resolvers
-
-# Data display
-npm install @tanstack/react-table recharts
-
-# Utilities
-npm install date-fns lucide-react
-
-# Dev dependencies
-npm install -D @playwright/test @tanstack/react-query-devtools
+# Auto-resizing textarea
+npm install react-textarea-autosize
 ```
+
+No additional dev dependencies required — TypeScript types are bundled in `react-markdown` and `remark-gfm`. `react-textarea-autosize` includes its own types at `@types/react-textarea-autosize` (not required for modern TS, types bundled in the package itself for recent versions).
 
 ---
 
-## Stack Patterns by Variant
+## Alternatives Considered
 
-**If building realtime pipeline board (Kanban):**
-- Enable Supabase Realtime subscriptions on `deals` table
-- Use TanStack Query's `invalidateQueries` on realtime events
-- Use Zustand for optimistic drag-and-drop state before server confirmation
-
-**If adding file attachments to contacts/deals:**
-- Use Supabase Storage (included in Supabase subscription)
-- Store public URLs in database, reference from UI
-- RLS policies on storage buckets mirror database RLS policies
-
-**If building email integration later:**
-- Supabase Edge Functions call external email APIs (Resend, SendGrid)
-- Do not route email through Next.js API routes (cold-start latency)
-
-**If team grows beyond 5 users:**
-- Supabase Pro handles the load (connection pooling via PgBouncer included)
-- Vercel Pro scales automatically
-- No re-architecture needed at 10-50 user scale
+| Decision | Recommended | Alternative | Why Not |
+|----------|-------------|-------------|---------|
+| Markdown renderer | `react-markdown` 10.1.0 | `markdown-to-jsx` | markdown-to-jsx auto-detects RSC vs client; no `'use client'` needed. However, the chat message component is already `'use client'` (it uses state/refs), so this advantage doesn't apply here. react-markdown has wider adoption, better plugin ecosystem (remark/rehype). |
+| Markdown renderer | `react-markdown` 10.1.0 | Vercel AI SDK `MemoizedMarkdown` | The AI SDK ships its own optimized markdown renderer with memoization for streaming. Excellent choice IF migrating to Vercel AI SDK. Since we're staying with the custom route, this is not available standalone. |
+| Textarea | `react-textarea-autosize` | CSS `field-sizing: content` | A native CSS property that eliminates JS-based resizing entirely. Browser support is ~85% as of 2026 — Chrome/Edge/Firefox support it; Safari TP has partial support. Not yet reliable enough for a mobile-first app where the primary browser is mobile Safari. Use `react-textarea-autosize` now; revisit when Safari ships full support. |
+| Textarea | `react-textarea-autosize` | Manual `useLayoutEffect` resize | Roll-your-own resize logic. react-textarea-autosize is 1.3KB and handles edge cases (padding, border-box, max-height, minRows/maxRows). No reason to DIY this. |
+| AI SDK migration | Keep `@google/generative-ai` | Migrate to `ai` + `@ai-sdk/google` | AI SDK 6.x with @ai-sdk/google 3.x supports Gemini 2.5 Flash, streaming, and tool calling. Migration path exists (streamText + useChat). The tradeoff: migration would require rewriting the existing API route and chat state logic. Benefit: streaming responses, unified API. This is a valid v2 upgrade if streaming becomes a requirement. |
+| Conversation history | Custom `chat_messages` table | Vercel AI SDK `useChat` with `initialMessages` | `useChat` has a built-in `initialMessages` prop for DB-backed history. Only useful if migrating to AI SDK. With the existing custom API route, a custom table is the correct approach. |
 
 ---
 
@@ -182,29 +210,27 @@ npm install -D @playwright/test @tanstack/react-query-devtools
 
 | Package | Compatible With | Notes |
 |---------|-----------------|-------|
-| Next.js 16.x | React 19.2.x | React 19.2 is the App Router runtime in Next.js 16. Do not use React 18 with Next.js 16 App Router. |
-| Next.js 16.x | TypeScript 5.1+ | Next.js 16 requires TypeScript 5.1 minimum. Current TS 5.9.3 is fine. |
-| shadcn/ui 3.x | Tailwind v4.x | shadcn/ui v3 targets Tailwind v4 by default. Using shadcn/ui v3 with Tailwind v3 requires extra config. |
-| @supabase/ssr 0.8.x | Next.js 15+ App Router | `@supabase/ssr` is specifically designed for the App Router cookie model. Required for server-side auth. |
-| TanStack Query 5.x | React 18+ | v5 requires React 18+. Next.js 16 ships React 19, which is compatible. |
-| Recharts 3.x | Tailwind v4.x | Tailwind v4 eliminates need for `hsl()` wrappers in Recharts chart config. Fully compatible. |
-| Zod 4.x | React Hook Form 7.x | Use `@hookform/resolvers/zod` adapter. Compatible with current versions of both. |
+| `react-markdown` 10.1.0 | React 19.x | react-markdown v10 targets React 18+; works with React 19. Must be used in a `'use client'` component due to ESM + Next.js module resolution. |
+| `react-markdown` 10.1.0 | `remark-gfm` 4.0.1 | remark-gfm 4.x targets remark-parse 11+ (remark 15+). react-markdown 10.x ships remark 15. Compatible. |
+| `react-textarea-autosize` 8.5.9 | React 19.x | Tested against React 16+. React 19 compatible (passive prop model unchanged). |
+| `react-markdown` 10.1.0 | Tailwind CSS 4.x | No conflict. Rendered HTML elements styled via Tailwind `prose` or custom class mapping via `components` prop. |
 
 ---
 
 ## Sources
 
-- [Next.js 16 Official Blog](https://nextjs.org/blog/next-16) — Release date, features, breaking changes verified (HIGH confidence)
-- [Next.js 16.1 Blog](https://nextjs.org/blog/next-16-1) — Minor release details (HIGH confidence)
-- npm registry live query — All version numbers current as of 2026-02-21 (HIGH confidence)
-- [Supabase Security Retro 2025](https://supabase.com/blog/supabase-security-2025-retro) — RLS warnings, new API key model (HIGH confidence)
-- [shadcn/ui Tailwind v4 docs](https://ui.shadcn.com/docs/tailwind-v4) — Tailwind v4 compatibility confirmed (HIGH confidence)
-- [TanStack Query comparison page](https://tanstack.com/query/latest/docs/framework/react/comparison) — Feature comparison vs SWR (HIGH confidence)
-- [React Hook Form homepage](https://react-hook-form.com/) — Current status, Formik comparison (HIGH confidence)
-- WebSearch: Framework comparison articles (MEDIUM confidence — multiple consistent sources)
-- WebSearch: State management comparison articles (MEDIUM confidence — multiple consistent sources)
-- WebSearch: Chart library comparison articles (MEDIUM confidence — multiple consistent sources)
+- npm registry live query (2026-02-25) — `react-markdown@10.1.0`, `remark-gfm@4.0.1`, `react-textarea-autosize@8.5.9`, `ai@6.0.99`, `@ai-sdk/google@3.0.31` versions confirmed (HIGH confidence)
+- [react-markdown GitHub](https://github.com/remarkjs/react-markdown) — ESM-only, React 18+ requirement, plugin compatibility (HIGH confidence)
+- [remark-gfm GitHub](https://github.com/remarkjs/remark-gfm) — v4.0.1 targets remark-parse 11+ (HIGH confidence)
+- [react-markdown/issues/869](https://github.com/remarkjs/react-markdown/issues/869) — Next.js 15/16 compatibility issue: resolved by using inside `'use client'` component (HIGH confidence)
+- [ai-sdk.dev/providers/google](https://ai-sdk.dev/providers/ai-sdk-providers/google-generative-ai) — Gemini 2.5 Flash + tool calling support in @ai-sdk/google confirmed (HIGH confidence)
+- WebSearch: Tailwind CSS v4 `h-dvh` / `min-h-dvh` classes — confirmed present since v3.4, carried to v4 (HIGH confidence, multiple sources)
+- WebSearch: `field-sizing: content` browser support — ~85%, Safari mobile unreliable (MEDIUM confidence)
+- WebSearch: Vercel AI SDK vs custom route — migration path confirmed, kept custom route for this milestone (MEDIUM confidence)
+- [Supabase RLS docs](https://supabase.com/docs/guides/database/postgres/row-level-security) — RLS policy pattern for per-user rows (HIGH confidence)
 
 ---
+
 *Stack research for: Modern CRM Web Application (Healthcare B2B SaaS)*
-*Researched: 2026-02-21*
+*Initial research: 2026-02-21*
+*v1.1 Team Command Portal update: 2026-02-25*

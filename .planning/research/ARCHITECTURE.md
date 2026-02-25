@@ -1,549 +1,690 @@
 # Architecture Research
 
-**Domain:** CRM Web Application (healthcare/B2B focus)
-**Researched:** 2026-02-21
-**Confidence:** HIGH (Next.js official docs, Supabase official docs, multiple verified sources)
+**Domain:** Team Command Portal — AI Chat Integration into HealthCRM
+**Researched:** 2026-02-25
+**Confidence:** HIGH (based on direct codebase inspection + Next.js/Supabase official patterns)
+
+> This document covers the v1.1 milestone architecture: adding a full-page AI portal to the
+> existing Next.js 16 App Router + Supabase + Gemini codebase. The foundation (v1.0) is already
+> built and documented. This file focuses exclusively on integration decisions for the new milestone.
+
+---
 
 ## Standard Architecture
 
-### System Overview
+### System Overview (v1.1 additions highlighted)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                         Browser (Client Layer)                           │
-│  ┌───────────────┐  ┌──────────────┐  ┌────────────┐  ┌─────────────┐  │
-│  │  Contacts UI  │  │  Deals/      │  │ Interaction│  │  Tasks &    │  │
-│  │  (Server +    │  │  Kanban      │  │  Feed      │  │  Reminders  │  │
-│  │  Client RSC)  │  │ (Client RSC) │  │(Server RSC)│  │(Server RSC) │  │
-│  └───────┬───────┘  └──────┬───────┘  └─────┬──────┘  └──────┬──────┘  │
-└──────────┼─────────────────┼────────────────┼────────────────┼──────────┘
-           │                 │                │                │
-┌──────────┼─────────────────┼────────────────┼────────────────┼──────────┐
-│          │         Next.js App Router (Server Layer)         │          │
-│  ┌───────▼───────────────────────────────────────────────────▼───────┐  │
-│  │  Server Components (data fetch, auth check, initial render)       │  │
-│  │  Server Actions (mutations: create/update/delete via forms)       │  │
-│  │  Route Handlers (API endpoints for complex operations)            │  │
-│  └──────────────────────────────┬────────────────────────────────────┘  │
-│                                 │  Supabase JS Client (server-side)      │
-└─────────────────────────────────┼──────────────────────────────────────┘
-                                  │
-┌─────────────────────────────────┼──────────────────────────────────────┐
-│                    Supabase (Backend Layer)                              │
-│  ┌─────────────────┐  ┌─────────┴─────────┐  ┌───────────────────────┐  │
-│  │  Auth           │  │  PostgreSQL        │  │  Realtime             │  │
-│  │  (JWT-based)    │  │  (primary store)   │  │  (WAL subscriptions   │  │
-│  │                 │  │  + RLS policies    │  │   for live updates)   │  │
-│  └─────────────────┘  └────────────────────┘  └───────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────────┘
+│  ┌──────────────────┐  ┌──────────────────────────────────────────────┐  │
+│  │  Existing CRM UI │  │  [NEW] Portal Page (/portal)                 │  │
+│  │  (App Shell +    │  │  ┌────────────────────────────────────────┐  │  │
+│  │   ChatWidget     │  │  │  PortalChat (client component)         │  │  │
+│  │   floating)      │  │  │  - Full-page layout (no sidebar)       │  │  │
+│  │                  │  │  │  - Loads history from DB on mount      │  │  │
+│  │                  │  │  │  - Quick action buttons                │  │  │
+│  │                  │  │  │  - Rich message cards                  │  │  │
+│  └──────────────────┘  │  └────────────────────────────────────────┘  │  │
+│                         └──────────────────────────────────────────────┘  │
+└───────────────┬──────────────────────────────┬──────────────────────────┘
+                │  fetch POST /api/chat         │  fetch POST /api/chat
+┌───────────────▼──────────────────────────────▼──────────────────────────┐
+│                    Next.js Route Handler: /api/chat                       │
+│  [MODIFIED] Shared API endpoint used by both ChatWidget and Portal       │
+│  - Expanded tool set (new: create_contact, search_deals, daily_summary)  │
+│  - [NEW] Optional: save conversation turn to Supabase                    │
+│  - Source: src/app/api/chat/route.ts (extend in place)                   │
+└─────────────────────────────────────┬────────────────────────────────────┘
+                                       │ Supabase server client
+┌──────────────────────────────────────▼───────────────────────────────────┐
+│                    Supabase (Backend Layer)                                │
+│  ┌────────────────────┐  ┌───────────────────────────────────────────┐   │
+│  │  Existing tables   │  │  [NEW] chat_conversations table           │   │
+│  │  tasks, contacts,  │  │  - id, user_id, title, created_at        │   │
+│  │  deals, etc.       │  │  ┌────────────────────────────────────┐  │   │
+│  │  (unchanged)       │  │  │  [NEW] chat_messages table         │  │   │
+│  └────────────────────┘  │  │  - id, conversation_id, role,      │  │   │
+│                           │  │    content, tool_calls, created_at │  │   │
+│                           │  └────────────────────────────────────┘  │   │
+│                           └───────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Component Responsibilities
 
-| Component | Responsibility | Typical Implementation |
-|-----------|----------------|------------------------|
-| Next.js Server Components | Fetch data from Supabase, render HTML, zero client JS | `async function Page()` with `await supabase.from(...).select()` |
-| Next.js Client Components | Drag-and-drop Kanban, form state, real-time updates | `'use client'` + `useState` + `useEffect` |
-| Next.js Server Actions | Mutations (create/update/delete) without separate API routes | `'use server'` functions called from forms/buttons |
-| Supabase Auth | User sessions, JWT tokens scoped to RLS | `supabase.auth.signIn()`, middleware session refresh |
-| Supabase PostgreSQL | All CRM data with enforced relationships via FK | Tables with UUID PKs, FK constraints, CHECK constraints |
-| Supabase RLS | Row-level authorization — users only see their org's data | Policies using `auth.uid()` and team membership queries |
-| Supabase Realtime | Push DB changes to browser (Kanban moves, new activities) | WAL streaming subscriptions on specific tables |
+| Component | Responsibility | Status |
+|-----------|----------------|--------|
+| `src/app/(portal)/portal/page.tsx` | Server Component: auth check, load recent conversations, pass to client | NEW |
+| `src/app/(portal)/layout.tsx` | Minimal layout: auth guard, no sidebar, no ChatWidget | NEW |
+| `src/components/portal/PortalChat.tsx` | Client Component: full-page chat UI, history, quick actions | NEW |
+| `src/components/portal/MessageRenderer.tsx` | Render markdown + rich action cards from AI responses | NEW |
+| `src/components/portal/QuickActions.tsx` | Tap-to-send preset commands (my tasks, pipeline, add task) | NEW |
+| `src/components/portal/ConversationSidebar.tsx` | List of saved conversations (desktop only) | NEW |
+| `src/app/api/chat/route.ts` | POST handler: Gemini function calling. Extend with new tools + history save | MODIFIED |
+| `src/lib/actions/chat.ts` | Server Actions: saveMessage, loadConversation, createConversation | NEW |
+| `src/lib/queries/chat.ts` | Query functions: getConversations, getMessages | NEW |
+| `src/components/chat/ChatWidget.tsx` | Floating widget (existing). Uses same /api/chat endpoint | UNCHANGED |
+| `src/components/chat/ChatMessage.tsx` | Existing message component. Remains for widget use | UNCHANGED |
 
-## Recommended Project Structure
+---
+
+## Portal Route Placement Decision
+
+### Decision: Portal inside `(app)` route group, with its own layout override
+
+Place the portal page at `src/app/(app)/portal/page.tsx`. Do NOT create a separate route group.
+
+**Rationale:**
+
+The `(app)` route group enforces auth via its layout. Creating a separate `(portal)` group means
+duplicating the auth guard pattern. The portal does need auth — it's the same Supabase session.
+
+The visual difference (no sidebar, full-page) is solved by a **nested layout override**, not a
+separate route group:
 
 ```
-src/
-├── app/                          # Next.js App Router
-│   ├── (auth)/                   # Route group — no shared layout with app
-│   │   ├── login/
-│   │   │   └── page.tsx
-│   │   └── layout.tsx            # Auth-only layout (centered card)
-│   ├── (app)/                    # Route group — authenticated app shell
-│   │   ├── layout.tsx            # App shell: sidebar + top nav
-│   │   ├── dashboard/
-│   │   │   └── page.tsx          # Home/overview
-│   │   ├── contacts/
-│   │   │   ├── page.tsx          # Contact list (Server Component)
-│   │   │   ├── [id]/
-│   │   │   │   └── page.tsx      # Contact detail
-│   │   │   └── _components/      # Private — not routable
-│   │   │       ├── ContactTable.tsx
-│   │   │       └── ContactFilters.tsx
-│   │   ├── organizations/
-│   │   │   ├── page.tsx
-│   │   │   └── [id]/
-│   │   │       └── page.tsx
-│   │   ├── deals/
-│   │   │   ├── page.tsx          # Kanban board (Client Component shell)
-│   │   │   └── [id]/
-│   │   │       └── page.tsx      # Deal detail
-│   │   ├── tasks/
-│   │   │   └── page.tsx
-│   │   └── interactions/
-│   │       └── page.tsx          # Activity feed
-│   └── api/                      # Route handlers (webhooks, file ops)
-│       └── webhooks/
-│           └── route.ts
-├── components/                   # Shared UI (no data-fetching)
-│   ├── ui/                       # Primitives: Button, Input, Badge, etc.
-│   └── layout/                   # Sidebar, TopNav, PageHeader
-├── lib/                          # Server-only business logic
-│   ├── supabase/
-│   │   ├── server.ts             # Supabase client for Server Components
-│   │   ├── client.ts             # Supabase client for Client Components
-│   │   └── middleware.ts         # Session refresh middleware
-│   ├── queries/                  # Data fetching functions (server-only)
-│   │   ├── contacts.ts
-│   │   ├── deals.ts
-│   │   ├── interactions.ts
-│   │   └── tasks.ts
-│   └── actions/                  # Server Actions (mutations)
-│       ├── contacts.ts
-│       ├── deals.ts
-│       └── interactions.ts
-├── types/                        # TypeScript types matching DB schema
-│   └── database.ts               # Generated from Supabase or hand-written
-└── middleware.ts                 # Auth guard — redirect unauthenticated users
+src/app/(app)/
+├── layout.tsx          ← AppShell (sidebar + ChatWidget) — ALL (app) routes
+├── dashboard/
+├── contacts/
+├── ...
+└── portal/
+    ├── layout.tsx      ← Portal layout override: no sidebar, no ChatWidget
+    └── page.tsx        ← PortalPage (Server Component)
 ```
 
-### Structure Rationale
+The `portal/layout.tsx` wraps children WITHOUT AppShell. Next.js resolves layouts by nesting —
+`portal/layout.tsx` replaces `(app)/layout.tsx` for the `/portal` route only.
 
-- **`(auth)` vs `(app)` route groups:** Separate layouts for auth pages (centered login) vs app pages (sidebar dashboard). No URL impact.
-- **`_components/` private folders:** Colocate feature-specific components with their routes without making them routable.
-- **`lib/queries/` server-only:** All Supabase data fetching stays server-side. Client components receive data as props or subscribe via Realtime.
-- **`lib/actions/` server actions:** Mutations use Server Actions instead of API routes, eliminating boilerplate fetch/response handling.
-- **`types/database.ts`:** Single source of truth for TypeScript types. Run `supabase gen types typescript` to auto-generate from schema.
+**Wait — this is wrong. Nested layouts stack, they do not replace.** The correct approach:
 
-## Architectural Patterns
+Option A (recommended): Keep portal inside `(app)`, but the `(app)/layout.tsx` is minimal (it
+currently only adds AppShell, Toaster, ChatWidget). The portal page renders its own full-screen
+div that visually overrides the shell. The sidebar collapses/hides via CSS on `/portal`.
 
-### Pattern 1: Server Component Data Fetching
+Option B: Create `(portal)` route group at the same level as `(app)`, replicate auth check.
 
-**What:** Pages fetch data directly in Server Components using the server-side Supabase client. No client-side fetching for initial load.
+**Recommendation: Option A — Extend `(app)` layout to detect portal route.**
 
-**When to use:** All list pages, detail pages, read-heavy views (contacts, organizations, activity feed).
+The `(app)/layout.tsx` already mounts AppShell. The simplest integration: the portal page
+renders a full-screen positioned div that covers the shell layout. This avoids auth duplication.
 
-**Trade-offs:** Excellent initial load performance and SEO; requires `router.refresh()` or Realtime subscriptions for live updates after mutations.
+**Alternative that works cleanly: Parallel route group.**
 
-**Example:**
+Actually, the cleanest solution uses a sibling `(portal)` route group with its own auth check:
+
+```
+src/app/
+├── (auth)/             ← auth pages
+├── (app)/              ← CRM pages (sidebar layout)
+└── (portal)/           ← portal page (minimal layout)
+    ├── layout.tsx      ← auth guard + portal-specific layout
+    └── portal/
+        └── page.tsx
+```
+
+The `(portal)/layout.tsx` replicates the auth guard pattern already used in `(app)/layout.tsx`:
+
 ```typescript
-// app/(app)/contacts/page.tsx
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+// src/app/(portal)/layout.tsx
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import { Toaster } from '@/components/ui/sonner'
 
-export default async function ContactsPage() {
-  const supabase = await createSupabaseServerClient()
-  const { data: contacts } = await supabase
-    .from('contacts')
-    .select(`
-      id, first_name, last_name, email, phone, role, tags,
-      organizations (id, name)
-    `)
-    .order('last_name', { ascending: true })
-
-  return <ContactTable contacts={contacts ?? []} />
-}
-```
-
-### Pattern 2: Server Actions for Mutations
-
-**What:** Create/update/delete operations via Server Actions — no separate API routes needed for standard CRUD.
-
-**When to use:** All form submissions, status changes, data edits.
-
-**Trade-offs:** Simpler than API routes for standard mutations; keeps business logic server-side; native integration with Next.js `revalidatePath`.
-
-**Example:**
-```typescript
-// lib/actions/deals.ts
-'use server'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
-
-export async function updateDealStage(dealId: string, stageId: string) {
-  const supabase = await createSupabaseServerClient()
-  const { error } = await supabase
-    .from('deals')
-    .update({ stage_id: stageId, updated_at: new Date().toISOString() })
-    .eq('id', dealId)
-
-  if (error) throw new Error(error.message)
-  revalidatePath('/deals')
-}
-```
-
-### Pattern 3: Optimistic Updates for Kanban Drag-and-Drop
-
-**What:** Apply state change immediately in the client, fire Server Action, revert on error.
-
-**When to use:** Kanban drag-and-drop, any interaction requiring instant visual feedback.
-
-**Trade-offs:** Better UX (no lag); requires rollback logic; use `useOptimistic` (React 19) or manual state management.
-
-**Example:**
-```typescript
-// app/(app)/deals/_components/KanbanBoard.tsx
-'use client'
-import { useOptimistic, startTransition } from 'react'
-import { updateDealStage } from '@/lib/actions/deals'
-
-export function KanbanBoard({ initialDeals }: { initialDeals: Deal[] }) {
-  const [optimisticDeals, updateOptimisticDeals] = useOptimistic(
-    initialDeals,
-    (state, { dealId, stageId }: { dealId: string; stageId: string }) =>
-      state.map(d => d.id === dealId ? { ...d, stage_id: stageId } : d)
+export default async function PortalLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+  return (
+    <div className="min-h-screen bg-background">
+      {children}
+      <Toaster position="bottom-center" theme="dark" />
+    </div>
   )
-
-  const handleDrop = (dealId: string, stageId: string) => {
-    startTransition(async () => {
-      updateOptimisticDeals({ dealId, stageId })
-      await updateDealStage(dealId, stageId)
-    })
-  }
-
-  // render columns from optimisticDeals...
 }
 ```
 
-### Pattern 4: Polymorphic Activity Linking (Two-FK Pattern)
+**Final recommendation: Sibling `(portal)` route group.**
 
-**What:** Link interactions/tasks to BOTH contacts AND deals via separate nullable FK columns, not a generic polymorphic string type.
+This is the correct approach because:
+1. No sidebar, no ChatWidget — genuinely different layout, not a variant
+2. Auth guard is two lines — not meaningful duplication
+3. Clean separation: CRM shell vs portal shell
+4. Portal URL is `/portal`, not `/portal/portal` — achieved by nesting `portal/` under `(portal)/`
 
-**When to use:** Activities, tasks, notes — anything that can be attached to multiple entity types.
+---
 
-**Trade-offs:** More columns but full referential integrity; enables proper foreign key constraints and JOIN queries; avoids the `related_to_type`/`related_to_id` anti-pattern which breaks FK constraints.
+## Conversation History DB Schema
 
-**Example:**
-```sql
--- interactions table uses nullable FKs, not a polymorphic type column
-CREATE TABLE interactions (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  type        text NOT NULL CHECK (type IN ('call', 'email', 'meeting', 'note')),
-  subject     text,
-  body        text,
-  occurred_at timestamptz NOT NULL DEFAULT now(),
-  contact_id  uuid REFERENCES contacts(id) ON DELETE SET NULL,
-  deal_id     uuid REFERENCES deals(id) ON DELETE SET NULL,
-  user_id     uuid NOT NULL REFERENCES auth.users(id),
-  created_at  timestamptz NOT NULL DEFAULT now(),
-  -- at least one of contact_id or deal_id must be set
-  CONSTRAINT interaction_linked CHECK (contact_id IS NOT NULL OR deal_id IS NOT NULL)
-);
-```
-
-### Pattern 5: Pipeline Stage Ordering with Fractional/Lexicographic Indexing
-
-**What:** Store deal position within a stage using a `text` position column (lexicographic ordering), not integer sequence numbers.
-
-**When to use:** Any drag-and-drop ordered list where items move positions frequently.
-
-**Trade-offs:** Never requires re-indexing other records; lexicographic strings scale indefinitely; slightly more complex position calculation logic in the app layer.
-
-**Example:**
-```sql
--- stages table — ordered by display_order integer (rarely reordered)
-CREATE TABLE pipeline_stages (
-  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name          text NOT NULL,
-  display_order integer NOT NULL,  -- integer fine; stages rarely reordered
-  probability   integer CHECK (probability BETWEEN 0 AND 100),
-  is_won        boolean NOT NULL DEFAULT false,
-  is_lost       boolean NOT NULL DEFAULT false
-);
-
--- deals use text position for drag-drop ordering within a stage
-CREATE TABLE deals (
-  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  title         text NOT NULL,
-  value         numeric(12,2),
-  stage_id      uuid NOT NULL REFERENCES pipeline_stages(id),
-  position      text NOT NULL DEFAULT 'n',  -- lexicographic: 'a', 'an', 'b', etc.
-  ...
-);
--- Index for fast stage column queries
-CREATE INDEX deals_stage_position ON deals(stage_id, position);
-```
-
-## Data Flow
-
-### Request Flow (Read — Server Component)
-
-```
-User navigates to /contacts
-    |
-Next.js Server (edge middleware)
-    | -- checks Supabase session cookie
-    | -- redirects to /login if unauthenticated
-    |
-Server Component renders
-    | -- calls createSupabaseServerClient()
-    | -- executes: SELECT contacts JOIN organizations WHERE RLS passes
-    | -- RLS policy: user must be member of same team
-    |
-HTML streamed to browser
-    | -- ContactTable renders as static HTML
-    | -- Client-side JS only for interactive parts (filters, search input)
-```
-
-### Request Flow (Write — Server Action)
-
-```
-User submits "Add Contact" form
-    |
-Server Action executes (server-side)
-    | -- validates input
-    | -- calls supabase.from('contacts').insert(...)
-    | -- RLS WITH CHECK policy enforces org membership
-    | -- calls revalidatePath('/contacts')
-    |
-Next.js re-renders Server Component
-    | -- fresh data from Supabase
-    | -- updated HTML streamed back
-```
-
-### Real-time Flow (Kanban Updates)
-
-```
-User A drags deal to new stage
-    |
-Client Component (KanbanBoard)
-    | -- optimistic update: move card immediately in UI
-    | -- calls Server Action: updateDealStage(dealId, stageId)
-    |
-Supabase executes UPDATE
-    | -- WAL change event emitted
-    |
-Supabase Realtime broadcasts to channel subscribers
-    |
-User B's browser (subscribed to 'deals' table changes)
-    | -- receives postgres_changes event
-    | -- updates local state with new stage
-    | -- card moves on User B's Kanban board
-```
-
-### State Management
-
-```
-Server State (source of truth): Supabase PostgreSQL
-    |
-Server Components: fetch on render, no client state
-    |
-Client Components: local UI state only (open/close modals,
-    drag state, form values) — never duplicate server state
-    |
-Mutations: Server Actions → revalidatePath → refetch
-Real-time: Supabase Realtime subscription → setState
-```
-
-## Database Schema
-
-### Core Tables
+### New Tables
 
 ```sql
--- Users (managed by Supabase Auth, extended via profiles)
-CREATE TABLE profiles (
-  id          uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  full_name   text,
-  avatar_url  text,
-  role        text NOT NULL DEFAULT 'member' CHECK (role IN ('admin', 'member')),
-  created_at  timestamptz NOT NULL DEFAULT now()
-);
-
--- Organizations (hospitals, clinics, labs)
-CREATE TABLE organizations (
+-- Conversation sessions (one per chat thread)
+CREATE TABLE chat_conversations (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name         text NOT NULL,
-  type         text CHECK (type IN ('hospital', 'clinic', 'lab', 'other')),
-  website      text,
-  phone        text,
-  address      text,
-  city         text,
-  state        text,
-  tags         text[] DEFAULT '{}',
-  notes        text,
-  owner_id     uuid REFERENCES auth.users(id),
+  user_id      uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  account_id   uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  title        text,                        -- auto-generated from first message (first 60 chars)
   created_at   timestamptz NOT NULL DEFAULT now(),
   updated_at   timestamptz NOT NULL DEFAULT now()
 );
 
--- Contacts (people within organizations)
-CREATE TABLE contacts (
-  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  first_name      text NOT NULL,
-  last_name       text NOT NULL,
-  email           text,
-  phone           text,
-  role            text,                    -- job title / role at org
-  tags            text[] DEFAULT '{}',
-  organization_id uuid REFERENCES organizations(id) ON DELETE SET NULL,
-  owner_id        uuid REFERENCES auth.users(id),
-  notes           text,
-  created_at      timestamptz NOT NULL DEFAULT now(),
-  updated_at      timestamptz NOT NULL DEFAULT now()
-);
-CREATE INDEX contacts_org_idx ON contacts(organization_id);
-CREATE INDEX contacts_email_idx ON contacts(email);
-CREATE INDEX contacts_name_idx ON contacts(last_name, first_name);
+CREATE INDEX chat_conversations_user_idx ON chat_conversations(user_id, updated_at DESC);
 
--- Pipeline Stages (ordered Kanban columns)
-CREATE TABLE pipeline_stages (
-  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name          text NOT NULL,
-  display_order integer NOT NULL,
-  probability   integer DEFAULT 0 CHECK (probability BETWEEN 0 AND 100),
-  is_won        boolean NOT NULL DEFAULT false,
-  is_lost       boolean NOT NULL DEFAULT false,
-  color         text                        -- hex color for UI column header
+-- Individual messages within a conversation
+CREATE TABLE chat_messages (
+  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  conversation_id  uuid NOT NULL REFERENCES chat_conversations(id) ON DELETE CASCADE,
+  role             text NOT NULL CHECK (role IN ('user', 'assistant')),
+  content          text NOT NULL,           -- rendered text shown in UI
+  gemini_parts     jsonb,                   -- raw Gemini response parts (for history reconstruction)
+  created_at       timestamptz NOT NULL DEFAULT now()
 );
 
--- Deals / Opportunities
-CREATE TABLE deals (
-  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  title           text NOT NULL,
-  value           numeric(12,2),
-  currency        text NOT NULL DEFAULT 'USD',
-  stage_id        uuid NOT NULL REFERENCES pipeline_stages(id),
-  position        text NOT NULL DEFAULT 'n', -- lexicographic position in stage
-  contact_id      uuid REFERENCES contacts(id) ON DELETE SET NULL,
-  organization_id uuid REFERENCES organizations(id) ON DELETE SET NULL,
-  owner_id        uuid REFERENCES auth.users(id),
-  expected_close  date,
-  closed_at       timestamptz,
-  notes           text,
-  tags            text[] DEFAULT '{}',
-  created_at      timestamptz NOT NULL DEFAULT now(),
-  updated_at      timestamptz NOT NULL DEFAULT now()
-);
-CREATE INDEX deals_stage_position_idx ON deals(stage_id, position);
-CREATE INDEX deals_org_idx ON deals(organization_id);
+CREATE INDEX chat_messages_conversation_idx ON chat_messages(conversation_id, created_at ASC);
 
--- Interactions (calls, emails, meetings, notes)
--- Uses two-FK pattern — NOT polymorphic type column
-CREATE TABLE interactions (
-  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  type            text NOT NULL CHECK (type IN ('call', 'email', 'meeting', 'note')),
-  subject         text,
-  body            text,
-  occurred_at     timestamptz NOT NULL DEFAULT now(),
-  duration_mins   integer,                  -- for calls/meetings
-  contact_id      uuid REFERENCES contacts(id) ON DELETE SET NULL,
-  deal_id         uuid REFERENCES deals(id) ON DELETE SET NULL,
-  organization_id uuid REFERENCES organizations(id) ON DELETE SET NULL,
-  user_id         uuid NOT NULL REFERENCES auth.users(id),
-  created_at      timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT interaction_linked CHECK (
-    contact_id IS NOT NULL OR deal_id IS NOT NULL OR organization_id IS NOT NULL
+-- RLS Policies
+ALTER TABLE chat_conversations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+
+-- Users see only their own conversations
+CREATE POLICY "Users manage own conversations"
+  ON chat_conversations FOR ALL
+  TO authenticated
+  USING ((SELECT auth.uid()) = user_id)
+  WITH CHECK ((SELECT auth.uid()) = user_id);
+
+-- Users see messages in their own conversations
+CREATE POLICY "Users manage own messages"
+  ON chat_messages FOR ALL
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM chat_conversations
+      WHERE id = chat_messages.conversation_id
+        AND user_id = (SELECT auth.uid())
+    )
+  );
+```
+
+### Schema Design Rationale
+
+- **`chat_conversations` / `chat_messages` split:** Allows listing past conversations without
+  loading all messages. Supports a sidebar that shows "Yesterday: Pipeline review" without
+  fetching the full transcript.
+
+- **`gemini_parts jsonb` on messages:** Gemini's `chat.getHistory()` returns structured parts
+  (including function call/response pairs). Storing this alongside the rendered `content` text
+  allows conversation replay — the portal can reconstruct `history: []` to continue an old session
+  by reading `gemini_parts` from the last N messages.
+
+- **`title` auto-generated:** Set from the first user message (truncated to 60 chars) when the
+  conversation is created. Simple, no LLM call needed for naming.
+
+- **`account_id` on conversations:** Consistent with existing table pattern (tasks, contacts all
+  have `account_id`). Required for multi-user team — all team members share one account.
+
+- **No `updated_at` trigger required initially:** The portal updates `updated_at` on the
+  conversation row when a new message is saved. A DB trigger can be added later.
+
+---
+
+## Expanding the Existing API Route vs Creating New
+
+### Decision: Extend the existing `/api/chat/route.ts` in place
+
+Do NOT create a separate `/api/portal/chat/route.ts`.
+
+**Why:**
+
+- Both ChatWidget and Portal send `POST /api/chat` with the same payload shape (`message`, `history`)
+- Tool definitions are the same — the portal wants more tools, not different ones
+- A second route handler duplicates: auth check, Gemini client init, tool loop, error handling
+- Gemini rate limits apply per API key regardless of which endpoint calls it
+
+**What changes in `/api/chat/route.ts`:**
+
+1. Add new `FunctionDeclaration` entries to the `tools` array
+2. Add new `case` entries to `executeTool`
+3. Accept optional `conversation_id` in the request body
+4. If `conversation_id` is present, save the turn (user message + assistant response) to Supabase
+
+```typescript
+// Modified POST handler signature (conceptual)
+const { message, history, conversation_id } = await request.json()
+
+// ... existing Gemini logic ...
+
+const text = response.text()
+
+// Persist turn if caller supplied a conversation_id
+if (conversation_id) {
+  await saveTurn(supabase, conversation_id, message, text, updatedHistory)
+}
+
+return NextResponse.json({ response: text, history: updatedHistory })
+```
+
+**ChatWidget** continues sending requests with no `conversation_id` — behavior unchanged, no DB writes.
+
+**Portal** sends `conversation_id` with every message — turns are saved automatically.
+
+---
+
+## Sharing Tool Definitions
+
+### Decision: Keep tools defined in the API route; extract to a separate module
+
+Currently all `FunctionDeclaration[]` and `executeTool()` live inline in `route.ts`. As the tool
+count grows (from 7 to ~12), extract to `src/lib/chat/tools.ts`:
+
+```
+src/lib/chat/
+├── tools.ts          ← FunctionDeclaration[] array + executeTool() function
+├── types.ts          ← ChatMessage, ConversationRow types
+└── history.ts        ← saveTurn(), loadHistory() helpers
+```
+
+`route.ts` imports and uses these:
+
+```typescript
+// src/app/api/chat/route.ts
+import { tools, executeTool } from '@/lib/chat/tools'
+import { saveTurn } from '@/lib/chat/history'
+```
+
+This does NOT require a separate API route. The abstraction is in the shared module, not in
+routing. Both the widget and portal share the same tool set via the same endpoint.
+
+**New tools to add (expand `tools.ts`):**
+
+| Tool Name | Description | New |
+|-----------|-------------|-----|
+| `get_urgent_tasks` | Overdue + high priority tasks | existing |
+| `get_all_tasks` | All pending tasks | existing |
+| `get_pipeline_status` | Pipeline overview | existing |
+| `get_analytics` | Deal analytics | existing |
+| `create_task` | Create a task | existing |
+| `get_contacts` | Search contacts | existing |
+| `get_recent_activity` | Recent interactions | existing |
+| `complete_task` | Mark task done by ID | NEW |
+| `search_tasks` | Search tasks by keyword | NEW |
+| `add_contact` | Create a new contact | NEW |
+| `create_deal` | Create a new deal | NEW |
+| `get_daily_summary` | Overdue tasks + today's tasks + pipeline snapshot | NEW |
+
+---
+
+## Message Rendering Architecture
+
+### Decision: Client-side markdown rendering in a shared `MessageRenderer` component
+
+The current `ChatMessage.tsx` renders raw text with `whitespace-pre-wrap`. The portal needs:
+- Markdown (bold, lists, code) from AI responses
+- Rich action cards when a tool creates/modifies data
+
+**Architecture:**
+
+```
+MessageRenderer (client component)
+├── if content is plain text → ReactMarkdown (lightweight MD parser)
+└── if message has action_data → ActionCard component
+    ├── TaskCard (created/completed task details)
+    ├── ContactCard (created contact details)
+    ├── DealCard (created deal details)
+    └── SummaryCard (daily briefing layout)
+```
+
+**Server vs Client decision:** Keep rendering client-side.
+
+Reasons:
+- Messages exist in client state (array in `useState`) — there is no server component lifecycle here
+- Rich cards require interactivity (e.g., "Go to task" link, "Mark complete" button)
+- ReactMarkdown is a small client bundle (~15KB gzipped)
+- Server components cannot be used inside a client component tree without `use client` boundary tricks
+
+**ActionCard data source:** The API response includes the rendered text AND optionally a
+structured `action_result` object:
+
+```typescript
+// API response shape (modified)
+return NextResponse.json({
+  response: text,            // markdown text for display
+  history: updatedHistory,
+  action_result?: {          // optional: structured data for card rendering
+    type: 'task_created' | 'contact_created' | 'deal_created',
+    data: { id, title, ... }
+  }
+})
+```
+
+The `PortalChat` component stores `action_result` alongside each message and passes it to
+`MessageRenderer`, which decides whether to show a card.
+
+**ChatMessage.tsx (existing widget):** Unchanged. The widget continues rendering plain text with
+pre-wrap. The richer `MessageRenderer` is portal-specific.
+
+---
+
+## Recommended Project Structure (delta from v1.0)
+
+```
+src/
+├── app/
+│   ├── (app)/                        ← existing CRM pages (unchanged)
+│   │   ├── layout.tsx
+│   │   ├── dashboard/
+│   │   ├── contacts/
+│   │   ├── deals/
+│   │   ├── tasks/
+│   │   └── ...
+│   ├── (auth)/                       ← existing auth pages (unchanged)
+│   ├── (portal)/                     ← [NEW] portal route group
+│   │   ├── layout.tsx                ← auth guard + minimal wrapper (no sidebar)
+│   │   └── portal/
+│   │       └── page.tsx              ← Server Component: loads conversations, passes to client
+│   └── api/
+│       └── chat/
+│           └── route.ts              ← [MODIFIED] expanded tools + optional history save
+├── components/
+│   ├── chat/
+│   │   ├── ChatWidget.tsx            ← existing (unchanged)
+│   │   └── ChatMessage.tsx           ← existing (unchanged)
+│   ├── portal/                       ← [NEW] portal-specific components
+│   │   ├── PortalChat.tsx            ← main client component (full-page chat)
+│   │   ├── MessageRenderer.tsx       ← markdown + action card renderer
+│   │   ├── QuickActions.tsx          ← preset command buttons
+│   │   ├── ConversationList.tsx      ← past conversations sidebar (desktop)
+│   │   └── cards/
+│   │       ├── TaskCard.tsx          ← created/updated task display
+│   │       ├── ContactCard.tsx       ← created contact display
+│   │       ├── DealCard.tsx          ← created deal display
+│   │       └── SummaryCard.tsx       ← daily briefing card
+│   └── ui/                           ← existing (unchanged)
+└── lib/
+    ├── chat/                         ← [NEW] shared chat logic
+    │   ├── tools.ts                  ← FunctionDeclaration[] + executeTool()
+    │   ├── types.ts                  ← ChatMessage, ActionResult types
+    │   └── history.ts                ← saveTurn(), loadHistory()
+    ├── actions/
+    │   ├── chat.ts                   ← [NEW] createConversation, deleteConversation
+    │   └── ... (existing)
+    ├── queries/
+    │   ├── chat.ts                   ← [NEW] getConversations, getMessages
+    │   └── ... (existing)
+    └── supabase/
+        └── server.ts                 ← existing (unchanged)
+```
+
+---
+
+## Data Flow
+
+### Portal Chat Turn (with history persistence)
+
+```
+User types message in PortalChat
+    |
+sendMessage() called in PortalChat client component
+    | -- appends user message to local messages[]
+    | -- reads current conversation_id from state
+    |
+POST /api/chat
+    body: { message, history: geminiHistory, conversation_id }
+    |
+route.ts: auth check (Supabase server client)
+    | -- 401 if no session
+    |
+Gemini: model.startChat({ history })
+    | -- sendMessage(message)
+    | -- tool calls resolved in loop (executeTool)
+    | -- final text response generated
+    |
+Optional: if conversation_id present
+    | -- INSERT INTO chat_messages (conversation_id, 'user', message, ...)
+    | -- INSERT INTO chat_messages (conversation_id, 'assistant', text, gemini_parts)
+    | -- UPDATE chat_conversations SET updated_at = now()
+    |
+Response: { response: text, history: updatedHistory, action_result?: {...} }
+    |
+PortalChat: append assistant message to messages[]
+    | -- store action_result alongside message
+    | -- update geminiHistory state
+    | -- MessageRenderer selects text or card rendering
+```
+
+### Starting a New Conversation (Portal)
+
+```
+User opens /portal for first time (or clicks "New Chat")
+    |
+PortalPage (Server Component)
+    | -- getConversations(userId) → last 10 conversations
+    | -- pass to PortalChat as initialConversations prop
+    |
+PortalChat mounts
+    | -- no conversation_id in state yet
+    |
+User sends first message
+    | -- POST /api/chat (no conversation_id)
+    | -- response received
+    |
+After response: createConversation() Server Action
+    | -- INSERT chat_conversations (user_id, account_id, title=firstMessage[0..60])
+    | -- INSERT chat_messages x2 (user + assistant for this turn)
+    | -- returns new conversation_id
+    |
+PortalChat: setState({ conversation_id: newId })
+    | -- subsequent messages include conversation_id
+```
+
+### Loading Past Conversation
+
+```
+User clicks conversation in ConversationList
+    |
+loadConversation(conversationId) called
+    | -- GET chat_messages WHERE conversation_id = ? ORDER BY created_at ASC
+    | -- reconstruct messages[] for display
+    | -- reconstruct geminiHistory from gemini_parts JSONB
+    |
+PortalChat state updated
+    | -- messages[] repopulated
+    | -- geminiHistory[] reconstructed
+    | -- conversation continues seamlessly
+```
+
+---
+
+## Architectural Patterns
+
+### Pattern 1: Single API Endpoint, Optional Persistence
+
+**What:** The `/api/chat` route serves both the floating widget (stateless) and the portal
+(stateful with DB persistence). The caller signals intent by including or omitting `conversation_id`.
+
+**When to use:** When two surfaces share the same core logic but differ in persistence needs.
+
+**Trade-offs:** Simpler than two routes, slightly more conditional logic in one handler. Acceptable
+because the conditional is trivial (check for `conversation_id` presence).
+
+**Example:**
+```typescript
+// route.ts
+const { message, history, conversation_id } = await request.json()
+
+// ... Gemini logic unchanged ...
+
+if (conversation_id && typeof conversation_id === 'string') {
+  // Fire-and-forget is acceptable — don't block response on DB write
+  saveTurn(supabase, conversation_id, message, text, updatedHistory).catch(
+    (err) => console.error('saveTurn failed:', err)
   )
-);
-CREATE INDEX interactions_contact_idx ON interactions(contact_id, occurred_at DESC);
-CREATE INDEX interactions_deal_idx ON interactions(deal_id, occurred_at DESC);
+}
 
--- Tasks / Reminders
-CREATE TABLE tasks (
-  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  title           text NOT NULL,
-  description     text,
-  due_date        timestamptz,
-  is_complete     boolean NOT NULL DEFAULT false,
-  completed_at    timestamptz,
-  priority        text DEFAULT 'normal' CHECK (priority IN ('low', 'normal', 'high')),
-  contact_id      uuid REFERENCES contacts(id) ON DELETE SET NULL,
-  deal_id         uuid REFERENCES deals(id) ON DELETE SET NULL,
-  organization_id uuid REFERENCES organizations(id) ON DELETE SET NULL,
-  assignee_id     uuid REFERENCES auth.users(id),
-  created_by      uuid REFERENCES auth.users(id),
-  created_at      timestamptz NOT NULL DEFAULT now(),
-  updated_at      timestamptz NOT NULL DEFAULT now()
-);
-CREATE INDEX tasks_due_idx ON tasks(due_date) WHERE is_complete = false;
-CREATE INDEX tasks_assignee_idx ON tasks(assignee_id, is_complete);
+return NextResponse.json({ response: text, history: updatedHistory })
 ```
 
-### RLS Policy Pattern
+### Pattern 2: Gemini History Stored as JSONB for Replay
 
-```sql
--- Enable RLS on all tables
-ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE contacts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE deals ENABLE ROW LEVEL SECURITY;
-ALTER TABLE interactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
+**What:** Store Gemini's raw `Content[]` history parts in a `gemini_parts jsonb` column alongside
+the human-readable `content` text. When loading a past conversation, reconstruct the Gemini
+history array directly from the stored JSONB.
 
--- For a 1-5 user team with shared data: all authenticated users see all records
--- (Simplest approach for small teams — add org-scoping later if multi-tenant needed)
-CREATE POLICY "Authenticated users can read organizations"
-  ON organizations FOR SELECT
-  TO authenticated
-  USING (true);
+**When to use:** Any chat system using a stateful LLM API where conversation context must survive
+page refreshes.
 
-CREATE POLICY "Authenticated users can insert organizations"
-  ON organizations FOR INSERT
-  TO authenticated
-  WITH CHECK (true);
+**Trade-offs:** Doubles storage per message (readable text + raw parts). Acceptable because
+messages are small (~1-5KB each) and volume is low (1-5 users, 500 RPD limit).
 
-CREATE POLICY "Authenticated users can update organizations"
-  ON organizations FOR UPDATE
-  TO authenticated
-  USING (true);
+**Example:**
+```typescript
+// history.ts
+export async function loadHistory(
+  supabase: SupabaseClient,
+  conversationId: string
+): Promise<{ messages: UIMessage[]; geminiHistory: Content[] }> {
+  const { data } = await supabase
+    .from('chat_messages')
+    .select('role, content, gemini_parts')
+    .eq('conversation_id', conversationId)
+    .order('created_at', { ascending: true })
 
--- Repeat pattern for contacts, deals, interactions, tasks
--- Add owner_id filter if per-user visibility needed:
--- USING ((SELECT auth.uid()) = owner_id OR is_shared = true)
+  const messages: UIMessage[] = (data ?? []).map(row => ({
+    role: row.role as 'user' | 'assistant',
+    content: row.content,
+  }))
+
+  // Reconstruct Gemini history from stored JSONB parts
+  const geminiHistory: Content[] = (data ?? [])
+    .filter(row => row.gemini_parts)
+    .map(row => row.gemini_parts as Content)
+
+  return { messages, geminiHistory }
+}
 ```
 
-## Scaling Considerations
+### Pattern 3: Mobile-First Full-Screen Layout Without Sidebar
 
-| Scale | Architecture Adjustments |
-|-------|--------------------------|
-| 0-10 users | Current design is sufficient. RLS with shared-access policies. Single Supabase project. |
-| 10-500 users | Add team/organization scoping to RLS. Index optimization based on query patterns. Enable connection pooling in Supabase (PgBouncer). |
-| 500k+ users | Multi-tenant schema per org, read replicas, consider caching layer (Redis) for hot data. Outside this project's scope. |
+**What:** The portal page renders a full-screen layout with no sidebar, no top nav. On mobile it
+fills the viewport. On desktop it shows a conversation list panel + main chat area side by side.
 
-### Scaling Priorities
+**When to use:** Chat-centric pages where the CRM chrome would be distracting noise.
 
-1. **First bottleneck:** RLS policies doing subqueries on every row — fix with `(SELECT auth.uid())` wrapper for caching within a single request, and proper indexes on FK columns used in policies.
-2. **Second bottleneck:** Unindexed full-text search on contacts — add `pg_trgm` or use Supabase's built-in full-text search (`to_tsvector`) on `name` and `email` columns.
+**Trade-offs:** Users cannot navigate to CRM pages without a back button or URL change. Mitigate
+by providing a "Back to CRM" link in the portal header.
+
+**Example (layout structure):**
+```typescript
+// components/portal/PortalChat.tsx (structure only)
+return (
+  <div className="flex h-screen overflow-hidden">
+    {/* Desktop: conversation list sidebar */}
+    <div className="hidden md:flex w-64 flex-col border-r border-border/50">
+      <ConversationList conversations={conversations} activeId={conversationId} />
+    </div>
+    {/* Main chat area — full width on mobile */}
+    <div className="flex flex-1 flex-col">
+      <PortalHeader />           {/* minimal: title + "Back to CRM" link */}
+      <MessageList messages={messages} />
+      <QuickActions onSelect={setInput} />
+      <ChatInput onSend={sendMessage} />
+    </div>
+  </div>
+)
+```
+
+### Pattern 4: Action Result Cards via Optional API Field
+
+**What:** When an AI tool creates or modifies data, the API route includes a structured
+`action_result` in the response. The client uses this to render a rich card below the text response.
+
+**When to use:** Mutations triggered by AI (create task, add contact, create deal).
+
+**Trade-offs:** Couples the API response shape to UI concerns. Acceptable at this scale. If the
+tool call result includes the created record, the route extracts it and forwards it.
+
+**Example:**
+```typescript
+// route.ts — after tool loop resolves
+// Collect action results from tool executions
+const actionResult = toolResults.find(r =>
+  ['create_task', 'add_contact', 'create_deal'].includes(r.functionResponse.name)
+)
+
+return NextResponse.json({
+  response: text,
+  history: updatedHistory,
+  action_result: actionResult ? {
+    type: actionResult.functionResponse.name,
+    data: actionResult.functionResponse.response,
+  } : undefined,
+})
+```
+
+---
 
 ## Anti-Patterns
 
-### Anti-Pattern 1: Polymorphic Type Columns for Activities
+### Anti-Pattern 1: Creating a Separate `/api/portal/chat` Route
 
-**What people do:** Create an `activities` table with `related_to_type VARCHAR` ('contact', 'deal') and `related_to_id UUID` as a fake foreign key.
+**What people do:** Duplicate the entire chat route handler for the portal to "keep things separate."
 
-**Why it's wrong:** PostgreSQL cannot enforce a foreign key constraint across multiple tables this way. You get silent orphan records when contacts or deals are deleted. Queries require application-level joins that can't use standard FK indexes.
+**Why it's wrong:** Gemini client init, auth check, tool loop, and error handling are identical.
+Tool definitions diverge immediately, creating two lists to maintain. Rate limit behavior and
+debugging become confusing with two endpoints.
 
-**Do this instead:** Use separate nullable FK columns (`contact_id`, `deal_id`, `organization_id`) with a CHECK constraint ensuring at least one is set. Full referential integrity, proper cascade rules, and clean JOIN queries.
+**Do this instead:** Extend the single `/api/chat` route. Use the optional `conversation_id`
+field to signal persistence intent. Extract tools to `src/lib/chat/tools.ts` for clean separation.
 
-### Anti-Pattern 2: Client-Side Data Fetching for Initial Page Load
+### Anti-Pattern 2: Storing Full Gemini History in the Browser Only
 
-**What people do:** Render a page shell server-side, then fetch all data client-side via `useEffect` + API routes.
+**What people do:** Keep `geminiHistory` state in `useState` (already done in ChatWidget). This
+works for the widget but is wrong for the portal where persistence is the feature.
 
-**Why it's wrong:** Double round-trip (HTML → JS hydrate → API call → render), worse LCP/FCP, secrets exposed if API keys slip to client, unnecessary complexity.
+**Why it's wrong:** History is lost on page refresh, browser close, or when switching devices.
+For a mobile-first portal, users will close the tab constantly.
 
-**Do this instead:** Fetch in Server Components. Pass data as props to Client Components. Only use client-side fetching for real-time updates (via Supabase Realtime) or user-triggered refreshes.
+**Do this instead:** Save each turn to `chat_messages` with `gemini_parts jsonb`. Reconstruct
+history from DB on load. The client still caches it in `useState` for performance during a session.
 
-### Anti-Pattern 3: Storing Pipeline Stage as a String on Deal
+### Anti-Pattern 3: Blocking the API Response on DB Write
 
-**What people do:** Add `stage VARCHAR` to the deals table with values like 'Prospecting', 'Negotiation', 'Closed Won'.
+**What people do:** `await saveTurn(...)` before returning the JSON response, making every chat
+message slower by the DB write latency.
 
-**Why it's wrong:** Stage names become magic strings scattered across code and DB. Renaming a stage requires a data migration. No ability to attach metadata (probability, color, order) to stages.
+**Why it's wrong:** Adds 50-200ms to every response unnecessarily. The user wants the AI response
+now. DB persistence is non-blocking from the user's perspective.
 
-**Do this instead:** Separate `pipeline_stages` table with a FK from deals. Rename stages by updating one row. Add probability, color, is_won, display_order as stage attributes.
+**Do this instead:** Fire-and-forget the DB write (with error logging). The response returns
+immediately. If the save fails, log it — occasional lost messages are preferable to consistent
+added latency. Alternatively, the client makes a separate `createMessage` Server Action call
+after receiving the API response.
 
-### Anti-Pattern 4: Skipping RLS and Relying Only on Application Auth
+### Anti-Pattern 4: Rendering AI Markdown with `dangerouslySetInnerHTML`
 
-**What people do:** Enable Supabase but disable or skip RLS, controlling access entirely in the Next.js layer.
+**What people do:** Parse markdown to HTML string server-side and inject it via `dangerouslySetInnerHTML`.
 
-**Why it's wrong:** In January 2025, 170+ Supabase apps were found with data exposure because developers skipped RLS. Any client-side bug, misconfigured route, or direct API access bypasses application-layer auth entirely.
+**Why it's wrong:** XSS risk. Gemini can produce content that, after markdown parsing, contains
+`<script>` tags or event handlers if not sanitized. Even with sanitization, this is fragile.
 
-**Do this instead:** Enable RLS on every table. Even the simplest policy (`TO authenticated USING (true)`) blocks anonymous access. Add owner-scoped policies as data sensitivity requires.
+**Do this instead:** Use `react-markdown` (or `marked` + DOMPurify) client-side. `react-markdown`
+renders to React elements, not HTML strings, so no injection is possible.
 
-### Anti-Pattern 5: Integer Sequence Positions for Kanban Ordering
+### Anti-Pattern 5: Putting the Portal Inside `(app)` Layout With Sidebar
 
-**What people do:** Use `position INTEGER` and re-number all records in a column when a card is dragged.
+**What people do:** Add `/portal` as a route inside the existing `(app)` route group, inheriting
+the AppShell (sidebar + header + floating ChatWidget).
 
-**Why it's wrong:** Moving one card requires updating N other records (all items below the drop point). Under concurrent edits from multiple users, this causes update conflicts.
+**Why it's wrong:** The portal is a full-screen chat interface. The sidebar wastes ~256px on
+mobile where there is no space. The floating ChatWidget is redundant (the portal IS the chat).
+The AppShell adds unnecessary data fetching (overdue task count, profile fetch).
 
-**Do this instead:** Use lexicographic text positions (fractional indexing). Moving a card computes one intermediate string value and updates exactly one row. No re-indexing of other records needed.
+**Do this instead:** Create a sibling `(portal)` route group with a minimal layout — auth guard
+only, no sidebar, no header, no ChatWidget. The portal is a different surface, not a CRM page.
+
+---
 
 ## Integration Points
 
@@ -551,47 +692,68 @@ CREATE POLICY "Authenticated users can update organizations"
 
 | Service | Integration Pattern | Notes |
 |---------|---------------------|-------|
-| Supabase Auth | Server-side session via cookies; middleware refreshes tokens | Use `@supabase/ssr` package, not legacy `@supabase/auth-helpers-nextjs` |
-| Vercel (hosting) | Zero-config Next.js deployment; edge middleware for auth | Set `SUPABASE_URL` and `SUPABASE_ANON_KEY` as Vercel env vars |
-| Supabase Storage | For future file attachments (contracts, documents) | Bucket-level RLS policies mirror table RLS |
-| Email (future) | Resend or Postmark for task reminders | Supabase Edge Functions or Vercel Cron Jobs as trigger layer |
+| Gemini API | Route handler → `@google/generative-ai` SDK | Rate limit: 500 RPD / 15 RPM free tier. Portal + Widget share the same quota. At 1-5 users this is not a concern. |
+| Supabase Auth | Server client in route handler — `supabase.auth.getUser()` | No change. Portal shares the same session/cookie mechanism. |
+| Supabase DB | New `chat_conversations` + `chat_messages` tables with RLS | Users see only their own conversations. |
 
 ### Internal Boundaries
 
 | Boundary | Communication | Notes |
 |----------|---------------|-------|
-| Server Components -> Supabase | Direct SDK call (server-side client) | Never expose service_role key; use anon key + RLS |
-| Client Components -> Server | Server Actions (mutations) or props (read) | Avoid useEffect + fetch for initial data |
-| Client Components -> Supabase | Only for Realtime subscriptions | Use supabase-js browser client; RLS applies |
-| Kanban -> Deals state | Optimistic update + Server Action + Realtime confirmation | Prevents stale state in multi-user scenarios |
-| Middleware -> Auth | `@supabase/ssr` cookie-based session | Must run on every request to refresh tokens |
+| PortalChat → API | `fetch POST /api/chat` with optional `conversation_id` | Same as ChatWidget — no new endpoint needed |
+| API route → DB | Direct Supabase server client call inside `saveTurn()` | Fire-and-forget, does not block response |
+| PortalPage → DB | Server Component: `getConversations(userId)` query | Standard server-side Supabase query pattern |
+| Portal → CRM pages | Next.js `<Link href="/dashboard">` | No state sharing needed; separate page navigations |
+| ChatWidget → API | Existing `fetch POST /api/chat` (no `conversation_id`) | Zero changes to widget |
+| lib/chat/tools.ts → lib/actions/ | Tool implementations can call existing actions | `create_task` tool already reimplements task insertion inline — refactor to call `createTask` logic |
+
+---
 
 ## Build Order Implications
 
-The component dependencies suggest this build sequence:
+Dependencies drive this order:
 
-1. **Database schema + RLS** — foundation; everything else depends on it
-2. **Auth (login/logout + middleware)** — gates all app routes
-3. **Organizations CRUD** — top of the hierarchy; contacts and deals reference it
-4. **Contacts CRUD** — references organizations; needed before interactions/tasks
-5. **Pipeline stages + Deals list** — stages table seeded first; deal cards reference it
-6. **Kanban board (drag-and-drop)** — requires deals + stages data layer complete
-7. **Interactions (activity feed)** — references contacts and deals (both must exist)
-8. **Tasks/Reminders** — references contacts and deals; largely independent of interactions
-9. **Dashboard/reporting** — aggregates from all completed tables
+1. **DB migration** — `chat_conversations` + `chat_messages` tables + RLS policies + TypeScript
+   types regeneration. Everything else depends on this.
+
+2. **Extract tools to `src/lib/chat/tools.ts`** — Move existing 7 tools out of `route.ts`.
+   No behavior change. Establishes the module that new tools extend. Required before adding tools.
+
+3. **Add new tool implementations** — Add `complete_task`, `search_tasks`, `add_contact`,
+   `create_deal`, `get_daily_summary` to `tools.ts`. Verify against existing DB schema before
+   writing — schema already exists, just need correct column names.
+
+4. **Modify `/api/chat/route.ts`** — Import from `tools.ts`. Add `conversation_id` optional
+   handling. Add `saveTurn()` call. Verify widget still works unchanged.
+
+5. **`src/lib/chat/history.ts`** — `saveTurn()`, `loadHistory()` helper functions. Needed by
+   route.ts (step 4) and portal page (step 7).
+
+6. **`(portal)` route group + layout** — Auth guard layout. No dependencies beyond Supabase client.
+
+7. **`src/app/(portal)/portal/page.tsx`** — Server Component that calls `getConversations()`,
+   passes to PortalChat. Depends on history.ts (step 5) and PortalChat (step 8).
+
+8. **`PortalChat.tsx` + child components** — Main client component. Depends on MessageRenderer,
+   QuickActions, ConversationList. Build PortalChat first as shell, then fill in children.
+
+9. **`MessageRenderer.tsx` + card components** — Markdown rendering and action cards. Depends on
+   API returning `action_result`. Can be stubbed as plain text initially and enhanced.
+
+10. **QA: widget regression** — Verify ChatWidget still works, history not corrupted, no rate
+    limit changes visible.
+
+---
 
 ## Sources
 
-- [Next.js Server and Client Components (official, updated 2026-02-20)](https://nextjs.org/docs/app/getting-started/server-and-client-components)
-- [Next.js Project Structure (official, updated 2026-02-20)](https://nextjs.org/docs/app/getting-started/project-structure)
-- [Supabase Row Level Security (official)](https://supabase.com/docs/guides/database/postgres/row-level-security)
-- [CRM Database Schema Practical Guide — DragonflyDB](https://www.dragonflydb.io/databases/schema/crm) — MEDIUM confidence
-- [CRM Architecture and Data Modeling — DZone](https://dzone.com/articles/scalable-crm-architecture-and-data-modeling) — MEDIUM confidence
-- [Kanban Indexing Patterns — Nick McCleery](https://nickmccleery.com/posts/08-kanban-indexing/) — MEDIUM confidence (verified against fractional indexing pattern)
-- [Polymorphic Associations in PostgreSQL — multiple sources](https://hashrocket.com/blog/posts/modeling-polymorphic-associations-in-a-relational-database) — MEDIUM confidence (consistent across sources)
-- [Supabase Realtime with Next.js (official)](https://supabase.com/docs/guides/realtime/realtime-with-nextjs) — HIGH confidence
-- [Next.js + Supabase Ticket Management with Kanban (GitHub reference)](https://github.com/gal1aoui/Nextjs-Supabase-Project-Ticket-Management) — LOW confidence (single source, implementation reference only)
+- Direct codebase inspection: `src/app/api/chat/route.ts`, `src/components/chat/ChatWidget.tsx`,
+  `src/app/(app)/layout.tsx`, `src/components/layout/app-shell.tsx` — HIGH confidence
+- [Next.js Route Groups documentation](https://nextjs.org/docs/app/building-your-application/routing/route-groups) — HIGH confidence
+- [Next.js Nested Layouts](https://nextjs.org/docs/app/building-your-application/routing/layouts-and-templates) — HIGH confidence
+- [Supabase Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security) — HIGH confidence
+- Gemini API rate limits (free tier): 500 RPD, 15 RPM — verified from Google AI Studio docs — HIGH confidence
 
 ---
-*Architecture research for: CRM Web Application (Next.js + Supabase + PostgreSQL)*
-*Researched: 2026-02-21*
+*Architecture research for: Team Command Portal integration into HealthCRM*
+*Researched: 2026-02-25*
