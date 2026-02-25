@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI, type FunctionResponsePart } from '@google/generative-ai'
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { chatTools, executeTool, SYSTEM_PROMPT } from '@/lib/chat/tools'
+import { chatTools, executeTool, SYSTEM_PROMPT, WRITE_TOOLS, buildActionPreview } from '@/lib/chat/tools'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 export const maxDuration = 30
@@ -58,6 +58,34 @@ export async function POST(request: Request) {
     while (response.candidates?.[0]?.content?.parts?.some(p => p.functionCall)) {
       const functionCalls = response.candidates[0].content.parts.filter(p => p.functionCall)
 
+      // Check for write tools — return pendingAction instead of executing
+      const writeCall = functionCalls.find(p => WRITE_TOOLS.has(p.functionCall!.name))
+      if (writeCall) {
+        const fc = writeCall.functionCall!
+        const preview = buildActionPreview(fc.name, (fc.args ?? {}) as Record<string, unknown>)
+
+        // Save the user message before returning pendingAction
+        if (sessionId) {
+          await supabase.from('chat_messages').insert([
+            { session_id: sessionId, role: 'user', content: message },
+          ])
+          await supabase
+            .from('chat_sessions')
+            .update({ updated_at: new Date().toISOString() })
+            .eq('id', sessionId)
+        }
+
+        return NextResponse.json({
+          pendingAction: {
+            tool: fc.name,
+            args: fc.args,
+            preview,
+            sessionId,
+          }
+        })
+      }
+
+      // Execute non-write tools normally
       const toolResults: FunctionResponsePart[] = []
       for (const part of functionCalls) {
         const fc = part.functionCall!
