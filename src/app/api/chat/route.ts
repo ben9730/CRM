@@ -62,7 +62,7 @@ export async function POST(request: Request) {
       // Check for write tools — return pendingAction instead of executing
       const writeCall = assistantMessage.tool_calls.find(tc => WRITE_TOOLS.has(tc.function.name))
       if (writeCall) {
-        const args = JSON.parse(writeCall.function.arguments) as Record<string, unknown>
+        const args = (JSON.parse(writeCall.function.arguments) ?? {}) as Record<string, unknown>
         const preview = buildActionPreview(writeCall.function.name, args)
 
         // Save the user message before returning pendingAction
@@ -99,7 +99,7 @@ export async function POST(request: Request) {
       for (const toolCall of assistantMessage.tool_calls) {
         const toolResult = await executeTool(
           toolCall.function.name,
-          JSON.parse(toolCall.function.arguments) as Record<string, unknown>,
+          (JSON.parse(toolCall.function.arguments) ?? {}) as Record<string, unknown>,
           supabase
         )
         messages.push({
