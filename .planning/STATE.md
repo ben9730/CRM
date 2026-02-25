@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 5 — Portal Foundation & API Safety
-Plan: 1 of 3 complete
-Status: Plan 01 complete — shared chat tools module, rate limit handling, viewport-fit=cover
-Last activity: 2026-02-25 — Phase 5 Plan 01 complete
+Plan: 2 of 3 complete
+Status: Plan 02 complete — /portal route, bubble chat UI, react-markdown rendering, sidebar AI Chat link
+Last activity: 2026-02-25 — Phase 5 Plan 02 complete
 
-Progress: [##########] v1.0 complete — [░░░░░░░░░░] v1.1 ~9% (1/11 plans)
+Progress: [##########] v1.0 complete — [█░░░░░░░░░] v1.1 ~18% (2/11 plans)
 
 ## Performance Metrics
 
@@ -42,6 +42,7 @@ Progress: [##########] v1.0 complete — [░░░░░░░░░░] v1.1 ~
 | Phase 04-polish-production P03 | 10 | 1 tasks | 3 files |
 | Phase 04-polish-production P03 | 20 | 2 tasks | 4 files |
 | Phase 05-portal-foundation-api-safety P01 | 3 | 2 tasks | 3 files |
+| Phase 05-portal-foundation-api-safety P02 | 5 | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -114,6 +115,9 @@ Recent decisions affecting current work:
 - [05-01]: Rate limit detection checks both '429' and 'RESOURCE_EXHAUSTED' — belt-and-suspenders for SDK version variance
 - [05-01]: maxDuration = 30 added to /api/chat/route.ts — prevents Vercel 10s timeout on multi-tool queries
 - [05-01]: viewport export with viewportFit: 'cover' added to root layout.tsx — enables env(safe-area-inset-bottom) for portal iPhone layout
+- [Phase 05-02]: (portal) route group as sibling to (app) — portal layout excludes AppShell, ChatWidget, Toaster; /portal URL from nested portal/ folder
+- [Phase 05-02]: h-dvh + flex-col layout for iOS keyboard compat — no position:fixed; input area pinned via flex push
+- [Phase 05-02]: Rate limit errors rendered as assistant chat bubbles using data.rateLimited + data.friendlyMessage from /api/chat
 
 ### Pending Todos
 
@@ -127,5 +131,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 05-01-PLAN.md — shared tools module + rate limit handling complete; ready for Plan 02 portal UI
+Stopped at: Completed 05-02-PLAN.md — portal UI with bubble messages and markdown rendering complete; ready for Plan 03 persistence
 Resume file: N/A

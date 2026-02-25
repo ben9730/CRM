@@ -99,11 +99,11 @@ Requirements for milestone v1.1. Each maps to roadmap phases 5+.
 
 ### Portal Foundation
 
-- [ ] **PORTAL-01**: User can access a full-page chat interface at /portal that requires Supabase authentication
-- [ ] **PORTAL-02**: Portal uses mobile-first responsive layout optimized for phone usage (dvh units, safe area insets)
-- [ ] **PORTAL-03**: Portal renders AI responses with markdown formatting (bold, lists, headers, code blocks)
+- [x] **PORTAL-01**: User can access a full-page chat interface at /portal that requires Supabase authentication
+- [x] **PORTAL-02**: Portal uses mobile-first responsive layout optimized for phone usage (dvh units, safe area insets)
+- [x] **PORTAL-03**: Portal renders AI responses with markdown formatting (bold, lists, headers, code blocks)
 - [x] **PORTAL-04**: Portal displays a user-friendly error message when Gemini rate limit is exceeded
-- [ ] **PORTAL-05**: Portal hides the existing floating chat widget to avoid duplication
+- [x] **PORTAL-05**: Portal hides the existing floating chat widget to avoid duplication
 
 ### AI Tools
 
@@ -198,11 +198,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PROC-02 | Phase 1 | Pending |
 | PROC-03 | Phase 3 | Complete |
 | PROC-04 | Phase 4 | Complete |
-| PORTAL-01 | Phase 5 | Pending |
-| PORTAL-02 | Phase 5 | Pending |
-| PORTAL-03 | Phase 5 | Pending |
+| PORTAL-01 | Phase 5 | Complete |
+| PORTAL-02 | Phase 5 | Complete |
+| PORTAL-03 | Phase 5 | Complete |
 | PORTAL-04 | Phase 5 | Complete |
-| PORTAL-05 | Phase 5 | Pending |
+| PORTAL-05 | Phase 5 | Complete |
 | AITOOL-05 | Phase 5 | Complete |
 | AITOOL-01 | Phase 6 | Pending |
 | AITOOL-02 | Phase 6 | Pending |
