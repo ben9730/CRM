@@ -66,6 +66,19 @@ export async function POST(request: Request) {
   } catch (err) {
     console.error('Chat API error:', err)
     const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+
+    // Detect Gemini rate limit (RPM or RPD exceeded)
+    const isRateLimited =
+      errorMessage.includes('429') ||
+      errorMessage.includes('RESOURCE_EXHAUSTED')
+
+    if (isRateLimited) {
+      return NextResponse.json(
+        { rateLimited: true, friendlyMessage: "I'm taking a breather -- try again in a minute" },
+        { status: 429 }
+      )
+    }
+
     return NextResponse.json({ error: `AI error: ${errorMessage}` }, { status: 500 })
   }
 }
