@@ -134,7 +134,11 @@ Plans:
   1. Always-visible quick action buttons are displayed above the chat input — tapping one (e.g. "My Tasks", "Daily Briefing", "Add Task") immediately sends that command without typing
   2. The portal layout passes a real-device iOS Safari test: the keyboard does not cover the input, scrolling works naturally, and no layout elements clip or overflow
   3. The floating ChatWidget is confirmed absent on /portal across all tested screen sizes and browsers
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 07-01-PLAN.md -- Quick action pill buttons in portal chat input + iOS Safari viewport fix
+- [ ] 07-02-PLAN.md -- ChatWidget shared session + mobile hide + clear chat feature + human verification
 
 ## Progress
 
@@ -149,4 +153,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 4. Polish & Production | 3/3 | Complete | 2026-02-23 |
 | 5. Portal Foundation & API Safety | 2/2 | Complete   | 2026-02-25 |
 | 6. Conversation Persistence & AI Write Tools | 3/3 | Complete   | 2026-02-25 |
-| 7. Mobile UX Polish | 0/? | Not started | - |
+| 7. Mobile UX Polish | 0/2 | Not started | - |
