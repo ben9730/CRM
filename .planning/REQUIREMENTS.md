@@ -93,24 +93,29 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **PROC-03**: Code reviewed using `code-reviewer` agent after each major implementation step
 - [x] **PROC-04**: Security reviewed using `security-reviewer` agent before production deployment
 
-## v2 Requirements
+## v1.1 Requirements — Team Command Portal
 
-Deferred to future release. Tracked but not in current roadmap.
+Requirements for milestone v1.1. Each maps to roadmap phases 5+.
 
-### Roles & Permissions
+### Portal Foundation
 
-- **ROLE-01**: Admin role with full CRUD and user management
-- **ROLE-02**: Rep role with own records + shared read access
+- [ ] **PORTAL-01**: User can access a full-page chat interface at /portal that requires Supabase authentication
+- [ ] **PORTAL-02**: Portal uses mobile-first responsive layout optimized for phone usage (dvh units, safe area insets)
+- [ ] **PORTAL-03**: Portal renders AI responses with markdown formatting (bold, lists, headers, code blocks)
+- [ ] **PORTAL-04**: Portal displays a user-friendly error message when Gemini rate limit is exceeded
+- [ ] **PORTAL-05**: Portal hides the existing floating chat widget to avoid duplication
 
-### Advanced Features
+### AI Tools
 
-- **ADV-01**: Deal stall detection — flag deals with no activity in configurable period
-- **ADV-02**: Stakeholder role tracking per contact-org relationship (Clinical Champion, Procurement, IT, etc.)
-- **ADV-03**: Pipeline forecast view — weighted revenue by close month/quarter
-- **ADV-04**: Custom fields on contacts, organizations, and deals
-- **ADV-05**: Activity-based reminders — require "next action" per deal
-- **ADV-06**: In-app task reminder notifications
-- **ADV-07**: Audit trail / change history
+- [ ] **AITOOL-01**: User can create a new contact via natural language chat command
+- [ ] **AITOOL-02**: User can create a new deal via natural language chat command
+- [ ] **AITOOL-03**: User can mark a task as complete via natural language chat command
+- [ ] **AITOOL-04**: User can request a daily briefing showing overdue tasks, today's tasks, and pipeline summary
+- [ ] **AITOOL-05**: Chat tool definitions extracted to shared module for maintainability
+
+### Portal UX
+
+- [ ] **PUX-01**: Portal displays always-visible quick action buttons for common operations
 
 ## Out of Scope
 
@@ -128,6 +133,11 @@ Explicitly excluded. Documented to prevent scope creep.
 | Territory/quota management | Enterprise feature; overkill for 1-5 users |
 | Mobile native app | Responsive web sufficient for v1 |
 | HIPAA/PHI compliance | No patient data stored; CRM tracks business relationships only |
+| Conversation persistence (DB) | Session-only for v1.1; may add later |
+| Action confirmation cards | Rich formatted cards deferred; text responses sufficient |
+| Real-time sync between portal users | Adds complexity; actions persist to DB, users refresh to see changes |
+| Voice input for portal | Deferred; text input sufficient for v1.1 |
+| Push notifications | Deferred; not needed for lightweight remote access |
 
 ## Traceability
 
@@ -190,10 +200,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PROC-04 | Phase 4 | Complete |
 
 **Coverage:**
-- v1 requirements: 53 total
-- Mapped to phases: 53
-- Unmapped: 0
+- v1 requirements: 53 total (all complete)
+- v1.1 requirements: 11 total
+- Mapped to phases: 53 (v1) + 0 (v1.1, pending roadmap)
+- Unmapped: 11 (v1.1, pending roadmap)
 
 ---
 *Requirements defined: 2026-02-21*
-*Last updated: 2026-02-21 after 01-02 completion — DSGN-02 complete (interactive prototype screens built)*
+*Last updated: 2026-02-25 after milestone v1.1 requirements definition*
