@@ -19,7 +19,6 @@ export const chatTools: ChatTool[] = [
     function: {
       name: 'get_urgent_tasks',
       description: 'Fetch overdue and high priority incomplete tasks. Use when user asks about urgent, important, or overdue tasks.',
-      parameters: { type: 'object', properties: {} },
     },
   },
   {
@@ -27,7 +26,6 @@ export const chatTools: ChatTool[] = [
     function: {
       name: 'get_all_tasks',
       description: 'Fetch all pending (incomplete) tasks with due dates. Use when user asks to see all their tasks or task list.',
-      parameters: { type: 'object', properties: {} },
     },
   },
   {
@@ -35,7 +33,6 @@ export const chatTools: ChatTool[] = [
     function: {
       name: 'get_pipeline_status',
       description: 'Get total pipeline value, deals per stage, and active deals count. Use when user asks about pipeline, deals overview, or sales status.',
-      parameters: { type: 'object', properties: {} },
     },
   },
   {
@@ -43,7 +40,6 @@ export const chatTools: ChatTool[] = [
     function: {
       name: 'get_analytics',
       description: 'Get deals by stage, recent interactions count, and conversion info. Use when user asks about analytics, performance, or stats.',
-      parameters: { type: 'object', properties: {} },
     },
   },
   {
@@ -80,7 +76,6 @@ export const chatTools: ChatTool[] = [
     function: {
       name: 'get_recent_activity',
       description: 'Get last 10 interactions (calls, emails, meetings, notes). Use when user asks about recent activity or interactions.',
-      parameters: { type: 'object', properties: {} },
     },
   },
   {
@@ -137,7 +132,6 @@ export const chatTools: ChatTool[] = [
     function: {
       name: 'daily_briefing',
       description: "Get a daily briefing: overdue tasks, tasks due today, and deals closing soon. Use for \"daily briefing\", \"what's on today\", \"what do I have today\", \"morning summary\", or similar.",
-      parameters: { type: 'object', properties: {} },
     },
   },
 ]
