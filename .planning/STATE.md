@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 
 ## Current Position
 
-Phase: 6 — Conversation Persistence & AI Write Tools
-Plan: 3 of 3 complete
-Status: Plan 03 complete — ConfirmationCard UI, pendingAction wiring, Gemini history bug fix; Phase 6 fully complete
-Last activity: 2026-02-25 — Phase 6 Plan 03 complete
+Phase: 7 — Mobile UX Polish
+Plan: 1 of 2 complete
+Status: Plan 01 complete — Quick action pill buttons + iOS Safari keyboard fix; Phase 7 in progress
+Last activity: 2026-02-25 — Phase 7 Plan 01 complete
 
-Progress: [##########] v1.0 complete — [████░░░░░░] v1.1 ~45% (5/11 plans)
+Progress: [##########] v1.0 complete — [█████░░░░░] v1.1 ~55% (6/11 plans)
 
 ## Performance Metrics
 
@@ -46,6 +46,7 @@ Progress: [##########] v1.0 complete — [████░░░░░░] v1.1 ~
 | Phase 06-conversation-persistence-ai-write-tools P01 | 6 | 2 tasks | 8 files |
 | Phase 06-conversation-persistence-ai-write-tools P02 | 3 | 2 tasks | 3 files |
 | Phase 06-conversation-persistence-ai-write-tools P03 | 45 | 2 tasks | 4 files |
+| Phase 07-mobile-ux-polish P01 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -133,6 +134,11 @@ Recent decisions affecting current work:
 - [Phase 06-03]: pendingAction message uses '__pending__' sentinel content — PortalMessage checks this string to render ConfirmationCard vs standard text bubble
 - [Phase 06-03]: Gemini history must be returned in pendingAction response and set before early return — confirm endpoint needs matching functionCall/functionResponse pair in history
 - [Phase 06-03]: Input disabled (opacity-50 + disabled prop) while pendingAction is non-null — prevents concurrent writes
+- [Phase 07-01]: sendMessage accepts optional textOverride to avoid setState race — use (textOverride ?? input).trim(), only clear input when !textOverride
+- [Phase 07-01]: Quick action pill row is ALWAYS visible — not conditional on message history, loading state, or typing
+- [Phase 07-01]: Send button onClick arrow-wrapped (() => sendMessage()) — direct reference causes TS2322 because optional string param conflicts with MouseEvent
+- [Phase 07-01]: interactiveWidget: "resizes-content" in viewport export — shrinks layout when iOS keyboard appears, keeping input visible
+- [Phase 07-01]: scrollbar-none not in Tailwind v4 by default — added as plain CSS in globals.css
 
 ### Pending Todos
 
@@ -146,5 +152,5 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Phase 6 complete — 06-03 done (3f11f36 feat, ef0a391 fix); ConfirmationCard, confirm flow, Gemini history bug fixed; all 3 plans complete
+Stopped at: Phase 7 Plan 01 complete — quick action pill buttons + iOS keyboard fix (a0b3059 feat, dea4702 feat); 2 tasks done
 Resume file: N/A

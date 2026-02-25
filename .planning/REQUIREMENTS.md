@@ -115,7 +115,7 @@ Requirements for milestone v1.1. Each maps to roadmap phases 5+.
 
 ### Portal UX
 
-- [ ] **PUX-01**: Portal displays always-visible quick action buttons for common operations
+- [x] **PUX-01**: Portal displays always-visible quick action buttons for common operations
 
 ## Out of Scope
 
@@ -208,7 +208,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AITOOL-02 | Phase 6 | Complete |
 | AITOOL-03 | Phase 6 | Complete |
 | AITOOL-04 | Phase 6 | Complete |
-| PUX-01 | Phase 7 | Pending |
+| PUX-01 | Phase 7 | Complete |
 
 **Coverage:**
 - v1 requirements: 53 total (all complete)
